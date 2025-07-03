@@ -254,7 +254,7 @@ if __name__ == "__main__":
     ws=wb.active
     ws.title="優惠碼領取結果"
     ws.append(["玩家帳號","活動名稱", "優惠碼ID", "紅利金額", "積分", "票卷", "票卷張數","優惠碼領取狀態", "派發紀錄"])
-    username_list=['yhu777','rere333','www33331','cas211','ttt555','bnb7771','cszcs3','nn9999','mmm1111','m99999']
+    username_list=['cccc333','yyw1111','kkkk888','swow999','yyy771','nnn000','nnn111','nnn222','cccc333','ggg777']
     for name in username_list:
     #填入玩家帳號
         credential_frontend = {
