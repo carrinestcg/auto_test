@@ -1,6 +1,7 @@
 import requests,logging,datetime
 from datetime import datetime,timedelta
-
+import time,random,yaml,os
+from openpyxl import Workbook
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -11,9 +12,9 @@ class B_end:
         self.session=requests.Session()
         self.username=''
         self.password=''
-        self.token=None
+        self.token=self.get_token(credential['operatorName'],credential['password'])
         self.credential=credential
-        self.token_data=self.get_token(credential['operatorName'],credential['password'])
+        self.token_data=self.token
         self.record_data_list=''
     def get_token(self,operatorName,password):
         login_url="http://sit-admin2.tcg.com/tac/api/login/password"
@@ -42,11 +43,10 @@ class B_end:
             "language": "zh_CN"
         }
         requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
-        logging.info(f"狀態碼{requests_data.status_code}")
         token_data=requests_data.json()
-        self.token_data=token_data.get("token")
-        return self.token_data
-
+        token=token_data.get("token")
+        logging.info(f"登入API回傳: {token}")
+        return token
     def search_customerid(self,player:str):
         
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode=gi8viet&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
@@ -76,7 +76,6 @@ class B_end:
             response.raise_for_status()
 
             response_data=response.json()
-            logging.info(f"{response_data}")
             if response_data.get("success") == True:
                 value_data=response_data.get('value',{})
                 player_list=value_data.get('list',[])
@@ -139,11 +138,10 @@ class B_end:
 
     def Bonus_record_page(self):
         
+      
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
-        midnight=datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)
-        unit_time_1=str(int(midnight.timestamp()*1000))
-        end_midnight=datetime.now().replace(hour=23,minute=59,second=59,microsecond=59)
-        unit_time_2=str(int(end_midnight.timestamp()*1000))
+        start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
+        end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
         headers={
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
@@ -162,12 +160,11 @@ class B_end:
             "platform": "TCG"
         }
         payload={
-            "fromDate":unit_time_1,
-            "toDate":unit_time_2,
+            "fromDate":start_time,
+            "toDate":end_time,
             "isFuzzySearch":True,
             "searchDateMode":"requestedTimeSearch",
             "merchantCode":"gi8viet",
-            "customerName":"xxx555"
 
         }
         cookies = {
@@ -178,34 +175,89 @@ class B_end:
             response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
 
             response_data=response.json()
-            logging.info(f"{response_data}")
             if response_data.get("success") == True:
-                self.record_data_list=response_data.get('value',[])
-                item=self.record_data_list([0])
-                if item:
-                    customerId=player_list[0].get("customerId")
-                    if customerId:
-                        logging.info(f"拿到玩家資訊: {player}")
-                        logging.info(f"CustomerID: {customerId}")
-                    else:
-                        logging.error("沒有拿到CustomerID")
-                    return customerId
-                else:
-                    logging.error("沒有拿到List")
-                
+                self.record_data_list=response_data.get('value',{})
+                return True
             else:
-                error_msg = response_data.get("message", "未知錯誤")
-                logging.error(f"未拿到玩家資訊: {error_msg}")
+                response_data.get("message", "未知錯誤")
                 return False
+            
         except Exception as e:
             logging.error(f"狀態碼: {response.status_code}")
     def process_procedure(self):
-        customer_id=self.search_customerid()
-        if customer_id:
-            player_rank=self.player_rank(customer_id,NEW_REGISTER,L7)
+        PLAYER='pvp001'
+        L1=62785
+        L2=62786
+        L3=62787
+        L4=62788
+        L5=62789
+        L6=62790
+        L7=62816
+        random_level=random.choice([L1,L2,L3,L4,L5,L6,L7])
+        wb=Workbook()
+        ws=wb.active
+        ws.title="紅利發放結果"
+        ws.append(["玩家帳號","活動名稱","玩家等級","活動類型", "紅利金額", "積分", "票卷", "票卷張數", "更新等級結果", "紅利派發紀錄"])
+        bonusAmount=1000
+        bonusPointAmount=30
+        #count=2
+        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
+        ticketQuantity=3
+        #ticket=1105015
+        update_result='尚未更新等級'
+        bonus_record=''
+        playerRemark=''
+        if self.Bonus_record_page():
+            first_record=self.record_data_list[0]
+            promotion_name=first_record.get("promotionName")
+            type=first_record.get("type")
+            playerRemark=first_record.get("labelName")
+            ws.append([
+                    PLAYER,
+                    promotion_name,
+                    playerRemark,
+                    type,
+                    bonusAmount,
+                    bonusPointAmount,
+                    random_ticket,
+                    ticketQuantity,
+                    update_result,
+                    bonus_record
+                    ]
+                )
+        logging.info("先寫入還沒有手動升級前的紅利派發紀錄")
+        Customerid= self.search_customerid(PLAYER)
+        if Customerid :
+            player_rank_update_complete=self.player_rank(Customerid,PLAYER,random_level)
+            if player_rank_update_complete:
+                update_result='更新等級成功'
+            else:
+                update_result='更新等級失敗'
+        if self.Bonus_record_page():
+            logging.info("獲取紅利派發紀錄")
+            first_record=self.record_data_list[0]
+            promotion_name=first_record.get("promotionName")
+            type=first_record.get("type")
+            playerRemark=first_record.get("labelName")
+            bonus_record='紅利派發紀錄更新'      
+            ws.append([
+                    PLAYER,
+                    promotion_name,
+                    playerRemark,
+                    type,
+                    bonusAmount,
+                    bonusPointAmount,
+                    random_ticket,
+                    ticketQuantity,
+                    update_result,
+                    bonus_record
+                    ]
+                )
         else:
-            logging.error("沒有拿到CustomerID")
-
+            logging.error("無法獲取紅利記錄")
+        report_path=os.path.join(f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
+        wb.save(report_path)        
+        
 if __name__ == "__main__":
     credential = {
         "operatorName": "carrine03",
@@ -219,14 +271,7 @@ if __name__ == "__main__":
         print("啟動時取得 token 發生錯誤:", e)
 
     #填入玩家帳號
-    NEW_REGISTER = "lss111"
-    L1=62785
-    L2=62786
-    L3=62787
-    L4=62788
-    L5=62789
-    L6=62790
-    L7=62816
+    
     
     
 
