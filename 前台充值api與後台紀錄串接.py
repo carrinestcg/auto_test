@@ -487,7 +487,8 @@ class Backend:
 if __name__ == "__main__":
     from deposit_api import batch_approve
     while True:
-        username = input("請輸入帳號：")
+        username = os.environ.get("USERNAME")
+        
         password = "123qwe"
         #填入玩家帳號
         credential_fe = {
