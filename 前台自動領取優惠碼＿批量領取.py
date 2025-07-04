@@ -249,6 +249,13 @@ class Frontend:
             bonus_record
         ])
 if __name__ == "__main__":
+    #username_list = []
+
+    #with open('usernames.txt', 'r') as f:
+        #for line in f:
+            #cleaned_line = line.strip()  # 移除前後空白與換行符號
+            #if cleaned_line != "":       # 確認不是空行
+             #   username_list.append(cleaned_line)
 
     wb=Workbook()
     ws=wb.active
