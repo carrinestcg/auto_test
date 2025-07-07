@@ -490,6 +490,8 @@ if __name__ == "__main__":
     username = os.environ.get("USERNAME")
     password = "123qwe"
         #填入玩家帳號
+    if not username:
+        logging.info("沒有讀到username")
     credential_fe = {
             "username": username,
             "password": password

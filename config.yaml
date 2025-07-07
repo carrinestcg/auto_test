@@ -19,7 +19,7 @@ promtion_ids:
 - "4023104" # 哩程碑
 - "4023105" # 排行榜＋哩程碑
 
-promtion_ids_for_deposit_2_to_5:
+promotion_ids_for_deposit_2_to_5:
 - "4023094" # 首存
 - "4023095" # 二存
 - "4023096" # 三存
