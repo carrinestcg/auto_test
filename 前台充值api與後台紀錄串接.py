@@ -122,7 +122,7 @@ class Frontend:
         for bank_code,bank_type in zip(bank_codes,bank_types):
                 if not self.is_token_valid():
                     logging.info("token 過期, 重新登入")
-                    self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
+                    self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
                 if self.token is None:
                     return
                 current_time=datetime.now()
@@ -178,7 +178,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
+                self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -234,7 +234,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
+                self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -290,7 +290,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
+                self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -346,7 +346,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
+                self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -470,7 +470,6 @@ class Backend:
                 response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
 
                 response_data=response.json()
-                logging.info(f"{response_data}")
                 if response_data.get("success") == True:
                     self.record_data_list=response_data.get('value',[])
                     return True
@@ -482,14 +481,16 @@ class Backend:
                 logging.error(f"狀態碼: {response.status_code}")
 
     create_record=[]
+    
             
         
 if __name__ == "__main__":
     from deposit_api import batch_approve
+    from deposit_count import implement_function
 
     username = os.environ.get("USERNAME")
+    #username="ggg279"
     password = "123qwe"
-        #填入玩家帳號
     if not username:
         logging.info("沒有讀到username")
     credential_fe = {
@@ -505,28 +506,45 @@ if __name__ == "__main__":
     with open(yaml_path,"r",encoding="utf-8") as f:
         config=yaml.safe_load(f)
     promotion_id_for_deposit=config.get("promotion_ids_for_deposit_2_to_5",[])
-    for promo in promotion_id_for_deposit:
-        try:    
-            frontend = Frontend(credential_fe)
-            if frontend.token:
-                    frontend.deposit_QAD(credential_fe['username'],promo)
-                    #frontend.deposit_TBQR(credential_fe['username'])
-                    #frontend.quick_deposit(credential_fe['username'])
-                    #frontend.depositbyURL(credential_fe['username'])
-                    #frontend.BTC_deposit(credential_fe['username'])
-                    #frontend.mpesa_deposit(credential_fe['username'])
-            else:
-                logging.error("登入失敗 無法取得Token")
-            logging.info("進入 backend 區塊，準備執行 batch_approve")
-            backend=Backend(credential_be)
-            if backend.token:
-                logging.info("backend class有成功運作")
-                batch_approve()
-                #backend.Bonus_record_page()
+    try:
+        backend=Backend(credential_be)
+        if backend.token:
+            logging.info("backend class有成功運作")
+            deposit_count=implement_function(username)
+            if deposit_count>5:
+                promo=promotion_id_for_deposit[5]
+                frontend = Frontend(credential_fe)
+                if frontend.token:
+                        frontend.deposit_QAD(credential_fe['username'],promo)
+                            #frontend.deposit_TBQR(credential_fe['username'])
+                            #frontend.quick_deposit(credential_fe['username'])
+                            #frontend.depositbyURL(credential_fe['username'])
+                            #frontend.BTC_deposit(credential_fe['username'])
+                            #frontend.mpesa_deposit(credential_fe['username'])
+                else:
+                    logging.error("登入失敗 無法取得Token")
+                batch_approve()    
+            else:  
+                available_for_deposit_promo=promotion_id_for_deposit[deposit_count:]
+                for promo in available_for_deposit_promo:
+                    frontend = Frontend(credential_fe)
+                    if frontend.token:
+                            frontend.deposit_QAD(credential_fe['username'],promo)
+                            batch_approve() 
+                            time.sleep(1)
+                                #frontend.deposit_TBQR(credential_fe['username'])
+                                #frontend.quick_deposit(credential_fe['username'])
+                                #frontend.depositbyURL(credential_fe['username'])
+                                #frontend.BTC_deposit(credential_fe['username'])
+                                #frontend.mpesa_deposit(credential_fe['username'])
+                    else:
+                        logging.error("登入失敗 無法取得Token")
 
-
-            
-        except Exception as e:
+        else:
+            logging.error(f"沒有拿到後台token:")        
+            #backend.Bonus_record_page()  
+  
+    except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
 
     

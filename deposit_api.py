@@ -32,8 +32,6 @@ def get_token():
         "language": "zh_CN"
     }
     requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
-    logging.info(f"狀態碼{requests_data.status_code}")
-    requests_data.raise_for_status()
     token_data=requests_data.json()
     return token_data.get("token")
 
@@ -84,8 +82,6 @@ def deposit(token):
         
         
         response_data = response.json()
-        logging.info(f"狀態碼: {response.status_code}")
-        logging.info(f"響應內容: {response_data}")
         
         
         if response_data.get('success') == True:
