@@ -487,14 +487,22 @@ class Backend:
 if __name__ == "__main__":
     from deposit_api import batch_approve
     from deposit_count import implement_function
+    from accumulated_deposit import implement_accumulated_function
 
-    username = os.environ.get("USERNAME")
-    #username="ggg279"
+    username_1 = os.environ.get("USERNAME_1")
+    username_2 = os.environ.get("USERNAME_2")
+    #username="three444"
     password = "123qwe"
-    if not username:
-        logging.info("沒有讀到username")
+    if not username_1:
+        logging.info("沒有讀到username_1")
+    if not username_2:
+        logging.info("沒有讀到username_2")    
     credential_fe = {
-            "username": username,
+            "username": username_1,
+            "password": password
+    }
+    credential_fe_for_accu = {
+            "username": username_2,
             "password": password
     }
     credential_be = {
@@ -505,12 +513,12 @@ if __name__ == "__main__":
     yaml_path=os.path.join(current_dir,"config.yaml")
     with open(yaml_path,"r",encoding="utf-8") as f:
         config=yaml.safe_load(f)
-    promotion_id_for_deposit=config.get("promotion_ids_for_deposit_2_to_5",[])
+    promotion_id_for_deposit=config.get("promotion_ids_for_deposit_2",[])
     try:
         backend=Backend(credential_be)
         if backend.token:
             logging.info("backend class有成功運作")
-            deposit_count=implement_function(username)
+            deposit_count=implement_function(username_1)
             if deposit_count>5:
                 promo=promotion_id_for_deposit[5]
                 frontend = Frontend(credential_fe)
@@ -540,10 +548,21 @@ if __name__ == "__main__":
                                 #frontend.mpesa_deposit(credential_fe['username'])
                     else:
                         logging.error("登入失敗 無法取得Token")
+            #額外執行一個累計次數存款        
+            if frontend.token:
+                            deposit_count=implement_function(username_2)
+                            accumulated_time=implement_accumulated_function()
+                            times_to_complete=accumulated_time-deposit_count
+                            if times_to_complete==0:
+                                 logging.info("已達成累計次數存款獎勵")
+                            else:
+                                for _ in range(times_to_complete):
+                                    frontend.deposit_QAD(credential_fe_for_accu['username'],promo)
+                                batch_approve()
 
         else:
             logging.error(f"沒有拿到後台token:")        
-            #backend.Bonus_record_page()  
+            #backend.Bonus_record_page()  --之後再修改 
   
     except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
