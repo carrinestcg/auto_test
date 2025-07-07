@@ -65,7 +65,7 @@ class Frontend:
                 self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
             if self.token is None:
                 return
-            logging.info(f"看promoid{promo}")
+            logging.info(f"promoid:{promo}")
             current_time=datetime.now()
             unit_time=str(int(current_time.timestamp()*1000))
             login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
@@ -530,8 +530,9 @@ if __name__ == "__main__":
                     frontend = Frontend(credential_fe)
                     if frontend.token:
                             frontend.deposit_QAD(credential_fe['username'],promo)
-                            batch_approve() 
                             time.sleep(1)
+                            batch_approve() 
+                            time.sleep(0.5)
                                 #frontend.deposit_TBQR(credential_fe['username'])
                                 #frontend.quick_deposit(credential_fe['username'])
                                 #frontend.depositbyURL(credential_fe['username'])
