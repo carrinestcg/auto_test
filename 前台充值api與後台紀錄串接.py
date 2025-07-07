@@ -550,15 +550,10 @@ if __name__ == "__main__":
                         logging.error("登入失敗 無法取得Token")
             #額外執行一個累計次數存款        
             if frontend.token:
-                            deposit_count=implement_function(username_2)
                             accumulated_time=implement_accumulated_function()
-                            times_to_complete=accumulated_time-deposit_count
-                            if times_to_complete==0:
-                                 logging.info("已達成累計次數存款獎勵")
-                            else:
-                                for _ in range(times_to_complete):
-                                    frontend.deposit_QAD(credential_fe_for_accu['username'],promo)
-                                batch_approve()
+                            for _ in range(accumulated_time):
+                                frontend.deposit_QAD(credential_fe_for_accu['username'],promo)
+                            batch_approve()
 
         else:
             logging.error(f"沒有拿到後台token:")        
