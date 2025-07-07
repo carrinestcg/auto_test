@@ -486,46 +486,45 @@ class Backend:
         
 if __name__ == "__main__":
     from deposit_api import batch_approve
-    while True:
-        username = os.environ.get("USERNAME")
-        
-        password = "123qwe"
+
+    username = os.environ.get("USERNAME")
+    password = "123qwe"
         #填入玩家帳號
-        credential_fe = {
+    credential_fe = {
             "username": username,
             "password": password
-        }
-        credential_be = {
+    }
+    credential_be = {
             "operatorName": "carrine03",
             "password": "Test@1234"
-        }
-        current_dir=os.path.dirname(__file__)
-        yaml_path=os.path.join(current_dir,"config.yaml")
-        with open(yaml_path,"r",encoding="utf-8") as f:
-            config=yaml.safe_load(f)
-        promotion_id_for_deposit=config.get("promtion_ids_for_deposit_2_to_5",[])
-        for promo in promotion_id_for_deposit:
-            try:    
-                frontend = Frontend(credential_fe)
-                if frontend.token:
+    }
+    current_dir=os.path.dirname(__file__)
+    yaml_path=os.path.join(current_dir,"config.yaml")
+    with open(yaml_path,"r",encoding="utf-8") as f:
+        config=yaml.safe_load(f)
+    promotion_id_for_deposit=config.get("promotion_ids_for_deposit_2_to_5",[])
+    for promo in promotion_id_for_deposit:
+        try:    
+            frontend = Frontend(credential_fe)
+            if frontend.token:
                     frontend.deposit_QAD(credential_fe['username'],promo)
                     #frontend.deposit_TBQR(credential_fe['username'])
                     #frontend.quick_deposit(credential_fe['username'])
                     #frontend.depositbyURL(credential_fe['username'])
                     #frontend.BTC_deposit(credential_fe['username'])
                     #frontend.mpesa_deposit(credential_fe['username'])
-                else:
-                    logging.error("登入失敗 無法取得Token")
-                logging.info("進入 backend 區塊，準備執行 batch_approve")
-                backend=Backend(credential_be)
-                if backend.token:
-                    logging.info("backend class有成功運作")
-                    batch_approve()
-                    #backend.Bonus_record_page()
+            else:
+                logging.error("登入失敗 無法取得Token")
+            logging.info("進入 backend 區塊，準備執行 batch_approve")
+            backend=Backend(credential_be)
+            if backend.token:
+                logging.info("backend class有成功運作")
+                batch_approve()
+                #backend.Bonus_record_page()
 
 
             
-            except Exception as e:
-                logging.error(f"啟動時發生錯誤: {e}")
+        except Exception as e:
+            logging.error(f"啟動時發生錯誤: {e}")
 
     
