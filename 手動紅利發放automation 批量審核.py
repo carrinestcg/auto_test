@@ -276,12 +276,11 @@ class B_end:
             
         except Exception as e:
             logging.error(f"狀態碼: {response.status_code}")
-    def process_procedure(self,username:str):
+    def process_procedure(self):
         wb=Workbook()
         ws=wb.active
         ws.title="紅利發放結果"
         ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
-        CREATE_BONUS_PLAYER=username
         bonusAmount=10000
         bonusPointAmount=0
         #count=2
@@ -293,10 +292,11 @@ class B_end:
         prmotion_id_multiple=config.get("promtion_ids",[])
         prmotion_name=config.get("promtions_name",[])
         ticket_id=config.get("ticket_id")
+        testing_account=config.get("testing_account")
         create_record=[]
-        for promo ,name,ticket in zip(prmotion_id_multiple,prmotion_name,ticket_id):
+        for account,promo ,name,ticket in zip(testing_account,prmotion_id_multiple,prmotion_name,ticket_id):
             record={
-                    "player":CREATE_BONUS_PLAYER,
+                    "player":account,
                     "promo_id":promo,
                     "promoName":name,
                     "bonusAmount":bonusAmount,
@@ -309,11 +309,11 @@ class B_end:
                     "claimid":None,
                     "status":"尚未比對"
             }
-            is_success=self.create_bonus(CREATE_BONUS_PLAYER,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+            is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
             if is_success:
                 record['create_result']='創建紅利成功'
                 record['remark']="成功"
-                CustomerID,claimid = self.Search_Customer_bonus(CREATE_BONUS_PLAYER)
+                CustomerID,claimid = self.Search_Customer_bonus(account)
                 if claimid :
                     self.claimid_list.append(claimid)
                     record['claimid']=claimid
@@ -372,12 +372,11 @@ if __name__ == "__main__":
         "operatorName": "carrine03",
         "password": "Test@1234"
     }
-    username="xxx555"
     try:
         
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure(username)
+            b_end.process_procedure()
         else:
             logging.error("登入失敗 無法取得Token")
     except Exception as e:

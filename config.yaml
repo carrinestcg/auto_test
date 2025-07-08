@@ -49,3 +49,21 @@ promtions_name:
 - "carrine 關懷援助金"  # 關懷救援金
 - "carrine 註冊獎勵"  # 註冊獎勵
 - "carrine test"  # 新手任務獎勵
+
+ticket_id:
+- "1087007" # cash
+- "1087008" # raffle
+- "1087006" # egg
+- "1113014" # wheel
+- "1099016" # 商品
+- "1120016" # free spin
+- "1120017" # 拼多多
+
+testing_account:
+- "bnm111" 
+- "www111"
+- "three399" 
+- "feb002" 
+- "feb007" 
+- "nnn222" 
+- "pvp100" 

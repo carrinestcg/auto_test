@@ -1,5 +1,4 @@
 import yaml,os
-import time,random
 import requests,logging,json
 from datetime import datetime,timedelta
 from openpyxl import Workbook
@@ -286,12 +285,11 @@ class B_end:
             logging.error(f"狀態碼: {response.status_code}")
 
     create_record=[]
-    def process_procedure(self,username:str):
+    def process_procedure(self):
         wb=Workbook()
         ws=wb.active
         ws.title="紅利發放結果"
         ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
-        CREATE_BONUS_PLAYER=username
         bonusAmount=10000
         bonusPointAmount=0
         #count=2
@@ -303,15 +301,16 @@ class B_end:
         prmotion_id_multiple=config.get("promtion_ids",[])
         prmotion_name=config.get("promtions_name",[])
         ticket_id=config.get("ticket_id")
+        testing_account=config.get("testing_account")
         confirm_result = ''
         create_result=''
         remark=""
-        for promo ,name,ticket in zip(prmotion_id_multiple,prmotion_name,ticket_id):
-            is_success=self.create_bonus(CREATE_BONUS_PLAYER,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+        for account,promo ,name,ticket in zip(testing_account,prmotion_id_multiple,prmotion_name,ticket_id):
+            is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
             if is_success:
                 create_result='創建紅利成功'
                 remark="成功"
-                Customerid,self.claimid = self.Search_Customer_bonus(CREATE_BONUS_PLAYER)
+                Customerid,self.claimid = self.Search_Customer_bonus(account)
                 if self.claimid :
                     self.claimid_list.append(self.claimid)
                 if Customerid  and self.claimid :
@@ -325,7 +324,7 @@ class B_end:
                 create_result='創建紅利失敗'
                 remark="失敗"
             ws.append([
-                    CREATE_BONUS_PLAYER,
+                    account,
                     promo,
                     name,
                     bonusAmount,
@@ -358,15 +357,13 @@ class B_end:
 if __name__ == "__main__":
 
     credential = {
-        "operatorName": "carrine01",
+        "operatorName": "carrine03",
         "password": "Test@1234"
     }
-    username="xxx555"
     try:
-        
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure(username)
+            b_end.process_procedure()
         else:
             logging.error("登入失敗 無法取得Token")
     except Exception as e:

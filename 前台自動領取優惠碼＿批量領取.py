@@ -217,9 +217,10 @@ class Frontend:
         update_result='沒有資料'
         success_count=0
         bonusAmount = 1000
+        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
         bonusPointAmount = 30
         ticketQuantity = 3
-        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
+        
         ticketQuantity=3
         self.get_promo_code_list()
         for item in self.PromoCode_list:
