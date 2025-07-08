@@ -285,24 +285,23 @@ class B_end:
         bonusAmount=10000
         bonusPointAmount=0
         #count=2
-        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
         ticketQuantity=3
-        #ticket=1105015
         current_dir=os.path.dirname(__file__)
         yaml_path=os.path.join(current_dir,"config.yaml")
         with open(yaml_path,"r",encoding="utf-8") as f:
             config=yaml.safe_load(f)
         prmotion_id_multiple=config.get("promtion_ids",[])
         prmotion_name=config.get("promtions_name",[])
+        ticket_id=config.get("ticket_id")
         create_record=[]
-        for promo ,name in zip(prmotion_id_multiple,prmotion_name):
+        for promo ,name,ticket in zip(prmotion_id_multiple,prmotion_name,ticket_id):
             record={
                     "player":CREATE_BONUS_PLAYER,
                     "promo_id":promo,
                     "promoName":name,
                     "bonusAmount":bonusAmount,
                     "bonusPointAmount":bonusPointAmount,
-                    "ticket":random_ticket,
+                    "ticket":ticket,
                     "ticketQuantity":ticketQuantity,
                     "create_result":False,
                     "confirm_result":"",
@@ -310,7 +309,7 @@ class B_end:
                     "claimid":None,
                     "status":"尚未比對"
             }
-            is_success=self.create_bonus(CREATE_BONUS_PLAYER,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=random_ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+            is_success=self.create_bonus(CREATE_BONUS_PLAYER,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
             if is_success:
                 record['create_result']='創建紅利成功'
                 record['remark']="成功"
