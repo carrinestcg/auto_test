@@ -49,15 +49,18 @@ class B_end:
         return token
 
     def Bonus_record_page(self):
-        
+        name=[]
         current_dir=os.path.dirname(__file__)
         yaml_path=os.path.join(current_dir,"config.yaml")
         with open(yaml_path,"r",encoding="utf-8") as f:
             config=yaml.safe_load(f)
         VIP_testing_account_list=config.get("VIP_testing_account")
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/promo-promotion-rank_salary-claim_report"  
-        start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
-        end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
+        today = datetime.now().date()
+        startime=datetime.combine(today,datetime.min.time())
+        end_time = datetime.combine(today,datetime.max.time()).replace(microsecond=0)
+        startunix=int(startime.timestamp())*1000
+        Endunix=int(end_time.timestamp())*1000
         headers={
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
@@ -78,10 +81,10 @@ class B_end:
         params={
             "status":"A",
             "periodType":"CLAIM_PERIOD",
-            "startTime":start_time,
-            "endTime":end_time,
+            "startTime":startunix,
+            "endTime":Endunix,
             "page":1,
-            "size":1
+            "size":10
 
         }
         cookies = {
@@ -89,23 +92,25 @@ class B_end:
         }
         try:
             response=requests.get(API_URL2, headers=headers, params=params, cookies=cookies, verify=False)
-
             response_data=response.json()
+            all_exist=True
             if response_data.get("success") == True:
-                self.record_data_list=response_data.get('value',{})
-                for account in self.record_data_list:
-                    if account in VIP_testing_account_list:
-                        logging.info("有正確存在於派發紀錄")
-                        return True
+                self.record_data_list=response_data.get('values',[])
+                for record in self.record_data_list:
+                    customername=record.get("customerName")
+                    name.append(customername)
+                for account in VIP_testing_account_list:
+                    if account in name:    
+                        logging.info(f"有正確存在於派發紀錄 玩家帳號{account}")
                     else:
-                        logging.info("沒有正確存在於派發紀錄")
-                        return False
+                        logging.info(f"沒有正確存在於派發紀錄 玩家帳號{account}")
+                return all_exist
             else:
                 response_data.get("message", "未知錯誤")
                 return False
             
         except Exception as e:
-            logging.error(f"狀態碼: {response.status_code}")
+            logging.error(f": {e}")
         
 if __name__ == "__main__":
     credential = {
@@ -115,7 +120,9 @@ if __name__ == "__main__":
     try:
         b_end=B_end(credential)
         if b_end.token:
-            b_end.Bonus_record_page()
+            exist=b_end.Bonus_record_page()
+            if exist:
+                logging.info("全部玩家存在於紀錄中")
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
 
