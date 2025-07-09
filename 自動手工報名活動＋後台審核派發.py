@@ -55,7 +55,7 @@ class Frontend:
                 self.token_expire is not None and 
                 datetime.now() < self.token_expire)
     
-    def Join_promotion(self):
+    def Join_promotion(self,promo:int):
         apply_amount=0
         success_fail=0
         login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_signUpPromotionJoin"
@@ -76,7 +76,7 @@ class Frontend:
                    
                 }
         payload={
-                    "promotionId": "4023102"
+                    "promotionId": promo
                 }
         cookies={
                     'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
@@ -235,7 +235,6 @@ class Backend:
             response=requests.post(API_URL3, cookies=cookies, json=payload,headers=headers, verify=False)
 
             response_data=response.json()
-            logging.info(f"完整回應: {response_data}")
             if response_data.get("success") == True:
                 logging.info("派發手工報名活動成功")
                 return True  
@@ -268,19 +267,19 @@ if __name__ == "__main__":
             frontend = Frontend(credential_fe)
             if frontend.token:
                 frontend.Join_promotion(promo_id)
-                time.sleep(1) 
+                time.sleep(0.5) 
         except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
-    try:        
-        backend=Backend(credential_be)    
-        if backend.token:
-            record_id=backend.get_record_id(str(account))
-            if record_id:
-                backend.Approve_to_send_bounus(str(account),promo_id,record_id)        
-        else:
-            logging.error("登入失敗 無法取得Token")
-            
-    except Exception as e:
+    for account in testing_account_list:     
+        try:
+            backend=Backend(credential_be)    
+            if backend.token:
+                record_id=backend.get_record_id(str(account))
+                if record_id:
+                    backend.Approve_to_send_bounus(str(account),promo_id,record_id)        
+            else:
+                logging.error("登入失敗 無法取得Token")
+        except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
 
     
