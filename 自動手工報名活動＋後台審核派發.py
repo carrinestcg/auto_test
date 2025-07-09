@@ -269,17 +269,17 @@ if __name__ == "__main__":
                 frontend.Join_promotion(promo_id)
                 time.sleep(0.5) 
         except Exception as e:
-            logging.error(f"啟動時發生錯誤: {e}")
-    for account in testing_account_list:     
-        try:
-            backend=Backend(credential_be)    
-            if backend.token:
+            logging.error(f"啟動時發生錯誤: {e}")    
+    try:
+        backend=Backend(credential_be)    
+        if backend.token:
+            for account in testing_account_list:    
                 record_id=backend.get_record_id(str(account))
                 if record_id:
                     backend.Approve_to_send_bounus(str(account),promo_id,record_id)        
-            else:
+        else:
                 logging.error("登入失敗 無法取得Token")
-        except Exception as e:
+    except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
 
     
