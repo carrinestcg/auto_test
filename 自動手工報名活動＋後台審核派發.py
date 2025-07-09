@@ -55,7 +55,7 @@ class Frontend:
                 self.token_expire is not None and 
                 datetime.now() < self.token_expire)
     
-    def Join_promotion(self,username):
+    def Join_promotion(self):
         apply_amount=0
         success_fail=0
         login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_signUpPromotionJoin"
@@ -269,16 +269,18 @@ if __name__ == "__main__":
             if frontend.token:
                 frontend.Join_promotion(promo_id)
                 time.sleep(1) 
-                backend=Backend(credential_be)    
-                if backend.token:
-                    record_id=backend.get_record_id(str(account))
-                    if record_id:
-                        backend.Approve_to_send_bounus(str(account),promo_id,record_id) 
-                    
-            else:
-                logging.error("登入失敗 無法取得Token")
-           
         except Exception as e:
+            logging.error(f"啟動時發生錯誤: {e}")
+    try:        
+        backend=Backend(credential_be)    
+        if backend.token:
+            record_id=backend.get_record_id(str(account))
+            if record_id:
+                backend.Approve_to_send_bounus(str(account),promo_id,record_id)        
+        else:
+            logging.error("登入失敗 無法取得Token")
+            
+    except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
 
     

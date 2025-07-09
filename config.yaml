@@ -60,13 +60,28 @@ ticket_id:
 - "1120017" # 拼多多
 
 testing_account:
-- "ggg123" 
-- "ggg666"
-- "ggg888" 
-- "kkk999" 
-- "kkk789" 
-- "kirin350" 
-- "eee111" 
+  - "cccs8888"
+  - "ccczm11"
+  - "cccz111"
+  - "cici888"
+  - "cii88iu"
+  - "cmcmc99"
+  - "cncncn777"
+  - "cucu777"
+  - "css888"
+  - "ooo555"
+  - "ooo777"
+  - "ooo777y6"
+  - "ooo808"
+  - "oooo988"
+  - "sqqq111"
+  - "ucuc888"
+  - "ui8888"
+  - "uuu7779"
+  - "wyq662"
+  - "zc88888"
+
+
 
 VIP_testing_account:
 - "pop111" 
