@@ -88,3 +88,16 @@ VIP_testing_account:
 - "pop999"
 - "pop333" 
 - "pop555" 
+
+
+first_testing_account:
+- "carrine008" #10
+- "kkk999" #50
+- "kirin350" #100
+- "wwww444" #500
+
+bet_amount_list:
+- "10"
+- "50"
+- "100"
+- "500"
