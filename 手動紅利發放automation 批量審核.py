@@ -3,6 +3,7 @@ import time,random
 import requests,logging,json
 from datetime import datetime,timedelta
 from openpyxl import Workbook
+from itertools import cycle
 
 logging.basicConfig(
     level=logging.INFO,
@@ -294,7 +295,9 @@ class B_end:
         ticket_id=config.get("ticket_id")
         testing_account=config.get("testing_account")
         create_record=[]
-        for account,promo ,name,ticket in zip(testing_account,prmotion_id_multiple,prmotion_name,ticket_id):
+        ticket_cycle=cycle(ticket_id)
+        for account,promo ,name,ticket in zip(testing_account,prmotion_id_multiple,prmotion_name):
+            ticket=next(ticket_cycle)
             record={
                     "player":account,
                     "promo_id":promo,
