@@ -194,6 +194,8 @@ if __name__ == "__main__":
                         logging.error("沒有拿到numero")
                 else:
                     logging.error("登入失敗 無法取得Token")
+                time.sleep(1)
+                    
             
             except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
