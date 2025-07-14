@@ -37,7 +37,6 @@ class Frontend:
             } 
             
             requests_data=self.session.post(login_url,json=login_data,headers=headers)
-            print(requests_data.text)
             self.username = requests_data.json()['value']['userName']
             self.userid = requests_data.json()['value']['id']
             self.token=requests_data.json()['value']['token']
