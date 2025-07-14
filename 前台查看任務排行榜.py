@@ -232,7 +232,7 @@ if __name__ == "__main__":
                 logging.error("登入失敗 無法取得Token")
         for account,amount in zip(first_testing_account,reverse_bet_amount_lis):
             implement(account,password,amount)
-            time.sleep(1)
+        time.sleep(1)
             
     except Exception as e:
          logging.error(f"啟動錯誤{e}")
