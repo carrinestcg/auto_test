@@ -57,7 +57,6 @@ class B_end:
         return token
 
     def create_bonus(self,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int):
-        
         API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim?" 
         payload = {
         "merchantCode": "gi8viet",
@@ -95,7 +94,8 @@ class B_end:
             response_data = response.json()
             
             if response_data.get("success") == True:
-                logging.info(f"手動紅利發放成功 ")
+                logging.info(f"手動紅利發放成功, 玩家帳號{player} ")
+                self.success_count+=1
                 return True
             else:
                 error_msg = response_data.get("message", "未知錯誤")
@@ -296,34 +296,35 @@ class B_end:
         testing_account=config.get("testing_account")
         create_record=[]
         ticket_cycle=cycle(ticket_id)
-        for account,promo ,name,ticket in zip(testing_account,prmotion_id_multiple,prmotion_name):
-            ticket=next(ticket_cycle)
-            record={
-                    "player":account,
-                    "promo_id":promo,
-                    "promoName":name,
-                    "bonusAmount":bonusAmount,
-                    "bonusPointAmount":bonusPointAmount,
-                    "ticket":ticket,
-                    "ticketQuantity":ticketQuantity,
-                    "create_result":False,
-                    "confirm_result":"",
-                    "remark":"",
-                    "claimid":None,
-                    "status":"尚未比對"
-            }
-            is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
-            if is_success:
-                record['create_result']='創建紅利成功'
-                record['remark']="成功"
-                CustomerID,claimid = self.Search_Customer_bonus(account)
-                if claimid :
-                    self.claimid_list.append(claimid)
-                    record['claimid']=claimid
-            else:
-                record['create_result']='創建紅利失敗'
-                record['remark']="失敗"
-            create_record.append(record)  
+        for account in testing_account:
+            for promo ,name in zip(prmotion_id_multiple,prmotion_name):
+                ticket=next(ticket_cycle)
+                record={
+                        "player":account,
+                        "promo_id":promo,
+                        "promoName":name,
+                        "bonusAmount":bonusAmount,
+                        "bonusPointAmount":bonusPointAmount,
+                        "ticket":ticket,
+                        "ticketQuantity":ticketQuantity,
+                        "create_result":False,
+                        "confirm_result":"",
+                        "remark":"",
+                        "claimid":None,
+                        "status":"尚未比對"
+                }
+                is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+                if is_success:
+                    record['create_result']='創建紅利成功'
+                    record['remark']="成功"
+                    CustomerID,claimid = self.Search_Customer_bonus(account)
+                    if claimid :
+                        self.claimid_list.append(claimid)
+                        record['claimid']=claimid
+                else:
+                    record['create_result']='創建紅利失敗'
+                    record['remark']="失敗"
+                create_record.append(record)  
 
         is_confirm_complete=self.Confirm_Customer_bonus()
         for record in create_record:

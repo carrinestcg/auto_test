@@ -1,7 +1,8 @@
 import yaml,os
 import requests,logging,json
-from datetime import datetime,timedelta
+from datetime import datetime
 from openpyxl import Workbook
+from itertools import cycle
 
 logging.basicConfig(
     level=logging.INFO,
@@ -210,12 +211,7 @@ class B_end:
         }
         try:
             response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
-            response.raise_for_status()
-            
-            
             response_data = response.json()
-            logging.info(f"狀態碼: {response.status_code}")
-            
             
             if response_data.get("success") == True:
                 logging.info(f"審核活動紅利成功 ")
@@ -273,7 +269,6 @@ class B_end:
             response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
 
             response_data=response.json()
-            logging.info(f"{response_data}")
             if response_data.get("success") == True:
                 self.record_data_list=response_data.get('value',[])
                 return True
@@ -305,54 +300,57 @@ class B_end:
         confirm_result = ''
         create_result=''
         remark=""
-        for account,promo ,name,ticket in zip(testing_account,prmotion_id_multiple,prmotion_name,ticket_id):
-            is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
-            if is_success:
-                create_result='創建紅利成功'
-                remark="成功"
-                Customerid,self.claimid = self.Search_Customer_bonus(account)
-                if self.claimid :
-                    self.claimid_list.append(self.claimid)
-                if Customerid  and self.claimid :
-                    is_confirm_complete=self.Confirm_Customer_bonus(Customerid)
-                    if is_confirm_complete:
-                        confirm_result='審核紅利成功'
-                    
-                    else:
-                        confirm_result='審核紅利失敗'
-            else:
-                create_result='創建紅利失敗'
-                remark="失敗"
-            ws.append([
-                    account,
-                    promo,
-                    name,
-                    bonusAmount,
-                    bonusPointAmount,
-                    ticket,
-                    ticketQuantity,
-                    create_result,
-                    confirm_result,
-                    remark,
-                    self.claimid,
-                    "尚未比對"
-                    ]
-                )
-        if self.Bonus_record_page():
-            Bonus_record={str(item.get("promotionClaimId") for item in self.record_data_list)}
-
-            for row in ws.iter_rows(min_row=2,max_row=ws.max_row):
-                claimid=row[10].value
-                if claimid in Bonus_record:
-                    row[11].value = "後台有紀錄"
+        ticket_id_cycle=cycle(ticket_id)
+        for account in testing_account:
+            for promo ,name in zip(prmotion_id_multiple,prmotion_name):
+                ticket=next(ticket_id_cycle)
+                is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+                if is_success:
+                    create_result='創建紅利成功'
+                    remark="成功"
+                    Customerid,self.claimid = self.Search_Customer_bonus(account)
+                    if self.claimid :
+                        self.claimid_list.append(self.claimid)
+                    if Customerid  and self.claimid :
+                        is_confirm_complete=self.Confirm_Customer_bonus(Customerid)
+                        if is_confirm_complete:
+                            confirm_result='審核紅利成功'
+                        
+                        else:
+                            confirm_result='審核紅利失敗'
                 else:
-                    row[11].value = "後台沒紀錄"
+                    create_result='創建紅利失敗'
+                    remark="失敗"
+                ws.append([
+                        account,
+                        promo,
+                        name,
+                        bonusAmount,
+                        bonusPointAmount,
+                        ticket,
+                        ticketQuantity,
+                        create_result,
+                        confirm_result,
+                        remark,
+                        self.claimid,
+                        "尚未比對"
+                        ]
+                    )
+            if self.Bonus_record_page():
+                Bonus_record={str(item.get("promotionClaimId") for item in self.record_data_list)}
 
-        else:
-            logging.error("無法獲取紅利記錄")
+                for row in ws.iter_rows(min_row=2,max_row=ws.max_row):
+                    claimid=row[10].value
+                    if claimid in Bonus_record:
+                        row[11].value = "後台有紀錄"
+                    else:
+                        row[11].value = "後台沒紀錄"
+
+            else:
+                logging.error("無法獲取紅利記錄")
         report_path=os.path.join(current_dir,f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
         wb.save(report_path)        
-        
+            
     
 if __name__ == "__main__":
 
