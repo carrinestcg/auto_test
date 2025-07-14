@@ -229,7 +229,7 @@ if __name__ == "__main__":
                 if mission_id:
                     actual_rank=frontend.get_mission_leaderBoard(mission_id,account)
                     if actual_rank == expect_rank:
-                        logging.info(f"{account} 名次正確（預期: {expect_rank}, 實際: {actual_rank}")
+                        logging.info(f"{account} 名次正確 ✅（預期: {expect_rank}, 實際: {actual_rank}")
                     else:
                          logging.info(f"{account} 名次錯誤 ❌（預期: {expect_rank}, 實際: {actual_rank}")
                     time.sleep(1)
