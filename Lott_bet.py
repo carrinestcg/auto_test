@@ -188,7 +188,6 @@ if __name__ == "__main__":
                         issuccess=frontend.bet_func(numero,game_id,amount)
                         if issuccess:
                             logging.info(f"成功投注彩票{amount}")
-                            time.sleep(1)
                         else:
                             logging.error("投注彩票失敗")
                     else:
@@ -198,5 +197,6 @@ if __name__ == "__main__":
             
             except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
+        time.sleep(1)
 
         
