@@ -215,7 +215,7 @@ if __name__ == "__main__":
     with open(yaml_path,"r",encoding="utf-8") as f:
         config=yaml.safe_load(f)
     first_testing_account=config.get("first_testing_account")
-    reverse_bet_amount_lis=list(reversed(config.get("bet_amount_list")))
+    second_bet_list=config.get("second_bet_amount_list")
     try:
         for account ,rank_info in first_testing_account.items():
             expect_rank=rank_info.get("first_expect_rank")
@@ -238,7 +238,7 @@ if __name__ == "__main__":
             else:
                 logging.error("登入失敗 無法取得Token")
         account_list=list(first_testing_account.keys())
-        for account,amount in zip(account_list,reverse_bet_amount_lis):
+        for account,amount in zip(account_list,second_bet_list):
             implement(account,password,amount)
         time.sleep(1)
             
