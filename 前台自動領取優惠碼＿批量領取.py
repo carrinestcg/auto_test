@@ -9,19 +9,17 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 class Frontend:
-    def __init__(self,credential_fe:dict,credential_be:dict):
+    def __init__(self,credential_fe:dict):
         self.session=requests.Session()
         self.username=''
         self.userid=''
         self.credential_fe=credential_fe
-        self.credential_be=credential_be
         self.token=None
         self.token_expire=None
         self.token=self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
         self.PromoCode_list=''
         self.promoID=''
         self.i=0
-        self.token_backend=self.get_token_backend(credential_be['operatorName'],credential_be['password'])
         self.record_data_list=''
     def get_token_backend(self,operatorName,password):
         login_url="http://sit-admin2.tcg.com/tac/api/login/password"
@@ -161,6 +159,129 @@ class Frontend:
             error_message=response_json.get('message')
             logging.error(f"{error_message}")
             return False
+    def proccess_all_promoCode(self,ws):
+        update_result='沒有資料'
+        success_count=0
+        bonusAmount = 1000
+        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
+        bonusPointAmount = 30
+        ticketQuantity = 3
+        
+        ticketQuantity=3
+        self.get_promo_code_list()
+        for item in self.PromoCode_list:
+            promoCode=item.get("promoCode")
+            description=item.get("description","")
+            if description!='carrine優惠碼':
+                continue
+            success=self.click_promo_code(promoCode)
+            if success:
+                success_count+=1
+                update_result='成功領取優惠碼'
+                bonus_record='紅利派發紀錄更新'  
+                logging.info(f"領取第{success_count}組優惠碼成功") 
+            else:
+                bonus_record='紅利派發紀錄更新失敗'  
+                update_result='領取優惠碼失敗'
+        
+            ws.append([
+            self.username,
+            'carrine優惠碼',
+            promoCode,
+            bonusAmount,
+            bonusPointAmount,
+            random_ticket,
+            ticketQuantity,
+            update_result,
+            bonus_record
+        ])
+        return success_count
+            
+class B_end:
+    def __init__(self,credential:dict):
+        self.session=requests.Session()
+        self.username=''
+        self.password=''
+        self.token=self.get_token(credential['operatorName'],credential['password'])
+        self.credential=credential
+        self.token_data=self.token
+        self.record_data_list=[]
+        self.claimid_list=[]
+        self.success_count=0
+        self.claimid=''
+    def get_token(self,operatorName,password):
+        login_url="http://sit-admin2.tcg.com/tac/api/login/password"
+        payload={
+                "operatorName": operatorName,
+                "password": password
+            }
+        headers = {
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": "",
+            "Connection": "keep-alive",
+            "Content-Type": "application/json",
+            "Merchant": "gi8viet",
+            "MerchantCode": "gi8viet",
+            "Origin": "http://sit-admin2.tcg.com",
+            "Referer": "http://sit-admin2.tcg.com/",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "environment": "",
+            "language": "zh_CN",
+            "noErrorNotice": "true",
+            "platform": "",
+            "Tac-Trace-Id":"&kZEwhHNN!Pe(Qj_"
+        }
+        
+        cookies = {
+            "language": "zh_CN",
+            "JSESSIONID":"wK3EQfljeUHXxYAN8uKQcvkpKBg1WM4PaVshMx7TpsBoHDtAk4c_!-1653539373"
+        }
+        requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
+        token_data=requests_data.json()
+        token=token_data.get("token")
+        logging.info(f"登入API回傳: {token}")
+        return token
+    def get_remaincount_promocode(self,):
+        URL="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-promotion-promoCode-list"
+        params={
+            "merchantCode":"gi8viet",
+            "status":"A",
+            "pageNo":1,
+            "pageSize":10
+        }
+        headers={
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": "",
+            "Connection": "keep-alive",
+            "Content-Type": "application/json",
+            "Merchant": "gi8viet",
+            "MerchantCode": "gi8viet",
+            "Origin": "http://sit-admin2.tcg.com",
+            "Referer": "http://sit-admin2.tcg.com/",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "environment": "TCG3",
+            "language": "zh_CN",
+            "noErrorNotice": "true",
+            "platform": "TCG",
+            "Tac-Trace-Id":"q02^1XO_0PfgK!xY",
+            "Authorization": self.token_data,
+        }
+        cookies = {
+            "language": "zh_CN",
+        }
+        response=requests.get(URL,headers=headers,params=params,cookies=cookies,verify=False)
+        response_json=response.json()
+        if response_json.get("success")==True:
+            value_list=response_json.get("value",[])
+            for item in value_list:
+                name=item.get("name","")
+                if name=='carrine優惠碼':
+                    remainingCountDaily=item.get("remainingCountDaily")
+                    remainingCount=item.get("remainingCount")
+                    return remainingCountDaily,remainingCount
+                
     def Bonus_record_page(self,ws):
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-promotion-promoCode-claim-list"  
         start_time = datetime.now().strftime("%Y/%m/%d 00:00:00")
@@ -168,7 +289,7 @@ class Frontend:
         headers={
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": self.token_backend,
+            "Authorization": self.token_data,
             "Content-Type": "application/json",
             "Connection": "keep-alive",
             "Language": "zh_CN",
@@ -213,42 +334,7 @@ class Frontend:
             
         except Exception as e:
             logging.error(f"Exception 發生: {e}")
-    def proccess_all_promoCode(self,ws):
-        update_result='沒有資料'
-        success_count=0
-        bonusAmount = 1000
-        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
-        bonusPointAmount = 30
-        ticketQuantity = 3
-        
-        ticketQuantity=3
-        self.get_promo_code_list()
-        for item in self.PromoCode_list:
-            promoCode=item.get("promoCode")
-            description=item.get("description","")
-            if description!='carrine優惠碼':
-                continue
-            success=self.click_promo_code(promoCode)
-            if success:
-                success_count+=1
-                update_result='成功領取優惠碼'
-                bonus_record='紅利派發紀錄更新'  
-                logging.info(f"領取第{success_count}組優惠碼成功") 
-            else:
-                bonus_record='紅利派發紀錄更新失敗'  
-                update_result='領取優惠碼失敗'
-        
-            ws.append([
-            self.username,
-            'carrine優惠碼',
-            promoCode,
-            bonusAmount,
-            bonusPointAmount,
-            random_ticket,
-            ticketQuantity,
-            update_result,
-            bonus_record
-        ])
+
 if __name__ == "__main__":
     #username_list = []
 
@@ -262,32 +348,53 @@ if __name__ == "__main__":
     ws=wb.active
     ws.title="優惠碼領取結果"
     ws.append(["玩家帳號","活動名稱", "優惠碼ID", "紅利金額", "積分", "票卷", "票卷張數","優惠碼領取狀態", "派發紀錄"])
-    username_list=['cccc333','yyw1111','kkkk888','swow999','yyy771','nnn000','nnn111','nnn222','cccc333','ggg777']
-    for name in username_list:
-    #填入玩家帳號
-        credential_frontend = {
-            "username": name,
-            "password": "123qwe"
-        }
-        credential_Backend = {
+    username_list=['gui555','gui666','gui777','gui888']
+    total_claim_count=0
+    dailyremain_count=0
+    remainingCount=0
+    credential_Backend = {
             "operatorName": "carrine03",
             "password": "Test@1234"
         }
-        run_time="12:19"
-        try:    
-            frontend = Frontend(credential_frontend,credential_Backend)
-            if frontend.token:
-                logging.info(f"登入成功 Token: {frontend.token}")
-                #frontend.click_promo_code()
-                #schedule.every().day.at(f"{run_time}").do(frontend.click_promo_code,promo)
-                frontend.proccess_all_promoCode(ws)
-                frontend.Bonus_record_page(ws)
-                time.sleep(1)
-            else:
-                logging.error("登入失敗 無法取得Token")
+    try:    
+        backend = B_end(credential_Backend)
+        if backend.token:
+            dailyremain_count,remainingCount=backend.get_remaincount_promocode()
+            logging.info(f"當日剩餘次數{dailyremain_count}")
+            logging.info(f"總剩餘次數{remainingCount}")
+
+        for name in username_list:
+        #填入玩家帳號
+            credential_frontend = {
+                "username": name,
+                "password": "123qwe"
+            }
+            try:   
+                frontend = Frontend(credential_frontend)
+                if frontend.token:
+                    logging.info(f"登入成功 Token: {frontend.token}")
+                    #frontend.click_promo_code()
+                    #schedule.every().day.at(f"{run_time}").do(frontend.click_promo_code,promo)
+                    success_count=frontend.proccess_all_promoCode(ws)
+                    total_claim_count+=success_count
+                else:
+                    logging.error("登入失敗 無法取得Token")
+                    time.sleep(1)
+            except Exception as e:
+                logging.error(f"啟動時發生錯誤: {e}")
+        backend.Bonus_record_page(ws)
+        if backend.token:
+            after_receive_remain_dailyremain_count,after_receive_remainingCount=backend.get_remaincount_promocode()
+            logging.info(f"更新後的當日剩餘次數{after_receive_remain_dailyremain_count}")
+            logging.info(f"總剩餘次數{remainingCount}")
+            assert (dailyremain_count-after_receive_remain_dailyremain_count)==total_claim_count
+            assert (remainingCount-after_receive_remainingCount)==total_claim_count
+            
         
-        except Exception as e:
+            
+    except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
+         
     report_path=os.path.join(f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
     wb.save(report_path)   
     
