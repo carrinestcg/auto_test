@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>自動化腳本</title>
+</head>
+<body>
+    <h1>Automaintion_Script</h1>
+    <form method="POST" action="/submit">
+        <input type="checkbox" name="script" value="MANUAL_SINGLE">手動紅利發放automation 單一審核<br>
+        <input type="checkbox" name="script" value="MANUAL_BATCH">手動紅利發放automation 批量審核<br>
+        <input type="checkbox" name="script" value="PRMOCODE_BATCH">前台自動領取優惠碼＿批量領取<br>
+        <input type="checkbox" name="script" value="LOTTERY_BET">彩票投注<br>
+        <input type="checkbox" name="script" value="FRONTEND_DEPOSIT">前台充值api<br>
+        <input type="checkbox" name="script" value="DEPOSIT_API">deposit_api<br>
+        <input type="checkbox" name="script" value="MANUAL_SIGN">自動手工報名活動＋後台審核派發<br>
+        <button type="submit">送出</button>
+    </form>
+    {% if selected_scripts %}
+        <p style="color:green">執行腳本:</p>
+        <ul>
+            {% for script in selected_scripts %}
+                <li>{{script}}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
