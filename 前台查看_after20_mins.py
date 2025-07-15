@@ -193,8 +193,9 @@ class Frontend:
                     value_data_list=response_json.get("value",{})
                     footer=value_data_list.get("footer")
                     rank=footer.get("rank")
+                    reachedValue=footer.get("reachedValue")
                     logging.info(f"{account}拿到rank:{rank}")
-                    return rank
+                    return rank,reachedValue
             else:
                         logging.error("沒有找到 Carrine_test的mission")
              
@@ -215,7 +216,7 @@ if __name__ == "__main__":
     reverse_bet_amount_lis=list(reversed(config.get("bet_amount_list")))
     try:
         for account, rank in first_testing_account.items():
-            expect_rank=rank.get("expect_rank")
+            expect_rank=rank.get("second_expect_rank")
             credential_fe = {
                     "username": account,
                     "password": password
@@ -225,11 +226,11 @@ if __name__ == "__main__":
                 mission_id=frontend.get_mission_id()
                 time.sleep(0.5)
                 if mission_id:
-                    actual_rank=frontend.get_mission_leaderBoard(mission_id,account)
+                    actual_rank,reachedValue=frontend.get_mission_leaderBoard(mission_id,account)
                     if actual_rank == expect_rank:
-                        logging.info(f"{account} 名次正確 ✅（預期: {expect_rank}, 實際: {actual_rank}")
+                        logging.info(f"{account} 投注金額{reachedValue} 名次正確 ✅（預期: {expect_rank}, 實際: {actual_rank}")
                     else:
-                         logging.info(f"{account} 名次錯誤 ❌（預期: {expect_rank}, 實際: {actual_rank}")
+                         logging.error(f"{account} 投注金額{reachedValue} 名次正確 名次錯誤 ❌（預期: {expect_rank}, 實際: {actual_rank}")
                     time.sleep(1)
                                    
             else:

@@ -43,7 +43,7 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
         customerID, claimid = clone_be_end.Search_Customer_bonus(account)
         if claimid:
             result['claimid'] = claimid
-            time.sleep(1)
+            time.sleep(0.5)
             with clone_be_end.lock:
                 clone_be_end.claimid_list.append(claimid)
                 
@@ -252,7 +252,6 @@ class B_end:
             response.raise_for_status()
             logging.info(self.claimid_list)
             response_data = response.json()
-            logging.info(response_data)
             if response_data.get("success") == True:
                 logging.info(f"批量審核活動紅利成功 ")
                 return True
