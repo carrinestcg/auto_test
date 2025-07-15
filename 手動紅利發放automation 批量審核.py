@@ -4,12 +4,55 @@ import requests,logging,json
 from datetime import datetime,timedelta
 from openpyxl import Workbook
 from itertools import cycle
+import threading,copy
+import concurrent.futures
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+token_lock = threading.Lock()
+def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmount, ticket, ticketQuantity):
+    result = {
+        "player": account,
+        "promo_id": promo,
+        "promoName": name,
+        "bonusAmount": bonusAmount,
+        "bonusPointAmount": bonusPointAmount,
+        "ticket": ticket,
+        "ticketQuantity": ticketQuantity,
+        "create_result": "",
+        "remark": "",
+        "claimid": "",
+        "confirm_result": "",
+        "status": ""
+    }
+    is_success = clone_be_end.create_bonus(
+        player=account,
+        bonusAmount=bonusAmount,
+        bonusPointAmount=bonusPointAmount,
+        ticketId=ticket,
+        ticketQuantity=ticketQuantity,
+        prmotion_id=promo
+    )
+
+    if is_success:
+        result['create_result'] = '創建紅利成功'
+        result['remark'] = '成功'
+        customerID, claimid = clone_be_end.Search_Customer_bonus(account)
+        if claimid:
+            result['claimid'] = claimid
+            time.sleep(1)
+            with clone_be_end.lock:
+                clone_be_end.claimid_list.append(claimid)
+                
+    else:
+        result['create_result'] = '創建紅利失敗'
+        result['remark'] = '失敗'
+
+    return result
+
 class B_end:
     def __init__(self,credential:dict):
         self.session=requests.Session()
@@ -22,6 +65,7 @@ class B_end:
         self.claimid_list=[]
         self.success_count=0
         self.claimid=''
+        self.lock=threading.Lock()
     def get_token(self,operatorName,password):
         login_url="http://sit-admin2.tcg.com/tac/api/login/password"
         payload={
@@ -50,14 +94,15 @@ class B_end:
             "language": "zh_CN",
             "JSESSIONID":"wK3EQfljeUHXxYAN8uKQcvkpKBg1WM4PaVshMx7TpsBoHDtAk4c_!-1653539373"
         }
-        requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
-        token_data=requests_data.json()
-        token=token_data.get("token")
-        logging.info(f"登入API回傳: {token}")
-        return token
+        with token_lock:
+            requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
+            token_data=requests_data.json()
+            token=token_data.get("token")
+            logging.info(f"登入API回傳: {token}")
+            return token
 
     def create_bonus(self,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int):
-        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim?" 
+        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim" 
         payload = {
         "merchantCode": "gi8viet",
         "customerName": player,
@@ -201,22 +246,18 @@ class B_end:
         "merchantCode": "gi8viet",
         "platform": "TCG"
         }
-        cookies = {
-            "language": "zh_CN",
-            "JSESSIONID":"wK3EQfljeUHXxYAN8uKQcvkpKBg1WM4PaVshMx7TpsBoHDtAk4c_!-1653539373"
-        }
+        
         try:
-            response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
+            response = requests.post(API_URL, json=payload, headers=headers, verify=False)
             response.raise_for_status()
-            
-            
+            logging.info(self.claimid_list)
             response_data = response.json()
-            
+            logging.info(response_data)
             if response_data.get("success") == True:
                 logging.info(f"批量審核活動紅利成功 ")
                 return True
             else:
-                error_msg = response_data.get("value" )
+                error_msg = response_data.get("value")
                 logging.error(f"未審核成功 value: {error_msg}")
                 return False
                 
@@ -296,35 +337,30 @@ class B_end:
         testing_account=config.get("testing_account")
         create_record=[]
         ticket_cycle=cycle(ticket_id)
-        for account in testing_account:
-            for promo ,name in zip(prmotion_id_multiple,prmotion_name):
-                ticket=next(ticket_cycle)
-                record={
-                        "player":account,
-                        "promo_id":promo,
-                        "promoName":name,
-                        "bonusAmount":bonusAmount,
-                        "bonusPointAmount":bonusPointAmount,
-                        "ticket":ticket,
-                        "ticketQuantity":ticketQuantity,
-                        "create_result":False,
-                        "confirm_result":"",
-                        "remark":"",
-                        "claimid":None,
-                        "status":"尚未比對"
-                }
-                is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
-                if is_success:
-                    record['create_result']='創建紅利成功'
-                    record['remark']="成功"
-                    CustomerID,claimid = self.Search_Customer_bonus(account)
-                    if claimid :
-                        self.claimid_list.append(claimid)
-                        record['claimid']=claimid
-                else:
-                    record['create_result']='創建紅利失敗'
-                    record['remark']="失敗"
-                create_record.append(record)  
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            future_tasks=[]
+            for account in testing_account:
+                for promo ,name in zip(prmotion_id_multiple,prmotion_name):
+                    ticket=next(ticket_cycle)
+                    clone_be_end = copy.copy(self) 
+                    future=executor.submit(
+                            create_bonus,  
+                            self,      
+                            account,
+                            promo,
+                            name,
+                            bonusAmount,
+                            bonusPointAmount,
+                            ticket,
+                            ticketQuantity,
+                    )
+                    future_tasks.append(future)
+            for future in concurrent.futures.as_completed(future_tasks):
+                result=future.result()
+                create_record.append(result)  
+
+        logging.info("====等待系統同步====")
+        time.sleep(2)
 
         is_confirm_complete=self.Confirm_Customer_bonus()
         for record in create_record:
