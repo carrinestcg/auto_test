@@ -213,7 +213,6 @@ if __name__ == "__main__":
     with open(yaml_path,"r",encoding="utf-8") as f:
         config=yaml.safe_load(f)
     first_testing_account=config.get("first_testing_account")
-    reverse_bet_amount_lis=list(reversed(config.get("bet_amount_list")))
     try:
         for account, rank in first_testing_account.items():
             expect_rank=rank.get("second_expect_rank")
