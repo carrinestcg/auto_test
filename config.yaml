@@ -80,24 +80,18 @@ VIP_testing_account:
 
 
 first_testing_account:
-  kkk888:
-    expect_rank: 4
-  five001:
-    expect_rank: 3
-  four001:
-    expect_rank: 2
-  four002:
-    expect_rank: 1
-
-first1_testing_account:
   carrine008:
-    expect_rank: 4
-  kkk999:
-    expect_rank: 3
+    first_expect_rank: 4  
+    second_expect_rank: 2  
+  www444:
+    first_expect_rank: 3 
+    second_expect_rank: 4
   kirin350:
-    expect_rank: 2
-  wwww444:
-    expect_rank: 1
+    first_expect_rank: 2  
+    second_expect_rank: 3
+  kkk999:
+    first_expect_rank: 1 
+    second_expect_rank: 1
 
 
 bet_amount_list:
@@ -105,3 +99,9 @@ bet_amount_list:
 - "50"
 - "100"
 - "500"
+
+second_bet_amount_list:
+- "200"
+- "50"
+- "100"
+- "600"
