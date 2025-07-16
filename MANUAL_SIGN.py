@@ -55,7 +55,7 @@ class Frontend:
                 self.token_expire is not None and 
                 datetime.now() < self.token_expire)
     
-    def Join_promotion(self,promo:int):
+    def Join_promotion(self,promo:int,account:str):
         apply_amount=0
         success_fail=0
         login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_signUpPromotionJoin"
@@ -86,11 +86,11 @@ class Frontend:
         response_json=response.json()
                 
         if response_json.get('success')==True:
-                logging.info(f"成功報名")
+                logging.info(f"玩家{account}成功報名")
                 apply_amount+=1
                     
         else:
-                logging.error(f"報名失敗 已有報名紀錄")
+                logging.error(f"玩家{account}報名失敗 已有報名紀錄")
                 success_fail+=1
         time.sleep(1)
             
@@ -245,7 +245,7 @@ class Backend:
         except Exception as e:
             logging.error(f"API呼叫失敗{e}")
     
-if __name__ == "__main__":
+def main():
 
     password = "123qwe"
     credential_be = {
@@ -266,7 +266,7 @@ if __name__ == "__main__":
         try:
             frontend = Frontend(credential_fe)
             if frontend.token:
-                frontend.Join_promotion(promo_id)
+                frontend.Join_promotion(promo_id,account)
                 time.sleep(0.5) 
         except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")    

@@ -335,7 +335,7 @@ class B_end:
         except Exception as e:
             logging.error(f"Exception 發生: {e}")
 
-if __name__ == "__main__":
+def main():
     #username_list = []
 
     #with open('usernames.txt', 'r') as f:

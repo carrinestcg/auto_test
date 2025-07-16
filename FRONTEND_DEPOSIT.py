@@ -62,7 +62,7 @@ class Frontend:
         for bank_type in bank_types:
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login(credential['username'],credential['password'])
+                self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -120,7 +120,7 @@ class Frontend:
         for bank_code,bank_type in zip(bank_codes,bank_types):
                 if not self.is_token_valid():
                     logging.info("token 過期, 重新登入")
-                    self.get_token_login(credential['username'],credential['password'])
+                    self.get_token_login(self.credential['username'],self.credential['password'])
                 if self.token is None:
                     return
                 current_time=datetime.now()
@@ -176,7 +176,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login(credential['username'],credential['password'])
+                self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -232,7 +232,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login(credential['username'],credential['password'])
+                self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -288,7 +288,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login(credential['username'],credential['password'])
+                self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -344,7 +344,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login(credential['username'],credential['password'])
+                self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
             current_time=datetime.now()
@@ -395,9 +395,8 @@ class Frontend:
         
         
         
-if __name__ == "__main__":
-    while True:
-        username = input("請輸入帳號：")
+def main(username):
+        
         password = "123qwe"
         #填入玩家帳號
         credential = {

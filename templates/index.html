@@ -3,26 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <title>自動化腳本</title>
+    <style>
+        body{
+            background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFboY2rm05MNCaFhsgJEJ2QWl5q6lKY2kQsw&s);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center center;
+            font-family: Arial, sans-serif;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height: 100vh;
+            margin:0;
+        }
+        .container {
+            position:relative;
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 60px 70px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            width: 900px;
+            height: 500px;
+        }
+        h1{
+            text-align: center;
+            color: rgb(8, 7, 7);
+            margin-top: 10px
+        }
+        label{
+            display:block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="int"]{
+            width: 100px;
+            padding: 6px;
+            margin-top: 5px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+        button{
+            margin-top: 20px;
+            width: 10%;
+            padding: 10px;
+            border-radius: 6px;
+            border:none;
+            background-color: dodgerblue;
+            cursor: pointer;
+            color: white;
+            position:absolute;
+            bottom:20px;
+            right:20px;
+        }
+        button:hover{
+            background-color: #0056b3;
+        }
+        .script-list input{
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+        .script-grid{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+            gap:10px;
+            margin-top: 20px;
+        }
+        .script-grid label{
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+        }
+
+    </style>
+    <script>
+        function toggleInput(){
+            const frontendCheckbox=document.getElementById("frontend-checkbox")
+            const frontendCheckbox_lott=document.getElementById("frontend-checkbox_lott")
+            const usernameInputDiv=document.getElementById("username-input-div")
+            const passwordInputDiv=document.getElementById("password-input-div")
+            const amountInputDiv=document.getElementById("amount-input-div")
+            const frontendcheckboxNEW=document.getElementById("frontend-checkbox_new")
+            if (frontendCheckbox.checked||frontendcheckboxNEW.checked){
+                usernameInputDiv.style.display="block";
+            }else{
+                usernameInputDiv.style.display="none";
+            }
+            if (frontendCheckbox_lott.checked){
+                usernameInputDiv.style.display="block";
+                passwordInputDiv.style.display="block";
+                amountInputDiv.style.display="block";
+            }else{
+                passwordInputDiv.style.display="none";
+                amountInputDiv.style.display="none";
+            }
+          
+        }
+    </script>
 </head>
 <body>
-    <h1>Automaintion_Script</h1>
-    <form method="POST" action="/submit">
-        <input type="checkbox" name="script" value="MANUAL_SINGLE">手動紅利發放automation 單一審核<br>
-        <input type="checkbox" name="script" value="MANUAL_BATCH">手動紅利發放automation 批量審核<br>
-        <input type="checkbox" name="script" value="PRMOCODE_BATCH">前台自動領取優惠碼＿批量領取<br>
-        <input type="checkbox" name="script" value="LOTTERY_BET">彩票投注<br>
-        <input type="checkbox" name="script" value="FRONTEND_DEPOSIT">前台充值api<br>
-        <input type="checkbox" name="script" value="DEPOSIT_API">deposit_api<br>
-        <input type="checkbox" name="script" value="MANUAL_SIGN">自動手工報名活動＋後台審核派發<br>
-        <button type="submit">送出</button>
-    </form>
-    {% if selected_scripts %}
-        <p style="color:green">執行腳本:</p>
-        <ul>
-            {% for script in selected_scripts %}
-                <li>{{script}}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    <div class="container">
+        <h1>Automation_Script</h1>
+        <form method="POST" action="/submit">
+            <div class="script-grid">
+                <label><input type="checkbox" name="script" value="MANUAL_SINGLE">手動紅利發放單一審核<br></label>
+                <label><input type="checkbox" name="script" value="MANUAL_BATCH">手動紅利發放批量審核<br></label>
+                <label><input type="checkbox" name="script" value="PROMOCODE_BATCH">前台領取優惠碼<br></label>
+                <label><input type="checkbox" name="script" value="LOTTERY_BET" id="frontend-checkbox_lott" onchange="toggleInput()">前台彩票投注<br></label>
+                <label><input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">用戶前台充值<br></label>
+                <label><input type="checkbox" name="script" value="DEPOSIT_API">品牌管理員審核充值<br></label>
+                <label><input type="checkbox" name="script" value="MANUAL_SIGN">前台手工報名活動<br></label>
+                <label><input type="checkbox" name="script" value="NEW_REGISTER_API" id="frontend-checkbox_new" onchange="toggleInput()">新建代理帳號玩家<br></label>
+            </div>
+            <div id="username-input-div" style="display:none;margin-top:10px;">
+                <label for ="username">請輸入帳號</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <div id="password-input-div" style="display:none;margin-top:10px;">
+                <label for ="password">請輸入密碼</label>
+                <input type="text" id="password" name="password">
+            </div>
+            <div id="amount-input-div" style="display:none;margin-top:10px;">
+                <label for ="amount">請輸入金額</label>
+                <input type="int" id="amount" name="amount">
+            </div>
+            <button type="submit">送出</button>
+        </form>
+        {% if selected_scripts %}
+        <p style="color:rgb(11, 11, 11); font-style: bold;">腳本完成:</p>
+            <ul>
+                {% for script in selected_scripts %}
+                    <li>{{script}}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </div>    
 </body>
 </html>

@@ -352,7 +352,7 @@ class B_end:
         wb.save(report_path)        
             
     
-if __name__ == "__main__":
+def main():
 
     credential = {
         "operatorName": "carrine03",
