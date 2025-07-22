@@ -489,20 +489,21 @@ if __name__ == "__main__":
     from deposit_count import implement_function
     from accumulated_deposit import implement_accumulated_function
 
-    username_1 = os.environ.get("USERNAME_1")
-    username_2 = os.environ.get("USERNAME_2")
+    #username_1 = os.environ.get("USERNAME_1")
+    #username_2 = os.environ.get("USERNAME_2")
     #username="three444"
     password = "123qwe"
-    if not username_1:
-        logging.info("沒有讀到username_1")
-    if not username_2:
-        logging.info("沒有讀到username_2")    
+    #if not username_1:
+    #    logging.info("沒有讀到username_1")
+    #if not username_2:
+    #    logging.info("沒有讀到username_2")   
+    username_1="bnm112" 
     credential_fe = {
             "username": username_1,
             "password": password
     }
     credential_fe_for_accu = {
-            "username": username_2,
+            "username": username_1,
             "password": password
     }
     credential_be = {
