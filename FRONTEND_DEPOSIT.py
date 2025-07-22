@@ -55,7 +55,7 @@ class Frontend:
                 datetime.now() < self.token_expire)
     
         
-    def deposit_QAD(self,username):
+    def deposit_QAD(self,username,amount):
         success_fail=0
         success_count=0
         bank_types=["PAYID","WECHAT"]
@@ -86,7 +86,7 @@ class Frontend:
             }
             payload={
                 "targetUsername": username,
-                "amount":500,
+                "amount":amount,
                 "bankCode":"QADPAYID001",
                 "bankType":bank_type, 
                 "showQrImageOnly":1,
@@ -112,7 +112,7 @@ class Frontend:
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
             
-    def deposit_TBQR(self,username):
+    def deposit_TBQR(self,username,amount):
         bank_codes=["2600","2101","2284","5832","2280","2279","6101","0400"]
         bank_types=["TBQR","VA","THREE65PAY","PAYVALIDA","ABPAY","KPAY","KBZPAY","UN"]
         success_fail=0
@@ -144,7 +144,7 @@ class Frontend:
                 }
                 payload={
                     "targetUsername": username,
-                    "amount":500,
+                    "amount":amount,
                     "bankCode":bank_code,
                     "bankType":bank_type,
                     "vendorId":28270,
@@ -168,7 +168,7 @@ class Frontend:
                 time.sleep(0.5)
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-    def quick_deposit(self,username):
+    def quick_deposit(self,username,amount):
         success_fail=0
         success_count=0
         bank_types=["null"]
@@ -201,7 +201,7 @@ class Frontend:
             payload={
                 "targetUsername": username,
                 "payeeName":"bbbb",
-                "amount":500,
+                "amount":amount,
                 "bankCode":bank_type,
                 "vendorId":28166,
                 "mcsBankCode":bank_code,
@@ -224,7 +224,7 @@ class Frontend:
             time.sleep(1)
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-    def depositbyURL(self,username):
+    def depositbyURL(self,username,amount):
         success_fail=0
         success_count=0
         bank_types=["WCFQR","ALIFQR","KAMI"]
@@ -256,7 +256,7 @@ class Frontend:
             }
             payload={
                 "targetUsername": username,
-                "amount":500,
+                "amount":amount,
                 "bankCode":bank_code,
                 "bankType":bank_type,
                 "vendorId":28268,
@@ -280,7 +280,7 @@ class Frontend:
             time.sleep(1)
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-    def BTC_deposit(self,username):
+    def BTC_deposit(self,username,amount):
         success_fail=0
         success_count=0
         bank_types=["BTC","TRX"]
@@ -312,7 +312,7 @@ class Frontend:
             }
             payload={
                 "targetUsername": username,
-                "amount":500,
+                "amount":amount,
                 "bankType":bank_type, 
                 "vendorId":28269,
                 "bankCode":bank_code,
@@ -336,7 +336,7 @@ class Frontend:
             time.sleep(1)
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-    def mpesa_deposit(self,username):
+    def mpesa_deposit(self,username,amount):
         success_fail=0
         success_count=0
         bank_types=["MPESA"]
@@ -368,7 +368,7 @@ class Frontend:
             }
             payload={
                 "targetUsername": username,
-                "amount":500,
+                "amount":amount,
                 "bankCode":bank_code,
                 "bankType":bank_type, 
                 "vendorId":28206,
@@ -395,9 +395,8 @@ class Frontend:
         
         
         
-def main(username):
+def main(username,password,amount):
         
-        password = "123qwe"
         #填入玩家帳號
         credential = {
             "username": username,
@@ -406,12 +405,12 @@ def main(username):
         try:    
             frontend = Frontend(credential)
             if frontend.token:
-                frontend.deposit_QAD(credential['username'])
-                frontend.deposit_TBQR(credential['username'])
-                frontend.quick_deposit(credential['username'])
-                frontend.depositbyURL(credential['username'])
-                frontend.BTC_deposit(credential['username'])
-                frontend.mpesa_deposit(credential['username'])
+                frontend.deposit_QAD(credential['username'],amount)
+                frontend.deposit_TBQR(credential['username'],amount)
+                frontend.quick_deposit(credential['username'],amount)
+                frontend.depositbyURL(credential['username'],amount)
+                frontend.BTC_deposit(credential['username'],amount)
+                frontend.mpesa_deposit(credential['username'],amount)
                 
             else:
                 logging.error("登入失敗 無法取得Token")

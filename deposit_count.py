@@ -216,7 +216,9 @@ if __name__=="__main__":
         token=get_token()
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
-    implement_function()'''     
+    
+    implement_function()   
+    '''
 
 
 

@@ -281,6 +281,105 @@ class B_end:
         
         except Exception as e:
             logging.error(f"api錯誤{e}")
+    def get_promo_code(self):
+        URL="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-promotion-promoCode-genCode?merchantCode=gi8viet"
+        headers=get_common_header(self.token_data,referer=24784)
+        cookies={
+            "Cookie":"language=zh_CN"
+        }
+        params={
+            "merchantCode":"gi8viet"
+        }
+        response=requests.get(URL,headers=headers,cookies=cookies,params=params,verify=False)
+        response_data=response.json()
+        print(response_data)
+        try:
+            if response_data.get("success")==True:
+                value=response_data.get("value")
+                logging.info(f"建立一組優惠碼{value}")
+                return value
+            else:
+                logging.error(f"建立優惠碼失敗")
+                return None
+        except Exception as e:
+            logging.error(f"建立優惠碼失敗{e}")
+    def create_promoCdoe_promotion(self,code,ticket,ticket_type):
+        start_time = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)
+        unix_starttime=int(start_time.timestamp()*1000)
+        end_time = datetime.now().replace(hour=23,minute=59,second=59,microsecond=0)
+        unix_starttime=int(end_time.timestamp()*1000)
+        URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-promotion-promoCode-create"
+        headers=get_common_header(self.token_data,referer=24784)
+        cookies={
+                    "Cookie":"language=zh_CN"
+                }
+        payload={
+            "merchantCode": "gi8viet",
+            "name": "test",
+            "productType": "ALL",
+            "promoCodes": [
+                {
+                    "promoCodeGenerateType": "RANDOM",
+                    "promoCode": code
+                }
+            ],
+            "startTime": unix_starttime,
+            "endTime": unix_starttime,
+            "excludeRebate": "N",
+            "remark": "test",
+            "description": "test",
+            "isPublicInPromoList": "Y",
+            "restriction": {
+                "exchangeCondition": {
+                    "condition": "ALL_MEMBER",
+                    "afterCampaignStart": None,
+                    "agentList": None,
+                    "labelIdList": None,
+                    "registerStartTime": None,
+                    "registerEndTime": None,
+                    "fileDetailList": None,
+                    "registerUrls": None
+                },
+                "participateCondition": {
+                    "conditions": [],
+                    "mobileNumHasAuthenticate": False
+                },
+                "claimMethod": "MANUAL",
+                "claimConditions": [
+                    "CUSTOMER"
+                ]
+            },
+            "config": {
+                "bonusAmt": 10,
+                "pointAmt": 5,
+                "ticketName": ticket_type,
+                "ticketId": ticket,
+                "turnoverMultiplier": 5,
+                "minimumTurnover": 1,
+                "maxClaimCount": "10",
+                "maxClaimCountDaily": " 5",
+                "configId": 0,
+                "promotionSettingId": 0,
+                "ticketQuantity": 1
+            },
+            "announcements": [],
+            "status": "A",
+            "promotionSettingId": None
+        }
+        response=requests.post(URL,headers=headers,cookies=cookies,json=payload,verify=False)
+        response_data=response.json()
+        print(response_data)
+        try:
+            if response_data.get("success")==True:
+                value=response_data.get("value")
+                logging.info(f"建立一組優惠碼{value}")
+                return value
+            else:
+                logging.error(f"建立優惠碼失敗")
+                return None
+        except Exception as e:
+            logging.error(f"建立優惠碼失敗{e}")
+
     def process_procedure(self):
         
         ticket_dict={
@@ -298,11 +397,14 @@ class B_end:
         for _ in range(2):
             for ticket,ticket_type in itertools.cycle(ticket_dict.items()):
                 #is_successs=self.REGISTER_TASK(ticket,ticket_type)
-                is_success=self.new_register_misssion(ticket,ticket_type)
+                #is_success=self.new_register_misssion(ticket,ticket_type)
+                code=self.get_promo_code()
+                is_success=self.create_promoCdoe_promotion(code,ticket,ticket_type)
                 if is_success:
                     logging.info("創建活動成功")
                 else:
                     logging.info("創建活動失敗")
+    
             
         
 if __name__ == "__main__":

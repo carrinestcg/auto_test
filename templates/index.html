@@ -26,9 +26,15 @@
             height: 500px;
         }
         h1{
-            text-align: center;
+            text-align: left;
             color: rgb(8, 7, 7);
-            margin-top: 10px
+            margin-top: 10px;
+            font-size: 26px; 
+        }
+        h2{
+            text-align: left;
+            color: rgb(8, 7, 7);
+            margin-top: 30px
         }
         label{
             display:block;
@@ -36,8 +42,8 @@
             font-weight: bold;
         }
         input[type="text"],
-        input[type="int"]{
-            width: 100px;
+        input[type="number"]{
+            width: 300px;
             padding: 6px;
             margin-top: 5px;
             border-radius: 8px;
@@ -47,12 +53,11 @@
             margin-top: 20px;
             width: 10%;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 3px;
             border:none;
             background-color: dodgerblue;
             cursor: pointer;
             color: white;
-            position:absolute;
             bottom:20px;
             right:20px;
         }
@@ -65,7 +70,7 @@
         }
         .script-grid{
             display: grid;
-            grid-template-columns: repeat(3,1fr);
+            grid-template-columns: repeat(4,1fr);
             gap:10px;
             margin-top: 20px;
         }
@@ -74,37 +79,72 @@
             display: flex;
             align-items: center;
         }
+        .account-config{
+            display:flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            margin-right: 20px;
+        }
+        .select-group {
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px;
+            margin-bottom: 6px;
+            width: 100px;
+    
+        }
+
 
     </style>
     <script>
         function toggleInput(){
-            const frontendCheckbox=document.getElementById("frontend-checkbox")
-            const frontendCheckbox_lott=document.getElementById("frontend-checkbox_lott")
-            const usernameInputDiv=document.getElementById("username-input-div")
-            const passwordInputDiv=document.getElementById("password-input-div")
-            const amountInputDiv=document.getElementById("amount-input-div")
-            const frontendcheckboxNEW=document.getElementById("frontend-checkbox_new")
-            if (frontendCheckbox.checked||frontendcheckboxNEW.checked){
-                usernameInputDiv.style.display="block";
-            }else{
-                usernameInputDiv.style.display="none";
-            }
-            if (frontendCheckbox_lott.checked){
-                usernameInputDiv.style.display="block";
-                passwordInputDiv.style.display="block";
-                amountInputDiv.style.display="block";
-            }else{
-                passwordInputDiv.style.display="none";
-                amountInputDiv.style.display="none";
-            }
-          
+            const usernameInputDiv=document.getElementById("username");
+            const passwordInputDiv=document.getElementById("password");
+            const amountInputDiv=document.getElementById("amount-input-div");
+            const ticket_select=document.getElementById("frontend-checkbox_select");
+            const ticket_input=document.getElementById("ticket-input-div")
+
+            const requireUsername=document.getElementById("frontend-checkbox_new").checked||document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked||document.getElementById("frontend-checkbox_id").checked;
+
+            const requirepassword=document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked;
+            const requireamount=document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked;
+            const checkbox=document.getElementById("frontend-checkbox_ticket");
+            const hasValue=ticket_select.value!="";
+            
+            amountInputDiv.style.display=requireamount?"block":"none";
+            ticket_select.style.display=checkbox.checked?"block":"none";
+            ticket_input.style.display=(checkbox.checked&&hasValue)?"block":"none";
+        
         }
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Automation_Script</h1>
-        <form method="POST" action="/submit">
+        <form method="POST" action="/submit" onsubmit="return checkpassword()">
+            <h1>測試配置</h1>
+            <div class="account-config">
+                <div class="input-group">
+                    <label for ="username">用戶帳號</label>
+                    <input type="text" id="username" name="username">
+                    <small id="username_hint" style="color:red; display: none;">必填</small>
+                </div>
+                <div class="input-group">
+                    <label for ="password">用戶密碼</label>
+                    <input type="text" id="password" name="password" placeholder="密碼 (預設123qwe)">
+                    <small id="password_hint" style="color:red; display: none;">必填</small>
+                </div>
+                <div id="amount-input-div" style="display:none;">
+                    <label for="amount">請輸入金額</label>
+                    <input type="number" id="amount" name="amount" style="width:150px;">
+                </div>
+                
+            </div>
+            <button type="submit">開始測試</button>
+            <h2>測試功能選擇</h2>
             <div class="script-grid">
                 <label><input type="checkbox" name="script" value="MANUAL_SINGLE">手動紅利發放單一審核<br></label>
                 <label><input type="checkbox" name="script" value="MANUAL_BATCH">手動紅利發放批量審核<br></label>
@@ -114,21 +154,54 @@
                 <label><input type="checkbox" name="script" value="DEPOSIT_API">品牌管理員審核充值<br></label>
                 <label><input type="checkbox" name="script" value="MANUAL_SIGN">前台手工報名活動<br></label>
                 <label><input type="checkbox" name="script" value="NEW_REGISTER_API" id="frontend-checkbox_new" onchange="toggleInput()">新建代理帳號玩家<br></label>
+                <label><input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">查詢玩家資訊<br></label>
+
+                <div class="select-group">
+                    <label><input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">創建票卷<br></label>
+                    <select id="frontend-checkbox_select"  name="ticket_type" style="display: none;border-radius: 6px;" onchange="toggleInput()">
+                        <option value="ALL" selected>全部</option>
+                        <option value="CASH">現金兌換卷</option>
+                        <option value="RAFFLE">幸運紅包</option>
+                        <option value="GOLDEN_EGG">砸金蛋</option>
+                        <option value="WHEEL">幸運大轉盤</option>
+                        <option value="GIFT">商品兌換卷</option>
+                        <option value="FREE_SPIN">FREE_SPIN</option>
+                        <option value="TEMU">拼多多</option>
+                    </select>
+                </div>
             </div>
-            <div id="username-input-div" style="display:none;margin-top:10px;">
-                <label for ="username">請輸入帳號</label>
-                <input type="text" id="username" name="username">
+            <div id="ticket-input-div" style="display:none;">
+                <label for="ticket">票卷名稱</label>
+                <input type="text" id="ticket" name="ticket_input" style="width: 100px;">
             </div>
-            <div id="password-input-div" style="display:none;margin-top:10px;">
-                <label for ="password">請輸入密碼</label>
-                <input type="text" id="password" name="password">
-            </div>
-            <div id="amount-input-div" style="display:none;margin-top:10px;">
-                <label for ="amount">請輸入金額</label>
-                <input type="int" id="amount" name="amount">
-            </div>
-            <button type="submit">送出</button>
+                
         </form>
+        <script>
+            function checkpassword(){
+                const pwd=document.getElementById("password");
+                const usernameInputDiv = document.getElementById("username");
+                const needUsername =
+                    document.getElementById("frontend-checkbox_new").checked ||
+                    document.getElementById("frontend-checkbox_lott").checked ||
+                    document.getElementById("frontend-checkbox").checked||
+                    document.getElementById("frontend-checkbox_id").checked ;
+
+                if(needUsername&&!usernameInputDiv.value.trim()){
+                    document.getElementById("username_hint").style.display="inline";
+                    document.getElementById("password_hint").style.display="inline";
+                    return false;
+                }
+                else{
+                    document.getElementById("username_hint").style.display="none";
+                }
+                if (!pwd.value.trim()){
+                    pwd.value="123qwe";
+                    return true;
+                }
+            }
+            
+        </script>
+
         {% if selected_scripts %}
         <p style="color:rgb(11, 11, 11); font-style: bold;">腳本完成:</p>
             <ul>
@@ -136,7 +209,18 @@
                     <li>{{script}}</li>
                 {% endfor %}
             </ul>
-        {% endif %}
+        <div style="display: flex; gap: 16px;">
+            {% endif %}
+            {% if customer_Id %}
+            <p style="color: green;margin: 0;">Customer ID: <strong>{{ customer_Id }}</strong></p>
+            {% endif %}
+            {% if customer_Rank %}
+             <p style="color: green;margin: 0;">Customer rank: <strong>{{ customer_Rank }}</strong></p>
+            {% endif %}
+            {% if Deposit_Count %}
+            <p style="color: green;margin: 0;">Deposit_Count: <strong>{{ Deposit_Count }}</strong></p>
+            {% endif %}
+        </div>  
     </div>    
 </body>
 </html>
