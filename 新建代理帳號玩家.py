@@ -34,7 +34,6 @@ def get_token():
         "language": "zh_CN"
     }
     requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
-    logging.info(f"狀態碼{requests_data.status_code}")
     token_data=requests_data.json()
     return token_data.get("token")
 
@@ -77,8 +76,6 @@ def create_agent(player:str):
         
         
         response_data = response.json()
-        logging.info(f"狀態碼: {response.status_code}")
-        logging.info(f"響應內容: {response_data}")
         
         
         if response_data.get("success") == True:
@@ -134,7 +131,6 @@ def search_customerid(player:str):
             if player_list:
                 customerId=player_list[0].get("customerId")
                 if customerId:
-                    logging.info(f"拿到玩家資訊: {player}")
                     logging.info(f"CustomerID: {customerId}")
                 else:
                     logging.error("沒有拿到CustomerID")
