@@ -1,7 +1,7 @@
 import yaml,os
-import time,random
-import requests,logging,json
-from datetime import datetime,timedelta
+import time
+import requests,logging
+from datetime import datetime
 from openpyxl import Workbook
 from itertools import cycle
 import threading,copy
@@ -40,12 +40,22 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
     if is_success:
         result['create_result'] = '創建紅利成功'
         result['remark'] = '成功'
-        customerID, claimid = clone_be_end.Search_Customer_bonus(account)
-        if claimid:
-            result['claimid'] = claimid
-            time.sleep(0.5)
-            with clone_be_end.lock:
-                clone_be_end.claimid_list.append(claimid)
+        search_result = clone_be_end.Search_Customer_bonus()
+        if search_result:
+            for customerID, claimid,promotionType in search_result:
+                if claimid:
+                    result['claimid'] = claimid
+                    time.sleep(0.5)
+                    with clone_be_end.lock:
+                        claim_dict={
+                            "promoClaimId": claimid,
+                            "promotionType": promotionType
+                        }
+                        if not any(item.get("promoClaimId")==claimid for item in clone_be_end.claimid_list):
+                            clone_be_end.claimid_list.append(claim_dict)
+                        else:
+                            logging.error("跳過添加")
+
                 
     else:
         result['create_result'] = '創建紅利失敗'
@@ -156,20 +166,19 @@ class B_end:
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
             return False
-    def Search_Customer_bonus(self,player:str):
+    def Search_Customer_bonus(self):
       
         API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/mcs-manualPromotion-search" 
         start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        payload = {
+        params = {
         "merchantCode": "gi8viet",
         "status": "P",
-        "customerName":player,
         "searchDateMode": "issuedDateSearch",
         "startTime": start_time,
         "endTime": end_time,
         "pageSize": 10,
-        "pageNo": 1
+        "pageNo": 1,
     }
 
         headers = {
@@ -185,13 +194,14 @@ class B_end:
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
         "environment": "TCG3",
         "merchantCode": "gi8viet",
-        "platform": "TCG"
+        "platform": "TCG",
+        "Tac-Trace-Id":"1L74iEvCRmDmsvUB"
+    
         }
-        cookies = {
-            "language": "zh_CN"
-        }
+        
         try:
-            response = requests.get(API_URL, params=payload, headers=headers, cookies=cookies, verify=False)
+            result_list=[]
+            response = requests.get(API_URL, params=params, headers=headers, verify=False)
             response.raise_for_status()
             
             response_data = response.json()
@@ -201,35 +211,35 @@ class B_end:
                 
                 if not customer_list:
                     logging.error("回應中找不到 customerlist")
-
-                customer_info=customer_list[0]
-                CustomerID=customer_info.get("customerId")
-                claimid=customer_info.get("id")
-        
-                if CustomerID and claimid:
-                    return CustomerID, claimid
-                
+                for customer_info in customer_list:
+                    CustomerID=customer_info.get("customerId")
+                    claimid=customer_info.get("id")
+                    promotionType=customer_info.get("promotionType")
+                    promotionId=customer_info.get("promotionId")
+                    logging.info(f"{claimid}和對應的{promotionType}和活動id{promotionId}")
+                    if CustomerID and claimid:
+                        result_list.append((CustomerID, claimid,promotionType))
+                return result_list
             else:
-                    logging.error("回應中找不到 customerId 或 claimid")
-                    return None, None 
+                logging.error("回應中找不到 customerId 或 claimid")
+                return None, None ,None
             
                 
         except requests.RequestException as e:
             logging.error(f"HTTP錯誤 {e}")
-            return None, None
+            return None, None,None
         except ValueError as e:
             logging.error(f"JSON解析錯誤: {e}")
-            return None, None
+            return None, None,None
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
-            return None, None
+            return None, None,None
     
     def Confirm_Customer_bonus(self):
-    
         API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-batchApproveRejectManualPromotion" 
         payload = {
             "status": "I",
-            "promotionClaimIds": self.claimid_list
+            "promotionClaims": self.claimid_list
         }
 
         headers = {
@@ -244,8 +254,11 @@ class B_end:
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
         "environment": "TCG3",
         "merchantCode": "gi8viet",
-        "platform": "TCG"
+        "platform": "TCG",
+        "Tac-Trace-Id":"3PZqY(SR-nuBO(wj",
+        "Content-Type":"application/json"
         }
+        
         
         try:
             response = requests.post(API_URL, json=payload, headers=headers, verify=False)
@@ -269,7 +282,7 @@ class B_end:
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
             return False
-    def Bonus_record_page(self):
+    def Bonus_record_page(self,testing_account):
         
       
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
@@ -298,11 +311,11 @@ class B_end:
             "isFuzzySearch":True,
             "searchDateMode":"requestedTimeSearch",
             "merchantCode":"gi8viet",
+            "customerName":testing_account
 
         }
         cookies = {
             "language": "zh_CN",
-            "JSESSIONID":"wK3EQfljeUHXxYAN8uKQcvkpKBg1WM4PaVshMx7TpsBoHDtAk4c_!-1653539373"
         }
         try:
             response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
@@ -371,7 +384,7 @@ class B_end:
                     record['confirm_result']='審核紅利失敗'
         time.sleep(3)
         logging.info("====等待紀錄更新====")
-        if self.Bonus_record_page():
+        if self.Bonus_record_page(testing_account):
             Bonus_record={str(item.get("promotionClaimId")) for item in self.record_data_list}
             logging.info(f"獲取紅利記錄{Bonus_record}")
 
@@ -421,7 +434,6 @@ def main():
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
 
-    
-    
+
 
    

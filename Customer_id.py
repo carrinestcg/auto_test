@@ -8,50 +8,8 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 class B_end:
-    def __init__(self,credential:dict):
-        self.session=requests.Session()
-        self.username=''
-        self.password=''
-        self.token=self.get_token(credential['operatorName'],credential['password'])
-        self.credential=credential
-        self.token_data=self.token
-        self.record_data_list=''
-    def get_token(self,operatorName,password):
-        login_url="http://sit-admin2.tcg.com/tac/api/login/password"
-        payload={
-            "operatorName": operatorName,
-            "password": password
-        }
-        headers = {
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": "",
-            "Connection": "keep-alive",
-            "Content-Type": "application/json",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Origin": "http://sit-admin2.tcg.com",
-            "Referer": "http://sit-admin2.tcg.com/",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "",
-            "language": "zh_CN",
-            "noErrorNotice": "true",
-            "platform": ""
-        }
-        
-        cookies = {
-            "language": "zh_CN"
-        }
-        requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
-        token_data=requests_data.json()
-        token=token_data.get("token")
-        logging.info(f"登入API回傳: {token}")
-        return token
-    def search_customerid(self,player:str):
-        
-        API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode=gi8viet&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
-        
-        headers={
+    def header(self):
+        return{
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
             "Authorization": self.token_data,
@@ -68,6 +26,67 @@ class B_end:
             "notPending": "true",
             "platform": "TCG"
         }
+    def header_rank(self,username):
+        return{
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": self.token_data,
+            "Content-Type": "application/json",
+            "Connection": "keep-alive",
+            "Language": "zh_CN",
+            "Merchant": "gi8viet",
+            "MerchantCode": "gi8viet",
+            "Origin": "http://sit-admin2.tcg.com",
+            "Referer": f"http://sit-admin2.tcg.com/20106/{username}-gi8viet",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "environment": "TCG3",
+            "merchantCode": "gi8viet",
+            "notPending": "true",
+            "platform": "TCG"
+        }
+    def __init__(self,credential:dict):
+        self.session=requests.Session()
+        self.username=''
+        self.password=''
+        self.token=self.get_token(credential['operatorName'],credential['password'])
+        self.credential=credential
+        self.token_data=self.token
+        self.record_data_list=''
+    def get_token(self,operatorName,password):
+        login_url="http://sit-admin2.tcg.com/tac/api/login/password"
+        payload={
+            "operatorName": operatorName,
+            "password": password
+        }
+        headers ={"Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": "",
+            "Content-Type": "application/json",
+            "Connection": "keep-alive",
+            "Language": "zh_CN",
+            "Merchant": "gi8viet",
+            "MerchantCode": "gi8viet",
+            "Origin": "http://sit-admin2.tcg.com",
+            "Referer": "http://sit-admin2.tcg.com/311792",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "environment": "TCG3",
+            "merchantCode": "gi8viet",
+            "notPending": "true",
+            "platform": "TCG"
+        }
+        cookies = {
+            "language": "zh_CN"
+        }
+        requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
+        token_data=requests_data.json()
+        token=token_data.get("token")
+        logging.info(f"登入API回傳: {token}")
+        return token
+    def search_customerid(self,player:str):
+        
+        API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode=gi8viet&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
+        
+        headers=self.header()
         cookies = {
             "language": "zh_CN"
         }
@@ -100,23 +119,7 @@ class B_end:
         
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-player-basic-information-getHeaderInfo"  
         
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": self.token_data,
-            "Content-Type": "application/json",
-            "Connection": "keep-alive",
-            "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Origin": "http://sit-admin2.tcg.com",
-            "Referer": f"http://sit-admin2.tcg.com/20106/{username}-gi8viet",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "TCG3",
-            "merchantCode": "gi8viet",
-            "notPending": "true",
-            "platform": "TCG"
-        }
+        headers=self.header_rank(username)
         cookies = {
             "language": "zh_CN"
         }
@@ -146,23 +149,7 @@ class B_end:
             logging.error(f"狀態碼: {response.status_code}")
     def get_register_time(self,customer_id):
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-player-basic-information-getPlayerDetail"  
-        headers={
-                    "Accept": "application/json, text/plain, */*",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Authorization": self.token_data,
-                    "Content-Type": "application/json",
-                    "Connection": "keep-alive",
-                    "Language": "zh_CN",
-                    "Merchant": "gi8viet",
-                    "MerchantCode": "gi8viet",
-                    "Tac-Trace-Id":"6oqC9fITw8UXUOwy",
-                    "Referer": f"http://sit-admin2.tcg.com/20106/{customer_id}-gi8viet",
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-                    "environment": "TCG3",
-                    "merchantCode": "gi8viet",
-                    "notPending": "true",
-                    "platform": "TCG"
-            }
+        headers= headers=self.header_rank(customer_id)
         params={
                     "merchantCode":"gi8viet",
                     "customerId": customer_id
@@ -191,23 +178,7 @@ class B_end:
     def get_deposit_counts(self,regester_date,player):
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/post/ods-v2-user-member-psersonal-info"  
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        headers={
-                    "Accept": "application/json, text/plain, */*",
-                    "Accept-Language": "en-US,en;q=0.9",
-                    "Authorization": self.token_data,
-                    "Content-Type": "application/json",
-                    "Connection": "keep-alive",
-                    "Language": "zh_CN",
-                    "Merchant": "gi8viet",
-                    "MerchantCode": "gi8viet",
-                    "Tac-Trace-Id":"aWLRJDWh(xK*ofqR",
-                    "Referer": f"http://sit-admin2.tcg.com/20106/{player}-gi8viet",
-                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-                    "environment": "TCG3",
-                    "merchantCode": "gi8viet",
-                    "notPending": "true",
-                    "platform": "TCG"
-        }
+        headers=self.header_rank(player)
         params={
                     "customerName":player,
                     "regStartDate":regester_date,

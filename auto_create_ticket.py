@@ -8,6 +8,26 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+def header(token):
+    return{
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Authorization": token,
+    "Content-Type": "application/json",
+    "Connection": "keep-alive",
+    "Language": "zh_CN",
+    "Merchant": "gi8viet",
+    "Origin": "http://sit-admin2.tcg.com",
+    "Referer": "http://sit-admin2.tcg.com/24786",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+    "environment": "TCG3",
+    "merchantCode": "gi8viet",
+    "platform": "TCG"
+    }
+def cookie():
+    return {
+        "language": "zh_CN"
+    }
 def get_token():
     login_url="http://sit-admin2.tcg.com/tac/api/login/password"
     payload={
@@ -48,7 +68,7 @@ def create_ticket_cash(token,localizations):
     "status": "ISSUING",
     "defaultLanguage": "CN",
     "turnoverMultiplier": 0,
-    "dayValidity": 30,
+    "dayValidity": 1,
     "hourValidity": 0,
     "claimDevice": None,
     "hasRewardTickets": False,
@@ -67,7 +87,7 @@ def create_ticket_cash(token,localizations):
     "internalRemark": "c",
     "validityType": "DAY_VALIDITY",
     "validMode": "PERIOD_VALIDITY",
-    "productType": "ALL",
+    "productType": "RNG_OR_LIVE",
     "fixedTimeFrom": None,
     "fixedTimeTo": None,
     "claimCondition": {
@@ -117,24 +137,8 @@ def create_ticket_cash(token,localizations):
     }
 }
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -165,7 +169,7 @@ def create_ticket_raffle(token,localizations):
     "status": "ISSUING",
     "defaultLanguage": "CN",
     "turnoverMultiplier": 5,
-    "dayValidity": 30,
+    "dayValidity": 1,
     "hourValidity": 0,
     "claimDevice": None,
     "hasRewardTickets": False,
@@ -183,7 +187,7 @@ def create_ticket_raffle(token,localizations):
     "rewardTicketValidityType": "TICKET_PROMOTION",
     "validityType": "DAY_VALIDITY",
     "validMode": "PERIOD_VALIDITY",
-    "productType": "ALL",
+    "productType": "RNG_OR_LIVE",
     "fixedTimeFrom": None,
     "fixedTimeTo": None,
     "claimCondition": {
@@ -233,24 +237,8 @@ def create_ticket_raffle(token,localizations):
     }
 }
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -281,7 +269,7 @@ def create_ticket_Egg(token,localizations):
     "status": "ISSUING",
     "defaultLanguage": "CN",
     "turnoverMultiplier": 0,
-    "dayValidity": 30,
+    "dayValidity": 1,
     "hourValidity": 0,
     "claimDevice": None,
     "hasRewardTickets": False,
@@ -331,7 +319,7 @@ def create_ticket_Egg(token,localizations):
     "localizations": localizations,
     "effectType": "IMMEDIATE",
     "rewardTicketValidityType": "TICKET_PROMOTION",
-    "productType": "ALL",
+    "productType": "RNG_OR_LIVE",
     "validityType": "DAY_VALIDITY",
     "validMode": "PERIOD_VALIDITY",
     "fixedTimeFrom": None,
@@ -383,24 +371,8 @@ def create_ticket_Egg(token,localizations):
     }
 }
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -431,7 +403,7 @@ def create_ticket_Wheel(token,localizations):
         "status": "ISSUING",
         "defaultLanguage": "CN",
         "turnoverMultiplier": 0,
-        "dayValidity": 30,
+        "dayValidity":1,
         "hourValidity": 0,
         "claimDevice": None,
         "hasRewardTickets": False,
@@ -513,7 +485,7 @@ def create_ticket_Wheel(token,localizations):
         "rewardTicketValidityType": "TICKET_PROMOTION",
         "validityType": "DAY_VALIDITY",
         "validMode": "PERIOD_VALIDITY",
-        "productType": "ALL",
+        "productType": "RNG_OR_LIVE",
         "fixedTimeFrom": None,
         "fixedTimeTo": None,
         "claimCondition": {
@@ -564,24 +536,9 @@ def create_ticket_Wheel(token,localizations):
     }
 
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
+    
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -612,7 +569,7 @@ def create_ticket_Gift(token,localizations):
     "status": "ISSUING",
     "defaultLanguage": "CN",
     "turnoverMultiplier": 0,
-    "dayValidity": 30,
+    "dayValidity": 1,
     "hourValidity": 0,
     "claimDevice": None,
     "hasRewardTickets": False,
@@ -678,24 +635,8 @@ def create_ticket_Gift(token,localizations):
     }
 }
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -770,24 +711,8 @@ def create_ticket_Free_spin(token,localizations):
 }
 
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -822,7 +747,7 @@ def create_ticket_temu(token,localizations):
         "fixedTimeFrom": 0,
         "fixedTimeTo": 0,
         "effectType": None,
-        "dayValidity": 30,
+        "dayValidity": 1,
         "hourValidity": 0
     },
     "claimDevice": None,
@@ -898,24 +823,8 @@ def create_ticket_temu(token,localizations):
 }
 
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Content-Type": "application/json",
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/24786",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
+    headers =header(token)
+    cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
@@ -940,29 +849,26 @@ def create_ticket_temu(token,localizations):
         return False
 def main(ticket,localizations):
     token = get_token()
-    if ticket=="ALL":
-        create_ticket_cash(token,localizations)
-        create_ticket_raffle(token,localizations)
-        create_ticket_Egg(token,localizations)
-        create_ticket_Wheel(token,localizations)
-        create_ticket_Gift(token,localizations)
-        create_ticket_Free_spin(token,localizations)
-        create_ticket_temu(token,localizations)
-    elif ticket=="CASH":
-        create_ticket_cash(token,localizations)
-    elif ticket=="RAFFLE":
-        create_ticket_raffle(token,localizations)
-    elif ticket=="GOLDEN_EGG":
-        create_ticket_Egg(token,localizations)
-    elif ticket=="WHEEL":
-        create_ticket_Wheel(token,localizations)
-    elif ticket=="GIFT":
-        create_ticket_Gift(token,localizations)
-    elif ticket=="FREE_SPIN":
-        create_ticket_Free_spin(token,localizations)
-    elif ticket=="TEMU":
-        create_ticket_temu(token,localizations)
-
+    ticket_dict={
+        "ALL":lambda:(
+            create_ticket_cash(token,localizations),
+            create_ticket_raffle(token,localizations),
+            create_ticket_Egg(token,localizations),
+            create_ticket_Wheel(token,localizations),
+            create_ticket_Gift(token,localizations),
+            create_ticket_Free_spin(token,localizations),
+            create_ticket_temu(token,localizations),
+        ),    
+        "CASH":lambda:create_ticket_cash(token,localizations),
+        "RAFFLE":lambda:create_ticket_raffle(token,localizations),
+        "GOLDEN_EGG":lambda:create_ticket_Egg(token,localizations),
+        "WHEEL":lambda:create_ticket_Wheel(token,localizations),
+        "GIFT":lambda:create_ticket_Gift(token,localizations),
+        "FREE_SPIN":lambda:create_ticket_Free_spin(token,localizations),
+        "TEMU":lambda:create_ticket_temu(token,localizations)
+    }
+    if ticket in ticket_dict:
+        ticket_dict[ticket]()
 
 '''
 if __name__ == "__main__":

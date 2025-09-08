@@ -5,6 +5,23 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+def header(token,merchantCode):
+    return{
+        
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Authorization": token,
+    "Connection": "keep-alive",
+    "Language": "zh_CN",
+    "Merchant": merchantCode,
+    "Origin": "http://sit-admin2.tcg.com",
+    "Referer": "http://sit-admin2.tcg.com/20000",
+    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+    "environment": "TCG3",
+    "merchantCode": merchantCode,
+    "platform": "TCG"
+    
+    }
 def get_token():
     login_url="http://sit-admin2.tcg.com/tac/api/login/password"
     payload={
@@ -36,7 +53,7 @@ def get_token():
     return token_data.get("token")
 
 
-def deposit(token):
+def deposit(token,merchantCode):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/mcs-player-deposit-search" 
     start_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
     end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
@@ -59,20 +76,7 @@ def deposit(token):
 
         }
 
-    headers = {
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Merchant": "gi8viet",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/20000",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "merchantCode": "gi8viet",
-    "platform": "TCG"
-    }
+    headers = header(token,merchantCode)
     cookies = {
         "language": "zh_CN"
     }
@@ -99,7 +103,7 @@ def deposit(token):
     except Exception as e:
         logging.error(f"狀態碼: {response.status_code}",e)
         return []
-def approve_deposit(token,deposit_Info):
+def approve_deposit(token,deposit_Info,merchantCode):
     try:
         API_URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-v3-deposit-processAndApprove"
         if deposit_Info.get("requestAmount") is None:
@@ -119,21 +123,7 @@ def approve_deposit(token,deposit_Info):
         "merchantCode": "gi8viet",
         "isProcessAndApprove": True
         }
-        headers = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Authorization": token,
-        "Connection": "keep-alive",
-        "Content-Type": "application/json",
-        "Language": "zh_CN",
-        "Merchant": "gi8viet",
-        "Origin": "http://sit-admin2.tcg.com",
-        "Referer": "http://sit-admin2.tcg.com/20000",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-        "environment": "TCG3",
-        "merchantCode": "gi8viet",
-        "platform": "TCG"
-        }
+        headers = header(token,merchantCode)
         cookies = {
         "language": "zh_CN"
         }
@@ -141,20 +131,21 @@ def approve_deposit(token,deposit_Info):
         response_data = response.json()
 
         if response_data.get('success')==True:
-            logging.info(f"成功批准ID: {deposit_Info["depositId"]} , 金額: {deposit_Info['requestAmount']}")
+            logging.info(f"成功批准ID: {deposit_Info['depositId']} , 金額: {deposit_Info['requestAmount']}")
             return True
         else:
-            logging.info(f"未成功批准ID: {deposit_Info["depositId"]}")
+            logging.info(f"未成功批准ID: {deposit_Info['depositId']}")
             return False
     except Exception as e:
         logging.error(f"處理充值 ID: {deposit_Info['depositId']} 時發生錯誤: {e}")
         return False
     
-def batch_approve():
+def batch_approve(merchantCode):
     logging.info("已進入 batch_approve 函數") 
+    deposit_Info = None
     try:
         token=get_token()
-        deposit_list=deposit(token)
+        deposit_list=deposit(token,merchantCode)
         if not deposit_list:
             logging.info("沒有找到充值ID")
             return
@@ -163,8 +154,8 @@ def batch_approve():
         fail_count=0
 
         for index, deposit_Info in enumerate(deposit_list,1):
-            logging.info(f"正在處理第{index}/{total_count}的充值list,金額{deposit_Info["requestAmount"]}")
-            if approve_deposit(token,deposit_Info):
+            logging.info(f"正在處理第{index}/{total_count}的充值list,金額{deposit_Info['requestAmount']}")
+            if approve_deposit(token,deposit_Info,merchantCode):
                 success_count+=1
             else:
                 fail_count+=1
@@ -176,7 +167,6 @@ def batch_approve():
     except Exception as e:
         logging.error(f"處理充值 ID: {deposit_Info['depositId']} 時發生錯誤: {e}")
         return False
-
 
     
 

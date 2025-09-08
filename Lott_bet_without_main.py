@@ -189,5 +189,3 @@ def implement(username,password,amount):
             
             except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
-
-        

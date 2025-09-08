@@ -122,10 +122,11 @@ if __name__ == "__main__":
         "operatorName": "carrine03",
         "password": "Test@1234"
     }
+    ticketid=1138018
     try:
         b_end=B_end(credential)
         if b_end.token:
-            b_end.multiple_create_bonus()
+            b_end.multiple_create_bonus(ticketid)
         else:
             logging.error("登入失敗 無法取得Token")
     except Exception as e:

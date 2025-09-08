@@ -1,6 +1,6 @@
 import requests,logging,datetime
 from datetime import datetime
-import yaml,os
+import yaml,os,random,string
 
 logging.basicConfig(
     level=logging.INFO,
@@ -81,7 +81,7 @@ def create_agent(token,player:str,MerchantCode:str):
         
         if response_data.get("success") == True:
             logging.info(f"新建代理玩家成功: {player}")
-            return True
+            return player
         else:
             error_msg = response_data.get("message", "未知錯誤")
             logging.error(f"創建代理失敗: {error_msg}")
@@ -545,20 +545,23 @@ def reset_to_123qwe(customerId:int):
     else:
         return logging.info("修改密碼失敗")
 
-def main(platform,username):
- 
-    if platform=='gi8viet':
+def main(platform,count):
+    account_list=[]
+    if platform=='gi8Vnet':
         MerchantCode='gi8viet'
         try:
             token = get_token()
             print("取得的 token:", token)
         except Exception as e:
             print("啟動時取得 token 發生錯誤:", e)
-        
-        create_agent(token,username,MerchantCode)
-        customer_id=search_customerid(token,username,MerchantCode)
-        if customer_id:
-                new_password=reset_to_123qwe(customer_id)
+        for _ in range(count):
+            username=''.join(random.choices(string.ascii_lowercase+string.digits,k=7))
+            create_agent(token,username,MerchantCode)
+            account_list.append(username)
+            customer_id=search_customerid(token,username,MerchantCode)
+            if customer_id:
+                    new_password=reset_to_123qwe(customer_id)
+        return account_list
     elif platform=='huamei':
         MerchantCode='huamei'
         try:
@@ -567,9 +570,11 @@ def main(platform,username):
         except Exception as e:
             print("啟動時取得 token 發生錯誤:", e)
         
-        create_agent_huamei(token,username,MerchantCode)
-        customer_id=search_customerid(token,username,MerchantCode)
-        if customer_id:
+        for _ in range(count):
+            username=''.join(random.choices(string.ascii_lowercase+string.digits,k=7))
+            create_agent(token,username,MerchantCode)
+            customer_id=search_customerid(token,username,MerchantCode)
+            if customer_id:
                     new_password=reset_to_123qwe(customer_id)
     elif platform=='TCGDEMOV3':
         MerchantCode='tcgdemov3'
@@ -579,10 +584,12 @@ def main(platform,username):
         except Exception as e:
             print("啟動時取得 token 發生錯誤:", e)
         
-        create_agent_tcgdemov3(token,username,MerchantCode)
-        customer_id=search_customerid(token,username,MerchantCode)
-        if customer_id:
-            new_password=reset_to_123qwe(customer_id)
+        for _ in range(count):
+            username=''.join(random.choices(string.ascii_lowercase+string.digits,k=7))
+            create_agent(token,username,MerchantCode)
+            customer_id=search_customerid(token,username,MerchantCode)
+            if customer_id:
+                    new_password=reset_to_123qwe(customer_id)
     elif platform=='rollbet':
         MerchantCode='rollbet'
         try:
@@ -591,10 +598,12 @@ def main(platform,username):
         except Exception as e:
             print("啟動時取得 token 發生錯誤:", e)
         
-        create_agent_rollbet(token,username,MerchantCode)
-        customer_id=search_customerid(token,username,MerchantCode)
-        if customer_id:
-            new_password=reset_to_123qwe(customer_id)
+        for _ in range(count):
+            username=''.join(random.choices(string.ascii_lowercase+string.digits,k=7))
+            create_agent(token,username,MerchantCode)
+            customer_id=search_customerid(token,username,MerchantCode)
+            if customer_id:
+                    new_password=reset_to_123qwe(customer_id)
     elif platform=='lodibet':
         MerchantCode='lodibet'
         try:
@@ -603,14 +612,17 @@ def main(platform,username):
         except Exception as e:
             print("啟動時取得 token 發生錯誤:", e)
         
-        create_agent_lodibet(token,username,MerchantCode)
-        customer_id=search_customerid(token,username,MerchantCode)
-        if customer_id:
-            new_password=reset_to_123qwe(customer_id)
+        for _ in range(count):
+            username=''.join(random.choices(string.ascii_lowercase+string.digits,k=7))
+            create_agent(token,username,MerchantCode)
+            customer_id=search_customerid(token,username,MerchantCode)
+            if customer_id:
+                    new_password=reset_to_123qwe(customer_id)
 
 
     else:
             logging.error("沒有拿到CustomerID")
+
 
         
 

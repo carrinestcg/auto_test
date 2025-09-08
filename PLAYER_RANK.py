@@ -8,6 +8,23 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 class B_end:
+    def header(self):
+        return{
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Authorization": self.token_data,
+        "Content-Type": "application/json",
+        "Connection": "keep-alive",
+        "Language": "zh_CN",
+        "Merchant": "gi8viet",
+        "Origin": "http://sit-admin2.tcg.com",
+        "Referer": "http://sit-admin2.tcg.com/24785",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+        "environment": "TCG3",
+        "merchantCode": "gi8viet",
+        "platform": "TCG"
+        
+        }
     def __init__(self,credential:dict):
         self.session=requests.Session()
         self.username=''
@@ -16,7 +33,7 @@ class B_end:
         self.credential=credential
         self.token_data=self.token
         self.record_data_list=''
-    def cookie():
+    def cookie(self):
         return{
             "language": "zh_CN"
         }
@@ -168,8 +185,7 @@ class B_end:
             
         except Exception as e:
             logging.error(f"狀態碼: {response.status_code}")
-    def process_procedure(self):
-        PLAYER='pvp001'
+    def process_procedure(self,username):
         L1=62785
         L2=62786
         L3=62787
@@ -197,7 +213,7 @@ class B_end:
             type=first_record.get("type")
             playerRemark=first_record.get("labelName")
             ws.append([
-                    PLAYER,
+                    username,
                     promotion_name,
                     playerRemark,
                     type,
@@ -210,9 +226,9 @@ class B_end:
                     ]
                 )
         logging.info("先寫入還沒有手動升級前的紅利派發紀錄")
-        Customerid= self.search_customerid(PLAYER)
+        Customerid= self.search_customerid(username)
         if Customerid :
-            player_rank_update_complete=self.player_rank(Customerid,PLAYER,random_level)
+            player_rank_update_complete=self.player_rank(Customerid,username,random_level)
             if player_rank_update_complete:
                 update_result='更新等級成功'
             else:
@@ -225,7 +241,7 @@ class B_end:
             playerRemark=first_record.get("labelName")
             bonus_record='紅利派發紀錄更新'      
             ws.append([
-                    PLAYER,
+                    username,
                     promotion_name,
                     playerRemark,
                     type,
@@ -242,7 +258,7 @@ class B_end:
         report_path=os.path.join(f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
         wb.save(report_path)        
         
-if __name__ == "__main__":
+def main(username):
     credential = {
         "operatorName": "carrine03",
         "password": "Test@1234"
@@ -250,7 +266,7 @@ if __name__ == "__main__":
     try:
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure()
+            b_end.process_procedure(username)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
 

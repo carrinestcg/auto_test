@@ -50,24 +50,23 @@ promtions_name:
 - "carrine test"  # 新手任務獎勵
 
 ticket_id:
-- "1087007" # cash
-- "1087008" # raffle
-- "1087006" # egg
-- "1113014" # wheel
-- "1099016" # 商品
-- "1120016" # free spin
-- "1120017" # 拼多多
+- "1168014" # cash
+- "1168015" # raffle
+- "1168016" # egg
+- "1168017" # wheel
+- "1150026" # 商品
+- "1150027" # free spin
+- "1150016" # 拼多多
 
 testing_account:
-  - "feb002"
-  - "feb001"
-  - "feb007"
-  - "feb008"
-  - "pop000"
-  - "pop111"
-  - "pop222"
-  - "pop888"
+  - "kok111"
 
+
+
+promotion:
+- "carrine 手工報名"
+promotion_id:
+- "4023102"
 
 
 

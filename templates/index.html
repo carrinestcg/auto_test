@@ -4,191 +4,471 @@
     <meta charset="UTF-8">
     <title>自動化腳本</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body{
-            background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFboY2rm05MNCaFhsgJEJ2QWl5q6lKY2kQsw&s);
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-position: center center;
-            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            font-family: 'Microsoft JhengHei', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display:flex;
             justify-content:center;
             align-items:center;
-            height: 100vh;
+            min-height: 100vh;
             margin:0;
+            padding:20px;
         }
         .container {
             position:relative;
             background-color: rgba(255, 255, 255, 0.85);
-            padding: 60px 70px;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            width: 900px;
-            height: 500px;
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            width: 90%;
+            max-width: 1200px;
+            height: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         h1{
-            text-align: left;
-            color: rgb(8, 7, 7);
+            text-align: center;
+            color: #2c3e50;
             margin-top: 10px;
-            font-size: 26px; 
+            font-size: 32px; 
+            margin-bottom: 30px;
+            font-weight: 300;
+            letter-spacing: 1px;
         }
         h2{
             text-align: left;
-            color: rgb(8, 7, 7);
-            margin-top: 30px
+            color: #34495e;
+            margin-top: 30px;
+            margin: 30px 0 20px 0;
+            font-size: 24px;
+            font-weight: 400px;
+            border-left: 4px solid #4a90e2;
+            padding-left: 15px;
         }
         label{
-            display:block;
-            margin-top: 10px;
-            font-weight: bold;
+            display:flex;
+            margin-top: 15px;
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 14px;
+            
         }
         input[type="text"],
         input[type="number"]{
-            width: 300px;
-            padding: 6px;
-            margin-top: 5px;
-            border-radius: 8px;
-            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 300px;
+            padding: 12px 16px;
+            margin-top: 8px;
+            border-radius: 12px;
+            border: 2px solid #e0e6ed;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
         }
         button{
+            margin: 10px 10px 10px 0;
             margin-top: 20px;
-            width: 10%;
-            padding: 10px;
-            border-radius: 3px;
+            font-size: 14px;
+            padding: 12px 24px;
+            border-radius: 12px;
             border:none;
-            background-color: dodgerblue;
+            background: linear-gradient(135deg, #4a90e2 0%, #357abd 100%);
+            transition: all 0.3s ease;
             cursor: pointer;
             color: white;
-            bottom:20px;
-            right:20px;
+            min-width: 120px;
+            font-weight: 500;
+            
         }
         button:hover{
-            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
         }
         .script-list input{
             margin-right: 5px;
             margin-top: 5px;
+
         }
         .script-grid{
             display: grid;
-            grid-template-columns: repeat(4,1fr);
-            gap:10px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 25px;
+            align-items: start;
         }
+
         .script-grid label{
             font-weight: normal;
             display: flex;
             align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            min-height: 60px;
+        }
+        .script-grid label:hover{
+            background: #e9ecef!important;
+            border-color: #4a90e2!important;
+            transform: translateY(-1px)!important; 
+        }
+        .script-grid input[type="checkbox"]{
+            margin-right: 12px;
+            transform: scale(1.2);
+            accent-color: #4a90e2;
         }
         .account-config{
             display:flex;
             align-items: flex-end;
             gap: 10px;
+            margin-bottom: 30px;
+
+    
         }
         .input-group {
             display: flex;
             flex-direction: column;
-            margin-right: 20px;
+            min-width: 200px;
         }
         .select-group {
             display: flex;
             flex-direction: column;
-            margin-right: 10px;
-            margin-bottom: 6px;
-            width: 100px;
+            margin-bottom: 0;
+            width: 100%;
+            position: relative;
+            min-width: 320px;
     
         }
+        .select-group_platform{
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+            width: 100%;
+            position: relative;
+            min-width: 320px;
+    
+        }
+        .deposit_select-group{
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 0;
+            width: 100%;
+            position: relative;
+            min-width: 320px;
+    
+        }
+        .deposit_select-group option:hover{
+            background: #e9ecef!important;
+            border-color: #1e5f8b!important;
+            transform: translateY(-1px)!important;
+        }
+        
+        .select-group option:hover{
+            background: #e9ecef!important;
+            border-color: #1e5f8b!important;
+            transform: translateY(-1px)!important;
+        }
+        .select-group_platform option:hover{
+            background: #e9ecef!important;
+            border-color: #1e5f8b!important;
+            transform: translateY(-1px)!important;
+        }
+        
+        select {
+            display: 25px 30px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        select:focus{
+            outline:none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+            display: 25px 30px;
+            
+            
+        }
+       
+        
+        .hidden{
+            display: none;
+        }
+        .tabcontent{
+            display: none;
+            padding: 25px 0;
+            
+            
+                }
+        .tabcontent.active {
+            display: block;
+            grid-template-columns: repeat(auto-fit,minmax(280,1fr));
+            gap:20px;
+        
+        }
+        .tab-button{
+            width: 200px;
+            height: 45px;
+            background-color: #f1f1f1;
+            color: black;
+            border-bottom: 2px solid black;
+            font-weight: bold;
+            
+        }
+        .tab{
+            display: flex;
+            margin-top: 20px 0;
+            padding: 4px;
+            border-radius: 12px;
+            background-color: #f8f9fa;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+           
+        }
+        .tab-button:hover {
+            background:rgba(102, 126, 234, 0.1);
+            color: #667eea;;
+        }
+        .tab-button.active{
+            background: linear-gradient(135deg, #6fa0d8 0%, #2c4866 100%);;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .mult-select{
+            min-height: 150px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            padding: 8px;
+            position: static;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+            margin-top: 8px;
+            overflow-y: auto;
+            width: 60%;
+        }
+        .mult-select:focus{
+            border-color: #667eea ;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background: white;
+        }
+        .mult-select option{
+            margin: 3px 0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            width: 200px;
+        }
+        .multi-select option:checked {
+            background-color: #667eea;
+            color: white;
+        }
+        
+        small{
+            color: #e74c3c !important;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+        input[type="checkbox"]{
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        } 
+        ::placeholder {
+            color: #95a5a6;
+            font-style: italic;
+        } 
+        .script-grid label:has(input:checked) {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-color: #357abd;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+        
 
 
     </style>
-    <script>
-        function toggleInput(){
-            const usernameInputDiv=document.getElementById("username");
-            const passwordInputDiv=document.getElementById("password");
-            const amountInputDiv=document.getElementById("amount-input-div");
-            const ticket_select=document.getElementById("frontend-checkbox_select");
-            const ticket_input=document.getElementById("ticket-input-div")
-
-            const requireUsername=document.getElementById("frontend-checkbox_new").checked||document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked||document.getElementById("frontend-checkbox_id").checked;
-
-            const requirepassword=document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked;
-            const requireamount=document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked;
-            const checkbox=document.getElementById("frontend-checkbox_ticket");
-            const hasValue=ticket_select.value!="";
-            
-            amountInputDiv.style.display=requireamount?"block":"none";
-            ticket_select.style.display=checkbox.checked?"block":"none";
-            ticket_input.style.display=(checkbox.checked&&hasValue)?"block":"none";
-        
-        }
-    </script>
 </head>
 <body>
     <div class="container">
         <form method="POST" action="/submit" onsubmit="return checkpassword()">
-            <h1>測試配置</h1>
+            <h1>🚀 自動化測試配置平台</h1>
             <div class="account-config">
                 <div class="input-group">
-                    <label for ="username">用戶帳號</label>
+                    <label for ="username">👤 用戶帳號</label>
                     <input type="text" id="username" name="username">
-                    <small id="username_hint" style="color:red; display: none;">必填</small>
+                    <small id="username_hint" style="color:red; display: none;">⚠️必填</small>
                 </div>
                 <div class="input-group">
-                    <label for ="password">用戶密碼</label>
+                    <label for ="password">🔐 用戶密碼</label>
                     <input type="text" id="password" name="password" placeholder="密碼 (預設123qwe)">
-                    <small id="password_hint" style="color:red; display: none;">必填</small>
+                    <small id="password_hint" style="color:red; display: none;">⚠️必填</small>
                 </div>
-                <div id="amount-input-div" style="display:none;">
-                    <label for="amount">請輸入金額</label>
+                <div id="amount-input-div" class="hidden">
+                    <label for="amount">💰請輸入金額</label>
                     <input type="number" id="amount" name="amount" style="width:150px;">
                 </div>
+                <div id="promotion_id-input-div" class="hidden">
+                    <label for="promotion_id">🎯 請輸入活動id</label>
+                    <input type="text" id="promotion_id" name="promotion_id" style="width:150px;">
+                </div>
+                <div id="ticket-input-div" style="display:none;">
+                    <label for="ticket">🎫 票卷名稱</label>
+                    <input type="text" id="ticket" name="ticket_input" style="width: 150px;">
+                </div>
+                <div id="ticket_id-input-div" >
+                    <label for="ticket_id">🎫 票卷ID</label>
+                    <input type="text" id="ticket_id" name="ticket_id" style="width: 150px;">
+                </div>
+                
                 
             </div>
-            <button type="submit">開始測試</button>
+            <button type="submit">🚀 開始測試</button>
+            <button id="selectALL">✅ 全選</button>
+            <button id="unselectALL">❌ 取消全選</button>
             <h2>測試功能選擇</h2>
-            <div class="script-grid">
-                <label><input type="checkbox" name="script" value="MANUAL_SINGLE">手動紅利發放單一審核<br></label>
-                <label><input type="checkbox" name="script" value="MANUAL_BATCH">手動紅利發放批量審核<br></label>
-                <label><input type="checkbox" name="script" value="PROMOCODE_BATCH">前台領取優惠碼<br></label>
-                <label><input type="checkbox" name="script" value="LOTTERY_BET" id="frontend-checkbox_lott" onchange="toggleInput()">前台彩票投注<br></label>
-                <label><input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">用戶前台充值<br></label>
-                <label><input type="checkbox" name="script" value="DEPOSIT_API">品牌管理員審核充值<br></label>
-                <label><input type="checkbox" name="script" value="MANUAL_SIGN">前台手工報名活動<br></label>
-                <label><input type="checkbox" name="script" value="NEW_REGISTER_API" id="frontend-checkbox_new" onchange="toggleInput()">新建代理帳號玩家<br></label>
-                <label><input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">查詢玩家資訊<br></label>
-
+            <div class="tab">
+                <button type="button" class="tab-button active" onclick="switchTab(event,'SmokeTab')">💨 Smoke_TEST</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'sanityTab')">🔍 Sanity_TEST</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'RegressionTab')">🔄 Regression_TEST</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'TestingTooLTab')">TestingTool</button>
+            </div>
+            <div id="SmokeTab" class="tablinkS tabcontent active script-grid" >
+                <label><input type="checkbox" name="script" value="MANUAL_SINGLE">🎯 手動紅利發放單一審核<br></label>
+                <label><input type="checkbox" name="script" value="SIGLE_PROMO_7_TICKET" id="frontend-checkbox_7_Ticket" onchange="toggleInput()">🎆 派發七種票卷<br></label>
+                <label><input type="checkbox" name="script" value="MANUAL_BATCH">📦手動紅利發放批量審核<br></label>
+                <label><input type="checkbox" name="script" value="MANUAL_CREATE_SINGLE_NOT_CONFIRM" id="frontend-checkbox_manual" onchange="toggleInput()">⚡手動紅利發放單一玩家_審核<br></label>
+                <select multiple id="frontend-checkbox_manual_platform" sixe="'8" name="platform_type_manual" style="display: none;border-radius: 6px;" class="mult-select" onchange="toggleInput()">
+                    <option value="gi8viet" selected >🏆 gi8Vnet</option>
+                    <option value="huamei" >🎊 Huamei</option>
+                    <option value="TCGDEMOV3">🎪 Tcgdemov3</option>
+                    <option value="rollbet">🎁 rollbet</option>
+                    <option value="lodibet">🎆 lodibet</option>
+                </select>
+            </div>
+            <div id="sanityTab" class="tablinkS tabcontent script-grid" >
+                <label><input type="checkbox" name="script" value="PROMOCODE_BATCH" id="frontend-promo-batch" onchange="toggleInput()">🎫 前台領取優惠碼<br></label>
+                <label><input type="checkbox" name="script" value="LOTTERY_BET" id="frontend-checkbox_lott" onchange="toggleInput()"> 🎲 前台彩票投注<br></label>
+                <label><input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">💳 用戶前台充值<br></label>
+                <label><input type="checkbox" name="script" value="MANUAL_SIGN">🥇 前台手工報名活動<br></label>
+                <label><input type="checkbox" name="script" value="PLAYER_RANK" id="frontend-player-rank" onchange="toggleInput()">👑 手動達成升級獎勵<br></label>
+            </div>
+            <div id="RegressionTab" class="tablinkS tabcontent script-grid" >
+                <div class="select-group_platform">
+                    <label><input type="checkbox" name="script" value="auto_create_player" id="frontend-checkbox_new" onchange="toggleInput()">👤 新建代理帳號玩家</label>
+                    <select multiple id="frontend-checkbox_select_platform" sixe="'8" name="platform_type" style="display: none;border-radius: 6px;" class="mult-select" onchange="toggleInput()">
+                        <option value="gi8viet" selected >🏆 gi8Vnet</option>
+                        <option value="huamei" >🎊 Huamei</option>
+                        <option value="TCGDEMOV3">🎪 Tcgdemov3</option>
+                        <option value="rollbet">🎁 rollbet</option>
+                        <option value="lodibet">🎆 lodibet</option>
+                    </select>
+                </div>
+                <label><input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">🔍 查詢玩家資訊<br></label>
                 <div class="select-group">
-                    <label><input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">創建票卷<br></label>
-                    <select id="frontend-checkbox_select"  name="ticket_type" style="display: none;border-radius: 6px;" onchange="toggleInput()">
-                        <option value="ALL" selected>全部</option>
-                        <option value="CASH">現金兌換卷</option>
-                        <option value="RAFFLE">幸運紅包</option>
-                        <option value="GOLDEN_EGG">砸金蛋</option>
-                        <option value="WHEEL">幸運大轉盤</option>
-                        <option value="GIFT">商品兌換卷</option>
-                        <option value="FREE_SPIN">FREE_SPIN</option>
-                        <option value="TEMU">拼多多</option>
+                    <label><input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">🎫 創建票卷</label>
+                    <select multiple id="frontend-checkbox_select"  size="8" name="ticket_type" style="display: none;border-radius: 6px;" class="mult-select" onchange="toggleInput()">
+                        <option value="ALL" selected>🎯 全部</option>
+                        <option value="CASH">💰 現金兌換卷</option>
+                        <option value="RAFFLE">🧧 幸運紅包</option>
+                        <option value="GOLDEN_EGG">🥚 砸金蛋</option>
+                        <option value="WHEEL">🎡 幸運大轉盤</option>
+                        <option value="GIFT">🎁 商品兌換卷</option>
+                        <option value="FREE_SPIN">🎰 FREE_SPIN</option>
+                        <option value="TEMU">🛒 拼多多</option>
                     </select>
                 </div>
             </div>
-            <div id="ticket-input-div" style="display:none;">
-                <label for="ticket">票卷名稱</label>
-                <input type="text" id="ticket" name="ticket_input" style="width: 100px;">
+            <div id="TestingTooLTab" class="tablinkS tabcontent script-grid">
+                <label><input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">👥 品牌管理員並行操作測試<br></label>
+                <div class="deposit_select-group">
+                    <label><input type="checkbox" name="script" value="DEPOSIT_API" id="frontend-checkbox_merchantCode" onchange="toggleInput()">✅ 品牌管理員審核充值<br></label>
+                    <select multiple id="frontend-deposit_select_platform" sixe="'8" name="deposit_platform_type" style="display: none;border-radius: 6px;" class="mult-select" onchange="toggleInput()">
+                        <option value="gi8viet" selected >🏆 gi8Vnet</option>
+                        <option value="huamei" >🎊 Huamei</option>
+                        <option value="TCGDEMOV3">🎪 Tcgdemov3</option>
+                        <option value="rollbet">🎁 rollbet</option>
+                        <option value="lodibet">🎆 lodibet</option>
+                    </select>
+                </div>
             </div>
                 
         </form>
         <script>
+            function toggleInput(){
+            const usernameInputDiv=document.getElementById("username");
+            const passwordInputDiv=document.getElementById("password");
+            const amountInputDiv=document.getElementById("amount-input-div");
+            const ticket_select=document.getElementById("frontend-checkbox_select");
+            const ticket_input=document.getElementById("ticket-input-div");
+            const promotion_id_Input=document.getElementById("promotion_id-input-div");
+            const platform_select=document.getElementById("frontend-checkbox_select_platform");
+            const deposit_platform_select=document.getElementById("frontend-deposit_select_platform");
+            const manual_platform_select=document.getElementById("frontend-checkbox_manual_platform");
+            const ticket_id_input=document.getElementById("ticket_id-input-div");
+
+            const requireUsername=document.getElementById("frontend-checkbox_new").checked||document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked||document.getElementById("frontend-checkbox_id").checked||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('frontend-promo-batch').checked||document.getElementById('frontend-player-rank').checked;
+            const requireMerchantCode=document.getElementById("frontend-checkbox_merchantCode").checked
+            const requirepassword=document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked;
+            const requireamount=document.getElementById("frontend-checkbox_lott").checked||document.getElementById("frontend-checkbox").checked;
+            const requirePromotion_id=document.getElementById("frontend-checkbox_manual").checked||document.getElementById('frontend-checkbox_7_Ticket').checked;
+            const requireTicket_input=document.getElementById("frontend-checkbox_manual").checked;
+            const checkbox=document.getElementById("frontend-checkbox_ticket");
+            const register_checkbox=document.getElementById("frontend-checkbox_new");
+            const deposit_checkbox=document.getElementById('frontend-checkbox_merchantCode');
+            const manual_checkbox=document.getElementById("frontend-checkbox_manual")
+            const hasSelectTicket=Array.from(ticket_select.selectedOptions).length>0;
+            const hasPlatformSelect=Array.from(platform_select.selectedOptions).length>0;
+            const hasmanualSelect=Array.from(manual_platform_select.selectedOptions).length>0;
+
+            
+            amountInputDiv.classList.toggle("hidden",!requireamount)
+            ticket_select.style.display=checkbox.checked?"block":"none";
+            platform_select.style.display=register_checkbox.checked?"block":"none";
+            manual_platform_select.style.display=manual_checkbox.checked?"block":"none";
+            deposit_platform_select.style.display=deposit_checkbox.checked?"block":"none";
+            ticket_input.style.display=(checkbox.checked&&hasSelectTicket)?"block":"none";
+            promotion_id_Input.classList.toggle("hidden",!requirePromotion_id);
+            ticket_id_input.classList.toggle("hidden",!requireTicket_input);
+        
+        }
             function checkpassword(){
                 const pwd=document.getElementById("password");
                 const usernameInputDiv = document.getElementById("username");
+                const merchant=document.getElementById("merchantCode")
                 const needUsername =
                     document.getElementById("frontend-checkbox_new").checked ||
                     document.getElementById("frontend-checkbox_lott").checked ||
                     document.getElementById("frontend-checkbox").checked||
-                    document.getElementById("frontend-checkbox_id").checked ;
+                    document.getElementById("frontend-checkbox_id").checked||
+                    document.getElementById("frontend-checkbox_manual").checked||
+                    document.getElementById("frontend-checkbox_7_Ticket").checked||
+                    document.getElementById("frontend-player-rank").checked
+                    ;
+
+                    
+
+                document.querySelector("button[type=submit]").disabled=true;
+                document.querySelector("button[type=submit]").innerText="執行中...";
 
                 if(needUsername&&!usernameInputDiv.value.trim()){
                     document.getElementById("username_hint").style.display="inline";
                     document.getElementById("password_hint").style.display="inline";
+                    document.querySelector("button[type=submit]").disabled=false;
+                    document.querySelector("button[type=submit]").innerText="開始測試";
                     return false;
                 }
                 else{
@@ -198,12 +478,81 @@
                     pwd.value="123qwe";
                     return true;
                 }
+                if(!merchant.value.trim()){
+                    merchant.value="gi8viet"
+                }
+                return true
             }
             
+            document.getElementById('selectALL').addEventListener('click',(e)=>{
+                e.preventDefault()
+                const active_tab=document.querySelector('.tabcontent.active');
+                const checkboxs=active_tab.querySelectorAll('input[type="checkbox"]');
+                const select=active_tab.querySelectorAll('select')
+                checkboxs.forEach(checkbox=>checkbox.checked=true);
+                toggleInput();
+                
+            });
+            document.getElementById('unselectALL').addEventListener('click',(e)=>{
+                e.preventDefault()
+                const active_tab=document.querySelector('.tabcontent.active');
+                const checkboxs=active_tab.querySelectorAll('input[type="checkbox"]');
+                const select=active_tab.querySelectorAll('select')
+                checkboxs.forEach(checkbox=>checkbox.checked=false);
+
+                select.forEach(select=>{
+                    Array.from(select.options).forEach(option=>option.selected=false);
+                });
+                toggleInput();
+                
+            });
+            ['frontend-checkbox_select','frontend-checkbox_select_platform','frontend-deposit_select_platform','frontend-checkbox_manual_platform']
+            .forEach(id => {
+            document.getElementById(id).addEventListener('change',function(){
+                const alloption=this.querySelector('option[value="ALL"]')
+                const otheroption=Array.from(this.options).filter(option=>option.value!=='ALL')
+
+                if (alloption.selected){
+                    otheroption.forEach(option=>option.selected==true)
+                    alloption.selected = false;
+                }
+                toggleInput();
+            })
+        });
+        ['frontend-checkbox_select','frontend-checkbox_select_platform','frontend-deposit_select_platform','frontend-checkbox_manual_platform']
+            .forEach(id => {
+            document.getElementById(id).addEventListener('mousedown',function(e){
+                e.preventDefault()
+                const option=e.target;
+                
+                if(option.tagName=='OPTION'){
+                    option.selected=!option.selected;
+                    this.dispatchEvent(new Event('change'));
+                }
+            })
+        });
+            function switchTab(evt,tabId){
+                document.querySelectorAll('.tabcontent').forEach(tab =>tab.classList.remove('active'));
+                document.querySelectorAll('.tab-button').forEach(btn =>btn.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+                evt.currentTarget.classList.add('active');
+            }
+            window.addEventListener('load',()=>{
+                toggleInput();
+            });
+            document.querySelectorAll('input,select').forEach(el=>{
+                    el.addEventListener('input', () => {
+                        if (el.type=='checkbox'){
+                            formState[el.name|| el.id]==el.checked
+                        }else{
+                            formState[el.name|| el.id]==el.value
+                        }
+                    }
+                )});
         </script>
 
         {% if selected_scripts %}
-        <p style="color:rgb(11, 11, 11); font-style: bold;">腳本完成:</p>
+        <p style="color:rgb(0, 68, 128); font-weight: bold;">✅ 執行成功</p>
             <ul>
                 {% for script in selected_scripts %}
                     <li>{{script}}</li>
@@ -212,13 +561,13 @@
         <div style="display: flex; gap: 16px;">
             {% endif %}
             {% if customer_Id %}
-            <p style="color: green;margin: 0;">Customer ID: <strong>{{ customer_Id }}</strong></p>
+            <p style="color: rgb(0, 68, 128);">Customer ID: <strong>{{ customer_Id }}</strong></p>
             {% endif %}
             {% if customer_Rank %}
-             <p style="color: green;margin: 0;">Customer rank: <strong>{{ customer_Rank }}</strong></p>
+             <p style="color: rgb(0, 68, 128);">Customer rank: <strong>{{ customer_Rank }}</strong></p>
             {% endif %}
             {% if Deposit_Count %}
-            <p style="color: green;margin: 0;">Deposit_Count: <strong>{{ Deposit_Count }}</strong></p>
+            <p style="color: rgb(0, 68, 128);">Deposit_Count: <strong>{{ Deposit_Count }}</strong></p>
             {% endif %}
         </div>  
     </div>    

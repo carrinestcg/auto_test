@@ -489,8 +489,8 @@ if __name__ == "__main__":
     from deposit_count import implement_function
     from accumulated_deposit import implement_accumulated_function
 
-    username_1 = os.environ.get("USERNAME_1")
-    username_2 = os.environ.get("USERNAME_2")
+    username_1 = 'yyyy123'#os.environ.get("USERNAME_1")
+    username_2 ='kkkk000' #os.environ.get("USERNAME_2")
     #username="three444"
     password = "123qwe"
     if not username_1:

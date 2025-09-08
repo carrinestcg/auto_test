@@ -248,11 +248,8 @@ class B_end:
             logging.error(f"狀態碼: {response.status_code}")
 
     create_record=[]
-    def process_procedure(self):
-        wb=Workbook()
-        ws=wb.active
-        ws.title="紅利發放結果"
-        ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
+    def process_procedure(self,player_acount,promo):
+        
         bonusAmount=10000
         bonusPointAmount=0
         #count=2
@@ -261,66 +258,19 @@ class B_end:
         yaml_path=os.path.join(current_dir,"config.yaml")
         with open(yaml_path,"r",encoding="utf-8") as f:
             config=yaml.safe_load(f)
-        prmotion_id_multiple=config.get("promtion_ids",[])
-        prmotion_name=config.get("promtions_name",[])
         ticket_id=config.get("ticket_id")
-        testing_account=config.get("testing_account")
-        confirm_result = ''
-        create_result=''
-        remark=""
-        ticket_id_cycle=cycle(ticket_id)
-        for account in testing_account:
-            for promo ,name in zip(prmotion_id_multiple,prmotion_name):
-                ticket=next(ticket_id_cycle)
-                is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
-                if is_success:
-                    create_result='創建紅利成功'
-                    remark="成功"
-                    Customerid,self.claimid = self.Search_Customer_bonus(account)
-                    if self.claimid :
-                        self.claimid_list.append(self.claimid)
-                    if Customerid  and self.claimid :
-                        is_confirm_complete=self.Confirm_Customer_bonus(Customerid)
-                        if is_confirm_complete:
-                            confirm_result='審核紅利成功'
-                        
-                        else:
-                            confirm_result='審核紅利失敗'
+        
+        for ticket in ticket_id:
+            is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+            if is_success:
+                Customerid,self.claimid = self.Search_Customer_bonus(player_acount)
+                if Customerid  and self.claimid :
+                    self.Confirm_Customer_bonus(Customerid)
                 else:
-                    create_result='創建紅利失敗'
-                    remark="失敗"
-                ws.append([
-                        account,
-                        promo,
-                        name,
-                        bonusAmount,
-                        bonusPointAmount,
-                        ticket,
-                        ticketQuantity,
-                        create_result,
-                        confirm_result,
-                        remark,
-                        self.claimid,
-                        "尚未比對"
-                        ]
-                    )
-            if self.Bonus_record_page():
-                Bonus_record={str(item.get("promotionClaimId") for item in self.record_data_list)}
-
-                for row in ws.iter_rows(min_row=2,max_row=ws.max_row):
-                    claimid=row[10].value
-                    if claimid in Bonus_record:
-                        row[11].value = "後台有紀錄"
-                    else:
-                        row[11].value = "後台沒紀錄"
-
-            else:
-                logging.error("無法獲取紅利記錄")
-        report_path=os.path.join(current_dir,f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        wb.save(report_path)        
-            
+                    logging.error("審核失敗")
+        
     
-def main():
+def main(player_account,promo):
     print("收到 submit 請求")
     credential = {
         "operatorName": "carrine03",
@@ -329,7 +279,7 @@ def main():
     try:
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure()
+            b_end.process_procedure(player_account,promo)
         else:
             logging.error("登入失敗 無法取得Token")
     except Exception as e:
