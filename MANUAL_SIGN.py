@@ -2,7 +2,6 @@ import requests,logging,time,yaml,os,random
 from datetime import datetime,timedelta
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from deposit_api import batch_approve
 
 logging.basicConfig(
     level=logging.INFO,
@@ -95,6 +94,25 @@ class Frontend:
         time.sleep(1)
             
 class Backend:
+    def header(self):
+        return {
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": self.token,
+            "Content-Type": "application/json",
+            "Connection": "keep-alive",
+            "Content-Length": "0",
+            "Language": "zh_CN",
+            "Merchant": "gi8viet",
+            "MerchantCode": "gi8viet",
+            "Origin": "http://sit-admin2.tcg.com",
+            "Referer": "http://sit-admin2.tcg.com/24785",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "environment": "TCG3",
+            "merchantCode": "gi8viet",
+            "notPending": "true",
+            "platform": "TCG",
+        }
     def __init__(self,credential_be:str):
         self.session=requests.Session()
         self.credential_be=credential_be
@@ -137,24 +155,7 @@ class Backend:
     
         API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-signUpList-search-get"
         
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": self.token,
-            "Content-Type": "application/json",
-            "Connection": "keep-alive",
-            "Content-Length": "0",
-            "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Origin": "http://sit-admin2.tcg.com",
-            "Referer": "http://sit-admin2.tcg.com/24785",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "TCG3",
-            "merchantCode": "gi8viet",
-            "notPending": "true",
-            "platform": "TCG",
-        }
+        headers=self.header()
         cookies = {
             "language": "zh_CN"
         }
@@ -189,24 +190,7 @@ class Backend:
     
         API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-signUpList-approve-create"
         
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": self.token,
-            "Content-Type": "application/json",
-            "Connection": "keep-alive",
-            "Content-Length": "0",
-            "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Origin": "http://sit-admin2.tcg.com",
-            "Referer": "http://sit-admin2.tcg.com/24785",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "TCG3",
-            "merchantCode": "gi8viet",
-            "notPending": "true",
-            "platform": "TCG",
-        }
+        headers=self.header()
         cookies = {
             "language": "zh_CN"
         }

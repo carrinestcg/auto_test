@@ -8,6 +8,8 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 class B_end:
+    
+        
     def header(self):
         return{
         "Accept": "application/json, text/plain, */*",

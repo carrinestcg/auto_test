@@ -1,5 +1,5 @@
 from flask import Flask,render_template,request
-import MANUAL_SINGLE,MANUAL_BATCH,PROMOCODE_BATCH,FRONTEND_DEPOSIT,MANUAL_SIGN,NEW_REGISTER_API,Customer_id,auto_create_ticket,Manual_create_single_with_confirm,SameTimeLogin_manager,SIGLE_PROMO_7_TICKET,PLAYER_RANK
+import MANUAL_SINGLE,MANUAL_BATCH,PROMOCODE_BATCH,FRONTEND_DEPOSIT,MANUAL_SIGN,NEW_REGISTER_API,Customer_id,auto_create_ticket,Manual_create_single_with_confirm,SameTimeLogin_manager,SIGLE_PROMO_7_TICKET,PLAYER_RANK,Condition_create_bonus,ALL_deposit_promotion,Frontend_receive_reward,Frontend_receive_ticket
 from Lott_bet_without_main import implement
 from deposit_api import batch_approve
 python_flask=Flask(__name__)
@@ -20,7 +20,7 @@ def manual_create_bonus(username,promotion,ticket_id,platform_type):
         print(platform_type)
         for platform in platform_type:
             if platform in ('gi8viet','huamei','TCGDEMOV3','rollbet','lodibet'):
-                Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform_type)
+                Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform)
 
 def auto_create_ticket_func(ticket_type):
     ticket_name_default="default_name_ALL"
@@ -67,60 +67,86 @@ def auto_create_ticket_func(ticket_type):
                 auto_create_ticket.main(ticket,localizations)
 @python_flask.route("/submit",methods=['POST'])
 def submit():
-    
-    selected_scripts=request.form.getlist('script')
-    ticket_type=request.form.getlist('ticket_type')
-    username=request.form.get('username')
-    password=request.form.get('password')
-    amount=request.form.get('amount')
-    promotion=request.form.get('promotion_id')
-    platform_type=request.form.getlist('platform_type')
-    deposit_platform_type=request.form.getlist('deposit_platform_type')
-    platform_type_manual=request.form.getlist('platform_type_manual')
-    ticket_id=request.form.get('ticket_id')
-    customer_Id = None
-    customer_Rank = None
-    Deposit_Count = None
-    promo=None
-    ticket = None
-    platform=None
-    customer_data = [None, None, None] 
-    script_map={
-        'MANUAL_SINGLE':lambda:MANUAL_SINGLE.main(),
-        'SIGLE_PROMO_7_TICKET':lambda:SIGLE_PROMO_7_TICKET.main(username,promotion),
-        'MANUAL_BATCH':lambda:MANUAL_BATCH.main(),
-        "MANUAL_CREATE_SINGLE_NOT_CONFIRM":lambda:manual_create_bonus(username,promotion,ticket_id,platform_type_manual),
-        'PROMOCODE_BATCH':lambda:PROMOCODE_BATCH.main(username),
-        'LOTTERY_BET':lambda:implement(username,password,amount),
-        'FRONTEND_DEPOSIT':lambda:FRONTEND_DEPOSIT.main(username,password,amount),
-        'DEPOSIT_API':lambda:batch_approve_func(deposit_platform_type),
-        'MANUAL_SIGN':lambda:MANUAL_SIGN.main(),
-        'auto_create_player':lambda:auto_create_player(platform_type,username),
-        "Customer_id":lambda:customer_data.__setitem__(slice(0,3),Customer_id.main(username)),
-        "auto_create_ticket":lambda:auto_create_ticket_func(ticket_type),
-        "SameTimeLogin":lambda:SameTimeLogin_manager.main(),
-        "PLAYER_RANK":lambda:PLAYER_RANK.main(username)
+    try:
+        selected_scripts=request.form.getlist('script')
+        ticket_type=request.form.getlist('ticket_type')
+        username_raw=request.form.get('username',"")
+        password=request.form.get('password')
+        amount=request.form.get('amount')
+        promotion=request.form.get('promotion_id')
+        platform_type=request.form.getlist('platform_type')
+        deposit_platform_type=request.form.getlist('deposit_platform_type')
+        platform_type_manual=request.form.getlist('platform_type_manual')
+        ticket_id=request.form.get('ticket_id')
+        usernames=[]
+        customer_Id = None
+        customer_Rank = None
+        Deposit_Count = None
+        promo=None
+        ticket = None
+        platform=None
+        customer_data = [None, None, None] 
+        for u in username_raw.split(","):
+            cleaned=u.strip()
+            if cleaned:
+                usernames.append(cleaned)
 
-    }
-    for script in selected_scripts:
-        action=script_map.get(script)
-        if action:
-            action()
-        else:
-            print("未知腳本")
+        
+        def get_script_map(username):
+
+            return{
+                'MANUAL_SINGLE':lambda:MANUAL_SINGLE.main(),
+                'SIGLE_PROMO_7_TICKET':lambda:SIGLE_PROMO_7_TICKET.main(username,promotion),
+                'MANUAL_BATCH':lambda:MANUAL_BATCH.main(),
+                "MANUAL_CREATE_SINGLE_NOT_CONFIRM":lambda:manual_create_bonus(username,promotion,ticket_id,platform_type_manual),
+                'PROMOCODE_BATCH':lambda:PROMOCODE_BATCH.main(username),
+                'LOTTERY_BET':lambda:implement(username,password,amount),
+                'FRONTEND_DEPOSIT':lambda:FRONTEND_DEPOSIT.main(username,password,amount),
+                'DEPOSIT_API':lambda:batch_approve_func(deposit_platform_type),
+                'MANUAL_SIGN':lambda:MANUAL_SIGN.main(),
+                'auto_create_player':lambda:auto_create_player(platform_type,username),
+                'Customer_id':lambda:customer_data.__setitem__(slice(0,3),Customer_id.main(username)),
+                'auto_create_ticket':lambda:auto_create_ticket_func(ticket_type),
+                'SameTimeLogin':lambda:SameTimeLogin_manager.main(),
+                'PLAYER_RANK':lambda:PLAYER_RANK.main(username),
+                'ALL_deposit_promotion':lambda:ALL_deposit_promotion.main(usernames),
+                'Codition_create_bonus':lambda:Condition_create_bonus.main(),
+                'BONUS_BATCH':lambda:Frontend_receive_reward.main(username),
+                'TICKET_BATCH':lambda:Frontend_receive_ticket.main(username)
+
+            }
+        for script in selected_scripts:
+            if script in ['MANUAL_SINGLE', 'MANUAL_BATCH', 'DEPOSIT_API', 'MANUAL_SIGN', 
+                            'auto_create_ticket', 'SameTimeLogin', 'ALL_deposit_promotion', 'Codition_create_bonus']:
+                script_map=get_script_map(None)
+                action=script_map.get(script)
+                if action:
+                    action()
+                else:
+                    print("未知腳本")
+            else:
+                for username in usernames:
+                    script_map=get_script_map(username)
+                    action=script_map.get(script)
+                    if action:
+                        action()
+                    else:
+                        print("未知腳本")
 
 
-    return render_template("index.html",
-                           selected_scripts=selected_scripts,
-                           customer_Id=customer_data[0],
-                           customer_Rank=customer_data[1],
-                           Deposit_Count=customer_data[2],
-                           ticket=ticket,
-                           promotion=promotion,
-                           platform=platform,
-                           ticket_type=ticket_type,
-                           )
-    
+        return render_template("index.html",
+                            selected_scripts=selected_scripts,
+                            customer_Id=customer_data[0],
+                            customer_Rank=customer_data[1],
+                            Deposit_Count=customer_data[2],
+                            ticket=ticket,
+                            promotion=promotion,
+                            platform=platform,
+                            ticket_type=ticket_type,
+                            )
+    except Exception as e:
+         return render_template("index.html", error=str(e))
+        
 if __name__ == "__main__":
     try:
         python_flask.run(host='0.0.0.0',port=5000,debug=True)

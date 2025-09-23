@@ -54,23 +54,15 @@ class Frontend:
                 self.token_expire is not None and 
                 datetime.now() < self.token_expire)
     
-        
-    def deposit_QAD(self,username,amount):
-        success_fail=0
-        success_count=0
-        bank_types=["PAYID","WECHAT"]
-        for bank_type in bank_types:
-            if not self.is_token_valid():
-                logging.info("token 過期, 重新登入")
-                self.get_token_login(self.credential['username'],self.credential['password'])
-            if self.token is None:
-                return
-            current_time=datetime.now()
-            unit_time=str(int(current_time.timestamp()*1000))
-            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
-
-            headers={
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
+    def unitTime(self):
+        current_time=datetime.now()
+        unit_time=str(int(current_time.timestamp()*1000))
+        return unit_time
+    
+    def header(self):
+        unitTime=self.unitTime()
+        return {
+            'Accept': 'application/json, text/javascript, */*; q=0.01',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Content-Type': 'application/json',
                 'Merchant': 'gi8viet',
@@ -82,16 +74,34 @@ class Frontend:
                 'ModuleId': 'DPSTBAS3',
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
                 'x-requested-with': 'XMLHttpRequest',  
-                'x-timestamp': unit_time     
+                'x-timestamp': unitTime     
             }
+    def deposit_QAD(self,username,amount):
+        success_fail=0
+        success_count=0
+        bank_codes=["MWQR","Alipay","EWBANK123","TCG-106324 depositByQRImageUrl"]
+        bank_types=["MWQR","MAQR","QQ","WCFQR","ALIFQR","KAMI"]
+        vender_id=[28886,28906,21306,28268,28268,28268]
+        while len(bank_codes) < len(bank_types):
+            bank_codes.append(bank_codes[-1])
+        for bank_code, bank_type, vender in zip(bank_codes, bank_types, vender_id):
+            if not self.is_token_valid():
+                logging.info("token 過期, 重新登入")
+                self.get_token_login(self.credential['username'],self.credential['password'])
+            if self.token is None:
+                return
+            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
+
+            headers=self.header()
             payload={
                 "targetUsername": username,
                 "amount":amount,
-                "bankCode":"QADPAYID001",
+                "bankCode":bank_code,
                 "bankType":bank_type, 
                 "showQrImageOnly":1,
-                "vendorId":21306,
-                "mcsBankCode":"QADPAYID001",
+                "vendorId":vender,
+                "mcsBankCode":bank_type,
+                "deviceId": "cc688917-11c4-34c5-aeb6-bbf37742f679",
                 "token":self.token
             }
             cookies={
@@ -112,62 +122,6 @@ class Frontend:
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
             
-    def deposit_TBQR(self,username,amount):
-        bank_codes=["2600","2101","2284","5832","2280","2279","6101","0400"]
-        bank_types=["TBQR","VA","THREE65PAY","PAYVALIDA","ABPAY","KPAY","KBZPAY","UN"]
-        success_fail=0
-        success_count=0
-        for bank_code,bank_type in zip(bank_codes,bank_types):
-                if not self.is_token_valid():
-                    logging.info("token 過期, 重新登入")
-                    self.get_token_login(self.credential['username'],self.credential['password'])
-                if self.token is None:
-                    return
-                current_time=datetime.now()
-                unit_time=str(int(current_time.timestamp()*1000))
-                login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
-
-                headers={
-                    'Accept': 'application/json, text/javascript, */*; q=0.01',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Content-Type': 'application/json',
-                    'Merchant': 'gi8viet',
-                    "Authorization":self.token,
-                    'Connection': 'keep-alive',
-                    'Language': 'EN',
-                    'Origin': 'http://www.sit-gi8viet.com',
-                    'Referer': 'http://www.sit-gi8viet.com/',
-                    'ModuleId': 'DPSTBAS3',
-                    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                    'x-requested-with': 'XMLHttpRequest',  
-                    'x-timestamp': unit_time     
-                }
-                payload={
-                    "targetUsername": username,
-                    "amount":amount,
-                    "bankCode":bank_code,
-                    "bankType":bank_type,
-                    "vendorId":28270,
-                    "mcsBankCode":"TCG-106324 depositByLaunchUrl",
-                    "token":self.token
-                }
-                cookies={
-                    'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
-                }
-                
-                response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
-                response_json=response.json()
-                
-                if response_json.get('success')==True:
-                    logging.info(f"成功充值 交易ID")
-                    success_count+=1
-                    
-                else:
-                    logging.error(f"充值失敗")
-                    success_fail+=1
-                time.sleep(0.5)
-        logging.info(f"總共充值{success_count}筆")
-        logging.info(f"總共失敗{success_fail}筆")
     def quick_deposit(self,username,amount):
         success_fail=0
         success_count=0
@@ -179,25 +133,9 @@ class Frontend:
                 self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
-            current_time=datetime.now()
-            unit_time=str(int(current_time.timestamp()*1000))
             login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_manualTransferByAccountName"
 
-            headers={
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
-                "Authorization":self.token,
-                'Connection': 'keep-alive',
-                'Language': 'EN',
-                'Origin': 'http://www.sit-gi8viet.com',
-                'Referer': 'http://www.sit-gi8viet.com/',
-                'ModuleId': 'DPSTBAS3',
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                'x-requested-with': 'XMLHttpRequest',  
-                'x-timestamp': unit_time     
-            }
+            headers=self.header()
             payload={
                 "targetUsername": username,
                 "payeeName":"bbbb",
@@ -224,175 +162,6 @@ class Frontend:
             time.sleep(1)
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-    def depositbyURL(self,username,amount):
-        success_fail=0
-        success_count=0
-        bank_types=["WCFQR","ALIFQR","KAMI"]
-        bank_codes=["TCG-106324 depositByQRImageUrl"]
-        for bank_type, bank_code in zip(bank_types,bank_codes):
-            if not self.is_token_valid():
-                logging.info("token 過期, 重新登入")
-                self.get_token_login(self.credential['username'],self.credential['password'])
-            if self.token is None:
-                return
-            current_time=datetime.now()
-            unit_time=str(int(current_time.timestamp()*1000))
-            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
-
-            headers={
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
-                "Authorization":self.token,
-                'Connection': 'keep-alive',
-                'Language': 'EN',
-                'Origin': 'http://www.sit-gi8viet.com',
-                'Referer': 'http://www.sit-gi8viet.com/',
-                'ModuleId': 'DPSTBAS3',
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                'x-requested-with': 'XMLHttpRequest',  
-                'x-timestamp': unit_time     
-            }
-            payload={
-                "targetUsername": username,
-                "amount":amount,
-                "bankCode":bank_code,
-                "bankType":bank_type,
-                "vendorId":28268,
-                "mcsBankCode":bank_code,
-                "token":self.token
-            }
-            cookies={
-                'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
-            }
-            
-            response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
-            response_json=response.json()
-            
-            if response_json.get('success')==True:
-                logging.info(f"成功充值 交易ID")
-                success_count+=1
-                
-            else:
-                logging.error(f"充值失敗")
-                success_fail+=1
-            time.sleep(1)
-        logging.info(f"總共充值{success_count}筆")
-        logging.info(f"總共失敗{success_fail}筆")
-    def BTC_deposit(self,username,amount):
-        success_fail=0
-        success_count=0
-        bank_types=["BTC","TRX"]
-        bank_codes=["TCG-106324 depositVirtualWallet"]
-        for bank_type, bank_code in zip(bank_types,bank_codes):
-            if not self.is_token_valid():
-                logging.info("token 過期, 重新登入")
-                self.get_token_login(self.credential['username'],self.credential['password'])
-            if self.token is None:
-                return
-            current_time=datetime.now()
-            unit_time=str(int(current_time.timestamp()*1000))
-            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositVirtualWallet"
-
-            headers={
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
-                "Authorization":self.token,
-                'Connection': 'keep-alive',
-                'Language': 'EN',
-                'Origin': 'http://www.sit-gi8viet.com',
-                'Referer': 'http://www.sit-gi8viet.com/',
-                'ModuleId': 'DPSTBAS3',
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                'x-requested-with': 'XMLHttpRequest',  
-                'x-timestamp': unit_time     
-            }
-            payload={
-                "targetUsername": username,
-                "amount":amount,
-                "bankType":bank_type, 
-                "vendorId":28269,
-                "bankCode":bank_code,
-                "showQrImageOnly":1,
-                "mcsBankCode":bank_code,
-            }
-            cookies={
-                'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
-            }
-            
-            response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
-            response_json=response.json()
-            
-            if response_json.get('success')==True:
-                logging.info(f"成功充值 交易ID")
-                success_count+=1
-                
-            else:
-                logging.error(f"充值失敗")
-                success_fail+=1
-            time.sleep(1)
-        logging.info(f"總共充值{success_count}筆")
-        logging.info(f"總共失敗{success_fail}筆")
-    def mpesa_deposit(self,username,amount):
-        success_fail=0
-        success_count=0
-        bank_types=["MPESA"]
-        bank_codes=["XXBangkokCentral"]
-        for bank_type, bank_code in zip(bank_types,bank_codes):
-            if not self.is_token_valid():
-                logging.info("token 過期, 重新登入")
-                self.get_token_login(self.credential['username'],self.credential['password'])
-            if self.token is None:
-                return
-            current_time=datetime.now()
-            unit_time=str(int(current_time.timestamp()*1000))
-            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByLaunchUrl"
-
-            headers={
-                'Accept': 'application/json, text/javascript, */*; q=0.01',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
-                "Authorization":self.token,
-                'Connection': 'keep-alive',
-                'Language': 'EN',
-                'Origin': 'http://www.sit-gi8viet.com',
-                'Referer': 'http://www.sit-gi8viet.com/',
-                'ModuleId': 'DPSTBAS3',
-                'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
-                'x-requested-with': 'XMLHttpRequest',  
-                'x-timestamp': unit_time     
-            }
-            payload={
-                "targetUsername": username,
-                "amount":amount,
-                "bankCode":bank_code,
-                "bankType":bank_type, 
-                "vendorId":28206,
-                "mcsBankCode":bank_code,
-                "token":self.token,
-            }
-            cookies={
-                'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
-            }
-            
-            response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
-            response_json=response.json()
-            
-            if response_json.get('success')==True:
-                logging.info(f"成功充值 交易ID")
-                success_count+=1
-                
-            else:
-                logging.error(f"充值失敗")
-                success_fail+=1
-            time.sleep(1)
-        logging.info(f"總共充值{success_count}筆")
-        logging.info(f"總共失敗{success_fail}筆")
-        
         
         
 def main(username,password,amount):
@@ -406,16 +175,13 @@ def main(username,password,amount):
             frontend = Frontend(credential)
             if frontend.token:
                 frontend.deposit_QAD(credential['username'],amount)
-                frontend.deposit_TBQR(credential['username'],amount)
                 frontend.quick_deposit(credential['username'],amount)
-                frontend.depositbyURL(credential['username'],amount)
-                frontend.BTC_deposit(credential['username'],amount)
-                frontend.mpesa_deposit(credential['username'],amount)
                 
             else:
                 logging.error("登入失敗 無法取得Token")
         
         except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
+
 
     

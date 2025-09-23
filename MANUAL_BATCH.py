@@ -54,7 +54,7 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
                         if not any(item.get("promoClaimId")==claimid for item in clone_be_end.claimid_list):
                             clone_be_end.claimid_list.append(claim_dict)
                         else:
-                            logging.error("跳過添加")
+                            logging.info("跳過添加")
 
                 
     else:
@@ -64,6 +64,22 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
     return result
 
 class B_end:
+    def header(self):
+        return {
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Authorization": self.token_data,
+        "Content-Type": "application/json",
+        "Connection": "keep-alive",
+        "Language": "zh_CN",
+        "Merchant": "gi8viet",
+        "Origin": "http://sit-admin2.tcg.com",
+        "Referer": "http://sit-admin2.tcg.com/24785",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+        "environment": "TCG3",
+        "merchantCode": "gi8viet",
+        "platform": "TCG"
+        }
     def __init__(self,credential:dict):
         self.session=requests.Session()
         self.username=''
@@ -124,21 +140,7 @@ class B_end:
         "ticketQuantity": ticketQuantity
     }
 
-        headers = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Authorization": self.token_data,
-        "Content-Type": "application/json",
-        "Connection": "keep-alive",
-        "Language": "zh_CN",
-        "Merchant": "gi8viet",
-        "Origin": "http://sit-admin2.tcg.com",
-        "Referer": "http://sit-admin2.tcg.com/24785",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-        "environment": "TCG3",
-        "merchantCode": "gi8viet",
-        "platform": "TCG"
-        }
+        headers = self.header()
         cookies = {
             "language": "zh_CN"
         }
@@ -181,23 +183,7 @@ class B_end:
         "pageNo": 1,
     }
 
-        headers = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Authorization": self.token_data,
-        "Content-Type": "application/json",
-        "Connection": "keep-alive",
-        "Language": "zh_CN",
-        "Merchant": "gi8viet",
-        "Origin": "http://sit-admin2.tcg.com",
-        "Referer": "http://sit-admin2.tcg.com/24785",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-        "environment": "TCG3",
-        "merchantCode": "gi8viet",
-        "platform": "TCG",
-        "Tac-Trace-Id":"1L74iEvCRmDmsvUB"
-    
-        }
+        headers = self.header()
         
         try:
             result_list=[]
@@ -242,24 +228,7 @@ class B_end:
             "promotionClaims": self.claimid_list
         }
 
-        headers = {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Authorization": self.token_data,
-        "Connection": "keep-alive",
-        "Language": "zh_CN",
-        "Merchant": "gi8viet",
-        "Origin": "http://sit-admin2.tcg.com",
-        "Referer": "http://sit-admin2.tcg.com/24785",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-        "environment": "TCG3",
-        "merchantCode": "gi8viet",
-        "platform": "TCG",
-        "Tac-Trace-Id":"3PZqY(SR-nuBO(wj",
-        "Content-Type":"application/json"
-        }
-        
-        
+        headers = self.header()
         try:
             response = requests.post(API_URL, json=payload, headers=headers, verify=False)
             response.raise_for_status()
@@ -288,23 +257,9 @@ class B_end:
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
         start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": self.token_data,
-            "Content-Type": "application/json",
-            "Connection": "keep-alive",
-            "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Tac-Trace-Id":"2eAM8QMqpfEd3QxE",
-            "Referer": "http://sit-admin2.tcg.com/311792",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "TCG3",
-            "merchantCode": "gi8viet",
-            "notPending": "true",
-            "platform": "TCG"
-        }
+        headers=self.header()
+        headers["Referer"]="http://sit-admin2.tcg.com/311792"
+
         payload={
             "fromDate":start_time,
             "toDate":end_time,
@@ -335,8 +290,8 @@ class B_end:
         ws=wb.active
         ws.title="紅利發放結果"
         ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
-        bonusAmount=10000
-        bonusPointAmount=0
+        bonusAmount=10
+        bonusPointAmount=10
         #count=2
         ticketQuantity=3
         current_dir=os.path.dirname(__file__)

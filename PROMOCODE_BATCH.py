@@ -23,8 +23,8 @@ class Frontend:
             'Connection': 'keep-alive',
             'Language': 'EN',
             'Merchant': 'gi8viet',
-            'Origin': 'http://www.sit-gi8viet.com',
-            'Referer': 'http://www.sit-gi8viet.com/',
+            'Origin': 'http://www.sit4.sit-gi8viet.com',
+            'Referer': 'http://www.sit4.sit-gi8viet.com/',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
             'X-Requested-With': 'XMLHttpRequest',
         }
@@ -42,44 +42,13 @@ class Frontend:
         self.promoID=''
         self.i=0
         self.record_data_list=''
-    def get_token_backend(self,operatorName,password):
-        login_url="http://sit-admin2.tcg.com/tac/api/login/password"
-        payload={
-            "operatorName": operatorName,
-            "password": password
-        }
-        headers = {
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": "",
-            "Connection": "keep-alive",
-            "Content-Type": "application/json",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Origin": "http://sit-admin2.tcg.com",
-            "Referer": "http://sit-admin2.tcg.com/",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "",
-            "language": "zh_CN",
-            "noErrorNotice": "true",
-            "platform": ""
-        }
-        
-        cookies = {
-            "language": "zh_CN"
-        }
-        requests_data=requests.post(login_url,json=payload,headers=headers,cookies=cookies,verify=False)
-        token_data=requests_data.json()
-        token=token_data.get("token")
-        logging.info(f"登入API回傳: {token}")
-        return token
     def get_token_login_frontend(self, username, password):
         try:
 
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url='http://www.sit-gi8viet.com/wps/session/login/unsecure'
+            login_url='http://www.sit4.sit-gi8viet.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
@@ -117,15 +86,15 @@ class Frontend:
             return
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://www.sit-gi8viet.com/wps/relay/PROMOFE_getPromoCode?_={unit_time}"
+        login_URL=f"http://www.sit4.sit-gi8viet.com/wps/relay/PROMOFE_getPromoCode?_={unit_time}"
         headers=self.header()
         
         response = self.session.get(login_URL, headers=headers, verify=False)
         response_json=response.json()
 
         if response_json.get('success')==True:
-            self.PromoCode_list=response_json.get("value",[])
-            
+            PromoCode_list=response_json.get("value",[])
+            return PromoCode_list
         else:
             logging.error(f"沒拿到優惠碼ID")
             return 
@@ -135,24 +104,22 @@ class Frontend:
             self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
         if self.token is None:
             return
-        current_time=datetime.now()
-        unit_time=str(int(current_time.timestamp()*1000))
-        login_URL="http://www.sit-gi8viet.com/wps/relay/PROMOFE_claimPromoCode"
+        login_URL="http://www.sit4.sit-gi8viet.com/wps/relay/PROMOFE_claimPromoCode"
         headers=self.header()
         payload={
              "promoCode": promoCode
         }
         
         cookies = {
-            '_ga': 'GA1.1.343769134.1743155195',
-            'SHELL_deviceId': '9248aea2-32ed-4b1a-afa9-d039ed6d1b95',
-            '_ga_ABCD123456789': 'GS1.1.1743388368.2.1.1743390818.0.0.0'
+            
+            'SHELL_deviceId': 'b1c6a230-98ec-fbe9-6079-72e43344c302',
         }
         response = self.session.post(login_URL, headers=headers, json=payload, cookies=cookies)
         response_json=response.json()
+        print(response_json)
 
         if response_json.get('success')==True:
-            logging.info(f"領取優惠碼成功 當前時間{current_time}")
+            logging.info(f"領取優惠碼成功")
             return True
         elif response_json.get('success')==False:
             error_message=response_json.get('message')
@@ -160,41 +127,35 @@ class Frontend:
             return False
     def proccess_all_promoCode(self,ws):
         update_result='沒有資料'
-        success_count=0
-        bonusAmount = 1000
-        random_ticket=random.choice([1004007,1004006,1004008,1004010,1004009,1010009])
-        bonusPointAmount = 30
-        ticketQuantity = 3
-        
-        ticketQuantity=3
-        self.get_promo_code_list()
-        for item in self.PromoCode_list:
-            promoCode=item.get("promoCode")
+        PromoCode_list=self.get_promo_code_list()
+        filter_list=[]
+
+        for item in PromoCode_list:
             description=item.get("description","")
-            if description!='carrine優惠碼':
+            if  description!='carrine優惠碼':
                 continue
+            filter_list.append(item)
+            promo_dict=random.choice(filter_list)
+            promoCode=promo_dict["promoCode"]
             success=self.click_promo_code(promoCode)
-            if success:
-                success_count+=1
-                update_result='成功領取優惠碼'
-                bonus_record='紅利派發紀錄更新'  
-                logging.info(f"領取第{success_count}組優惠碼成功") 
-            else:
-                bonus_record='紅利派發紀錄更新失敗'  
-                update_result='領取優惠碼失敗'
-        
+
+        if success:
+            success_count+=1
+            update_result='成功領取優惠碼'
+            bonus_record='紅利派發紀錄更新'  
+            logging.info(f"領取優惠碼{promoCode}成功") 
+        else:
+            bonus_record='紅利派發紀錄更新失敗'  
+            update_result='領取優惠碼失敗'
+    
             ws.append([
             self.username,
             'carrine優惠碼',
             promoCode,
-            bonusAmount,
-            bonusPointAmount,
-            random_ticket,
-            ticketQuantity,
             update_result,
             bonus_record
-        ])
-        return success_count
+            ])
+            return success_count
             
 class B_end:
     def __init__(self,credential:dict):
@@ -340,7 +301,7 @@ def main(username):
     wb=Workbook()
     ws=wb.active
     ws.title="優惠碼領取結果"
-    ws.append(["玩家帳號","活動名稱", "優惠碼ID", "紅利金額", "積分", "票卷", "票卷張數","優惠碼領取狀態", "派發紀錄"])
+    ws.append(["玩家帳號","活動名稱", "優惠碼ID","優惠碼領取狀態", "派發紀錄"])
     
     total_claim_count=0
     dailyremain_count=0
@@ -374,6 +335,7 @@ def main(username):
                 time.sleep(1)
         except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
+        time.sleep(0.5)
         backend.Bonus_record_page(ws)
         if backend.token:
             after_receive_remain_dailyremain_count,after_receive_remainingCount=backend.get_remaincount_promocode()
@@ -389,6 +351,7 @@ def main(username):
          
     report_path=os.path.join(f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
     wb.save(report_path)   
+
     
             
 

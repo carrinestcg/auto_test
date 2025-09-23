@@ -63,7 +63,7 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
     "bonusAmount": bonusAmount,
     "bonusPointAmount": bonusPointAmount,
     "promotionId": prmotion_id,
-    "toReqAmount": 0,
+    "toReqAmount": 5,
     "ticketId": ticketId,
     "ticketQuantity": ticketQuantity
 }
