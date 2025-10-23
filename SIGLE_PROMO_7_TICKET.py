@@ -15,14 +15,14 @@ class B_end:
         self.session=requests.Session()
         self.username=''
         self.password=''
-        self.token=self.get_token(credential['operatorName'],credential['password'])
+        self.token=self.get_token(credential['operatorName'],credential['password'],credential['merchantCode'])
         self.credential=credential
         self.token_data=self.token
         self.record_data_list=[]
         self.claimid_list=[]
         self.success_count=0
         self.claimid=''
-    def header(self):
+    def header(self,merchantCode):
         return{
         
         "Accept": "application/json, text/plain, */*",
@@ -31,12 +31,12 @@ class B_end:
         "Content-Type": "application/json",
         "Connection": "keep-alive",
         "Language": "zh_CN",
-        "Merchant": "gi8viet",
+        "Merchant": merchantCode,
         "Origin": "http://sit-admin2.tcg.com",
         "Referer": "http://sit-admin2.tcg.com/24785",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
         "environment": "TCG3",
-        "merchantCode": "gi8viet",
+        "merchantCode": merchantCode,
         "platform": "TCG"
         
     }
@@ -44,11 +44,12 @@ class B_end:
         return {
             "language": "zh_CN"
         }
-    def get_token(self,operatorName,password):
+    def get_token(self,operatorName,password,merchantCode):
         login_url="http://sit-admin2.tcg.com/tac/api/login/password"
         payload={
                 "operatorName": operatorName,
-                "password": password
+                "password": password,
+                "merchantCode":merchantCode
             }
         headers = {
         
@@ -58,12 +59,12 @@ class B_end:
         "Content-Type": "application/json",
         "Connection": "keep-alive",
         "Language": "zh_CN",
-        "Merchant": "gi8viet",
+        "Merchant": merchantCode,
         "Origin": "http://sit-admin2.tcg.com",
         "Referer": "http://sit-admin2.tcg.com/24785",
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
         "environment": "TCG3",
-        "merchantCode": "gi8viet",
+        "merchantCode": merchantCode,
         "platform": "TCG"
         
     }
@@ -75,11 +76,11 @@ class B_end:
         logging.info(f"登入API回傳: {token}")
         return token
 
-    def create_bonus(self,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int):
+    def create_bonus(self,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int,merchantCode:str):
         
         API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim" 
         payload = {
-        "merchantCode": "gi8viet",
+        "merchantCode": merchantCode,
         "customerName": player,
         "bonusAmount": bonusAmount,
         "bonusPointAmount": bonusPointAmount,
@@ -89,7 +90,7 @@ class B_end:
         "ticketQuantity": ticketQuantity
     }
 
-        headers = self.header()
+        headers = self.header(merchantCode)
         cookies = self.cookie()
         try:
             response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
@@ -118,13 +119,13 @@ class B_end:
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
             return False
-    def Search_Customer_bonus(self,player:str):
+    def Search_Customer_bonus(self,player:str,merchantCode:str):
       
         API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/mcs-manualPromotion-search" 
         start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
         payload = {
-        "merchantCode": "gi8viet",
+        "merchantCode": merchantCode,
         "status": "P",
         "customerName":player,
         "searchDateMode": "issuedDateSearch",
@@ -134,7 +135,7 @@ class B_end:
         "pageNo": 1
     }
 
-        headers = self.header()
+        headers = self.header(merchantCode)
         cookies = self.cookie()
         try:
             response = requests.get(API_URL, params=payload, headers=headers, cookies=cookies, verify=False)
@@ -171,14 +172,14 @@ class B_end:
             logging.error(f"其他錯誤: {e}")
             return None, None
     
-    def Confirm_Customer_bonus(self,Customerid:int):
+    def Confirm_Customer_bonus(self,Customerid:int,merchantCode:str):
     
         API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-approveClaimStatus?claimStatus=I&customerId={Customerid}&claimId={self.claimid}" 
         payload = {
         "internalRemark": ""
         }
 
-        headers = self.header()
+        headers = self.header(merchantCode)
         cookies = self.cookie()
         try:
             response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
@@ -248,43 +249,100 @@ class B_end:
             logging.error(f"狀態碼: {response.status_code}")
 
     create_record=[]
-    def process_procedure(self,player_acount,promo):
+    def process_procedure(self,player_acount,promotion_id,merchantCode):
         
-        bonusAmount=10000
-        bonusPointAmount=0
+        bonusAmount=100
+        bonusPointAmount=100
         #count=2
-        ticketQuantity=3
+        ticketQuantity=1
         current_dir=os.path.dirname(__file__)
         yaml_path=os.path.join(current_dir,"config.yaml")
         with open(yaml_path,"r",encoding="utf-8") as f:
             config=yaml.safe_load(f)
-        ticket_id=config.get("ticket_id")
-        
-        for ticket in ticket_id:
-            is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
-            if is_success:
-                Customerid,self.claimid = self.Search_Customer_bonus(player_acount)
-                if Customerid  and self.claimid :
-                    self.Confirm_Customer_bonus(Customerid)
+        if merchantCode =="gi8Viet":
+            ticket_id=config.get("ticket_id_gi8viet")
+            for ticket in ticket_id:
+                is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promotion_id,merchantCode=merchantCode)
+                if is_success:
+                    Customerid,self.claimid = self.Search_Customer_bonus(player_acount,merchantCode)
+                    if Customerid  and self.claimid :
+                        self.Confirm_Customer_bonus(Customerid,merchantCode)
+                    else:
+                        logging.error("沒有拿到customerid")
                 else:
-                    logging.error("審核失敗")
+                    logging.error("創建手動活動紅利失敗")
+
+        elif merchantCode =="huamei":
+            ticket_id=config.get("ticket_id_huamei")
+            for ticket in ticket_id:
+                is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promotion_id,merchantCode=merchantCode)
+                if is_success:
+                    Customerid,self.claimid = self.Search_Customer_bonus(player_acount,merchantCode)
+                    if Customerid  and self.claimid :
+                        self.Confirm_Customer_bonus(Customerid,merchantCode)
+                    else:
+                        logging.error("沒有拿到customerid")
+                else:
+                    logging.error("創建手動活動紅利失敗")
+
+        elif merchantCode =="tcgdemov3":
+            ticket_id=config.get("ticket_id_tcgdemov3")
+            for ticket in ticket_id:
+                is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promotion_id,merchantCode=merchantCode)
+                if is_success:
+                    Customerid,self.claimid = self.Search_Customer_bonus(player_acount,merchantCode)
+                    if Customerid  and self.claimid :
+                        self.Confirm_Customer_bonus(Customerid,merchantCode)
+                    else:
+                        logging.error("沒有拿到customerid")
+                else:
+                    logging.error("創建手動活動紅利失敗")
+
+        elif merchantCode =="rollbet":
+            ticket_id=config.get("ticket_id_rollbet")
+            for ticket in ticket_id:
+                is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promotion_id,merchantCode=merchantCode)
+                if is_success:
+                    Customerid,self.claimid = self.Search_Customer_bonus(player_acount,merchantCode)
+                    if Customerid  and self.claimid :
+                        self.Confirm_Customer_bonus(Customerid,merchantCode)
+                    else:
+                        logging.error("沒有拿到customerid")
+                else:
+                    logging.error("創建手動活動紅利失敗")
+
+        elif merchantCode =="lodibet":
+            ticket_id=config.get("ticket_id_lodibet")
+            for ticket in ticket_id:
+                is_success=self.create_bonus(player_acount,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promotion_id,merchantCode=merchantCode)
+                if is_success:
+                    Customerid,self.claimid = self.Search_Customer_bonus(player_acount,merchantCode)
+                    if Customerid  and self.claimid :
+                        self.Confirm_Customer_bonus(Customerid,merchantCode)
+                    else:
+                        logging.error("沒有拿到customerid")
+                else:
+                    logging.error("創建手動活動紅利失敗")
+
         
     
-def main(player_account,promo):
+def main(player_account,promotion_id,merchantCode):
     print("收到 submit 請求")
     credential = {
         "operatorName": "carrine03",
-        "password": "Test@1234"
+        "password": "Test@1234",
+        "merchantCode": merchantCode 
     }
     try:
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure(player_account,promo)
+            b_end.process_procedure(player_account,promotion_id,merchantCode)
         else:
             logging.error("登入失敗 無法取得Token")
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
-    
+
+
     
 
    

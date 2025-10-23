@@ -58,7 +58,7 @@ def get_token(merchant):
 def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int,merchant:str):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim?" 
     payload = {
-    "merchantCode": "gi8viet",
+    "merchantCode": merchant,
     "customerName": player,
     "bonusAmount": bonusAmount,
     "bonusPointAmount": bonusPointAmount,
@@ -102,7 +102,7 @@ def Search_Customer_bonus(token,player:str,merchant:str):
     start_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
     end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
     payload = {
-    "merchantCode": "gi8viet",
+    "merchantCode": merchant,
     "status": "P",
     "customerName":player,
     "searchDateMode": "issuedDateSearch",
@@ -187,9 +187,9 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ):
         logging.error(f"其他錯誤: {e}")
         return False
 def main(username,promotionid,ticket_id,platform):
-    merchant=platform[0]
+    
     try:
-        token = get_token(merchant)
+        token = get_token(platform)
         print("取得的 token:", token)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
@@ -199,11 +199,11 @@ def main(username,promotionid,ticket_id,platform):
     #bonusPointAmount_list=[2,3,4]
     #填入玩家帳號
     ticketQuantity=1
-    create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,ticketQuantity=ticketQuantity,prmotion_id=promotionid,merchant=merchant)
+    create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,ticketQuantity=ticketQuantity,prmotion_id=promotionid,merchant=platform)
         
-    Customerid,claimid = Search_Customer_bonus(token,username,merchant)
+    Customerid,claimid = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:
-        Confirm_Customer_bonus(token,Customerid,claimid,merchant)
+        Confirm_Customer_bonus(token,Customerid,claimid,platform)
     else:
         logging.error("沒有拿到ID")
 

@@ -782,9 +782,9 @@ if __name__ == "__main__":
             deposit_list=['DEPOSIT','FIRST_DEPOSIT','SECOND_DEPOSIT','THIRD_DEPOSIT','FOURTH_DEPOSIT','FIFTH_DEPOSIT','DEPOSIT_BET_BONUS','DEPOSIT_COUNT']
             for promo_type in deposit_list:
                 backend.create_fisrt_deposit_promotion(promo_type)
-            backend.create_new_register_Promotion()
-            backend.create_Register()
-            backend.create_app_download()
+            #backend.create_new_register_Promotion()
+            #backend.create_Register()
+            #backend.create_app_download()
         else:
             logging.error(f"沒有拿到後台token:")        
             #backend.Bonus_record_page()  --之後再修改 

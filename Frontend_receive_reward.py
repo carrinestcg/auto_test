@@ -14,27 +14,29 @@ class Frontend:
         self.session=requests.Session()
         self.username=''
         self.userid=''
+        self.merchantCode=credential['merchantCode']
         self.credential=credential
         self.token=None
         self.token_expire=None
-        self.token=self.get_token_login(credential['username'],credential['password'])
+        self.token=self.get_token_login(credential['username'],credential['password'],credential['merchantCode'])
         self.reward_id=''
         self.promotion_type=''
-    def get_token_login(self, username, password):
+    def get_token_login(self, username, password,merchantCode):
         try:
 
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url='http://www.sit4.sit-gi8viet.com/wps/session/login/unsecure'
+            login_url=f'http://www.sit4.sit-{self.merchantCode}.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
+                'Merchant': self.merchantCode,
             }
             login_data={
                 'username':username,
-                'password':password
+                'password':password,
+                'merchantCode':merchantCode
             } 
             
             requests_data=self.session.post(login_url,json=login_data,headers=headers)
@@ -67,12 +69,12 @@ class Frontend:
         promotionType_list=[]
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"https://sit4.sit-gi8viet.com/wps/relay/MCSFE_getClaimPromotion?promotionType=MANUAL,RAFFLE,UPGRADE_BONUS,MISSION,NEW_REGISTER,RANK_SALARY,DEPOSIT,FIRST_DEPOSIT,SECOND_DEPOSIT,THIRD_DEPOSIT,FOURTH_DEPOSIT,FIFTH_DEPOSIT,DEPOSIT_COUNT,DEPOSIT_BET_BONUS,SIGNUP,LUCKY_BET&status=I&_={unit_time}"
+        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/MCSFE_getClaimPromotion?promotionType=MANUAL,RAFFLE,UPGRADE_BONUS,MISSION,NEW_REGISTER,RANK_SALARY,DEPOSIT,FIRST_DEPOSIT,SECOND_DEPOSIT,THIRD_DEPOSIT,FOURTH_DEPOSIT,FIFTH_DEPOSIT,DEPOSIT_COUNT,DEPOSIT_BET_BONUS,SIGNUP,LUCKY_BET&status=I&_={unit_time}"
 
 
         headers={
             'Content-Type': 'application/json',
-            'Merchant': 'gi8viet',
+            'Merchant': self.merchantCode,
             "Authorization":self.token,
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"macOS"',
@@ -104,6 +106,8 @@ class Frontend:
                         promotionType_list.append(promotionType)
 
                 logging.info(f"總共可領{len(Claim_ID)}個獎勵")
+            else:
+                logging.info("目前沒有獎勵可領取")
             
         else:
             logging.error(f"交易ID查詢失敗")
@@ -118,18 +122,18 @@ class Frontend:
             return
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"https://sit4.sit-gi8viet.com/wps/relay/MCSFE_claimIssuedPromotion"
+        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/MCSFE_claimIssuedPromotion"
 
         headers={
             'Accept': 'application/json, text/javascript, */*; q=0.01',
             'Accept-Language': 'en-US,en;q=0.9',
             'Content-Type': 'application/json',
-            'Merchant': 'gi8viet',
+            'Merchant': self.merchantCode,
             "Authorization":self.token,
             'Connection': 'keep-alive',
             'Language': 'EN',
-            'Origin': 'https://sit4.sit-gi8viet.com',
-            'Referer': 'https://sit4.sit-gi8viet.com/',
+            'Origin': f'https://sit4.sit-{self.merchantCode}.com',
+            'Referer': f'https://sit4.sit-{self.merchantCode}.com/',
             'sec-ch-ua-mobile': '?0',
             "moduleid": "REWCEN3",
             'sec-ch-ua':'"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
@@ -161,8 +165,9 @@ class Frontend:
             logging.error(f"領取票卷失敗{response_json}")
             return False
             
-    def poccess_all_ticket(self):
+    def poccess_all_ticket(self,merchantCode):
         success_count=0
+        self.merchantCode=merchantCode
         Claim_ID,promotionType_list=self.get_Cliam_ID()
         if not Claim_ID:
             return
@@ -174,18 +179,19 @@ class Frontend:
             logging.info(f"領取成功")
             time.sleep(1)
 
-def main(username):
+def main(username,merchantCode):
   
     #填入玩家帳號
     credential = {
         "username": username,
-        "password": "123qwe"
+        "password": "123qwe",
+        "merchantCode":merchantCode
     }
     try:    
         frontend = Frontend(credential)
         if frontend.token:
             logging.info(f"登入成功 Token: {frontend.token}")
-            frontend.poccess_all_ticket()
+            frontend.poccess_all_ticket(merchantCode)
             
         else:
             logging.error("登入失敗 無法取得Token")
@@ -193,7 +199,8 @@ def main(username):
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
 
-main(username="bnm555")
+
+
 
 
    

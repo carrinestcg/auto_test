@@ -12,27 +12,29 @@ class Frontend:
         self.session=requests.Session()
         self.username=''
         self.userid=''
+        self.merchantCode=credential['Merchant']
         self.credential=credential
         self.token=None
         self.token_expire=None
-        self.token=self.get_token_login(credential['username'],credential['password'])
+        self.token=self.get_token_login(credential['username'],credential['password'],credential['Merchant'])
         self.trans_id=''
-    def get_token_login(self, username, password):
+    def get_token_login(self, username, password, merchantCode):
         try:
 
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url='http://www.sit-gi8viet.com/wps/session/login/unsecure'
+            login_url=f'http://www.sit-{self.merchantCode}.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
+                'Merchant': self.merchantCode,
                 
             }
             login_data={
                 'username':username,
-                'password':password
+                'password':password,
+                'Merchant':merchantCode
             } 
             
             requests_data=self.session.post(login_url,json=login_data,headers=headers)
@@ -58,16 +60,16 @@ class Frontend:
         tickets=[]
         if not self.is_token_valid():
             logging.info("token 過期, 重新登入")
-            self.get_token_login(self.credential['username'],self.credential['password'])
+            self.get_token_login(self.credential['username'],self.credential['password'], self.credential['Merchant'])
         if self.token is None:
             return
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://www.sit-gi8viet.com/wps/relay/PROMOFE_getClaimTicketList?isApp=N&status=AVAILABLE&_={unit_time}"
+        login_URL=f"http://www.sit-{self.merchantCode}.com/wps/relay/PROMOFE_getClaimTicketList?isApp=N&status=AVAILABLE&_={unit_time}"
 
         headers={
             'Content-Type': 'application/json',
-            'Merchant': 'gi8viet',
+            'Merchant': self.merchantCode,
             "Authorization":self.token
         }
         
@@ -100,22 +102,20 @@ class Frontend:
     def approve_to_receive_ticket(self):
         if not self.is_token_valid():
             logging.info("token 過期, 重新登入")
-            self.get_token_login(self.credential['username'],self.credential['password'])
+            self.get_token_login(self.credential['username'],self.credential['password'], self.credential['Merchant'])
         if self.token is None:
             return
-        login_URL=f"http://www.sit-gi8viet.com/wps/relay/PROMOFE_claimTicket"
+        login_URL=f"http://www.sit-{self.merchantCode}.com/wps/relay/PROMOFE_claimTicket"
 
         headers={
             'Content-Type': 'application/json',
-            'Merchant': 'gi8viet',
+            'Merchant': self.merchantCode,
             "Authorization":self.token,
             'Connection': 'keep-alive',
             'Language': 'VI',
-            'Origin': 'http://www.sit-gi8viet.com',
-            'Referer': 'http://www.sit-gi8viet.com/',
+            'Origin': f'http://www.sit-{self.merchantCode}.com',
+            'Referer': f'http://www.sit-{self.merchantCode}.com/',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-            'Origin':'http://www.sit-gi8viet.com',
-            'Referer':'http://www.sit-gi8viet.com/',
             
         }
         payload={
@@ -146,8 +146,9 @@ class Frontend:
             logging.error(traceback.format_exc())
             return False
             
-    def poccess_all_ticket(self):
+    def poccess_all_ticket(self,merchantCode):
         success_count=0
+        self.merchantCode=merchantCode
         ticket=self.get_Ticket_transaction_ID()
         if not ticket:
             return
@@ -158,20 +159,23 @@ class Frontend:
             logging.info(f"領取成功")
             time.sleep(1)
 
-def main(username):
+def main(username,merchantCode):
+    
     if not username:
         logging.info("no UserName")
         return False
     #填入玩家帳號
     credential = {
         "username": username,
-        "password": "123qwe"
+        "password": "123qwe",
+        "Merchant": merchantCode
     }
+
     try:    
         frontend = Frontend(credential)
         if frontend.token:
             logging.info(f"登入成功 Token: {frontend.token}")
-            frontend.poccess_all_ticket()
+            frontend.poccess_all_ticket(merchantCode)
             
         else:
             logging.error("登入失敗 無法取得Token")

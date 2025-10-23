@@ -122,6 +122,7 @@ class Frontend:
                 success_count+=1
                 
             else:
+                print(response_json)
                 logging.error(f"充值失敗")
                 success_fail+=1
             time.sleep(1)
@@ -136,7 +137,7 @@ class Frontend:
         for bank_type, bank_code in zip(bank_types,bank_codes):
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
-                self.get_token_login(self.credential_fe['username'],self.credential_fe['password'])
+                self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
             if self.token is None:
                 return
             login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_manualTransferByAccountName"
@@ -163,6 +164,7 @@ class Frontend:
                 success_count+=1
                 
             else:
+                print(response_json)
                 logging.error(f"充值失敗")
                 success_fail+=1
             time.sleep(1)
@@ -264,7 +266,7 @@ def main(usernames:list,password):
     from deposit_api import batch_approve
     from deposit_count import implement_function
     from accumulated_deposit import implement_accumulated_function
-    
+    merchantCode="gi8viet"
     username_1=usernames[0]
     username_2=usernames[1]
     credential_fe = {
@@ -298,7 +300,7 @@ def main(usernames:list,password):
                         #frontend.deposit_TBQR(credential_fe['username'])
                 else:
                     logging.error("登入失敗 無法取得Token")
-                batch_approve()    
+                batch_approve(merchantCode)    
             else:  
                 available_for_deposit_promo=promotion_id_for_deposit[deposit_count:]
                 for promo in available_for_deposit_promo:
@@ -306,7 +308,7 @@ def main(usernames:list,password):
                     if frontend.token:
                             frontend.deposit_QAD(credential_fe['username'],promo)
                             time.sleep(1)
-                            batch_approve() 
+                            batch_approve(merchantCode) 
                             time.sleep(0.5)
                                 #frontend.deposit_TBQR(credential_fe['username'])
                                 #frontend.quick_deposit(credential_fe['username'])
@@ -326,5 +328,6 @@ def main(usernames:list,password):
   
     except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
+
 
     

@@ -56,7 +56,7 @@ def search_deposit_count(token):
         "Tac-Trace-Id":"xXaTikW@z5rJ7J9W"
     }
     params={
-        "promotionId": "4023099", # 累計存款
+        "promotionId": "4200132", # 累計存款
         "merchantCode": "gi8viet",
         }
     

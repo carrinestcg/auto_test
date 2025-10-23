@@ -189,13 +189,15 @@ def get_deposit_counts(token,regester_date,player):
         response_data=response.json()
         if response_data.get("success")==True:
             value_list=response_data.get("value",{})
-            deposit_count_list=value_list.get("list", [])
+            deposit_count_list=value_list.get("list", []) or []
             if deposit_count_list:
                 deposit_count=deposit_count_list[0].get("depositCounts")
                 logging.info(f"取得存款次數: {deposit_count}")
                 return deposit_count
             else:
-                logging.error(f"沒有拿到list")
+                logging.info(f"玩家尚未首存過")
+                deposit_count=int(0)
+                return deposit_count
         else:
             logging.error(f"API Response: {response.text}")
 
@@ -209,7 +211,6 @@ def implement_function(player):
     regester_date=get_register_time(token,customer_id)
     deposit_count=get_deposit_counts(token,regester_date,player)
     return deposit_count
-     
 '''
 if __name__=="__main__":
     try:

@@ -8,7 +8,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 class B_end:
-    def header(self):
+    def header(self,platform):
         return{
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
@@ -16,17 +16,16 @@ class B_end:
             "Content-Type": "application/json",
             "Connection": "keep-alive",
             "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
+            "Merchant": platform,
+            "MerchantCode": platform,
             "Origin": "http://sit-admin2.tcg.com",
             "Referer": "http://sit-admin2.tcg.com/311792",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
             "environment": "TCG3",
-            "merchantCode": "gi8viet",
             "notPending": "true",
             "platform": "TCG"
         }
-    def header_rank(self,username):
+    def header_rank(self,username,platform):
         return{
             "Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
@@ -34,13 +33,12 @@ class B_end:
             "Content-Type": "application/json",
             "Connection": "keep-alive",
             "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
+            "Merchant": platform,
+            "MerchantCode": platform,
             "Origin": "http://sit-admin2.tcg.com",
             "Referer": f"http://sit-admin2.tcg.com/20106/{username}-gi8viet",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
             "environment": "TCG3",
-            "merchantCode": "gi8viet",
             "notPending": "true",
             "platform": "TCG"
         }
@@ -48,15 +46,17 @@ class B_end:
         self.session=requests.Session()
         self.username=''
         self.password=''
-        self.token=self.get_token(credential['operatorName'],credential['password'])
+        self.merchantCode=credential['merchantCode']
+        self.token=self.get_token(credential['operatorName'],credential['password'],credential['merchantCode'])
         self.credential=credential
         self.token_data=self.token
         self.record_data_list=''
-    def get_token(self,operatorName,password):
+    def get_token(self,operatorName,password,platform):
         login_url="http://sit-admin2.tcg.com/tac/api/login/password"
         payload={
             "operatorName": operatorName,
-            "password": password
+            "password": password,
+            "merchantCode":platform
         }
         headers ={"Accept": "application/json, text/plain, */*",
             "Accept-Language": "en-US,en;q=0.9",
@@ -64,13 +64,12 @@ class B_end:
             "Content-Type": "application/json",
             "Connection": "keep-alive",
             "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
+            "Merchant": platform,
+            "MerchantCode": platform,
             "Origin": "http://sit-admin2.tcg.com",
             "Referer": "http://sit-admin2.tcg.com/311792",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
             "environment": "TCG3",
-            "merchantCode": "gi8viet",
             "notPending": "true",
             "platform": "TCG"
         }
@@ -82,11 +81,11 @@ class B_end:
         token=token_data.get("token")
         logging.info(f"登入API回傳: {token}")
         return token
-    def search_customerid(self,player:str):
+    def search_customerid(self,player:str,platform):
         
-        API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode=gi8viet&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
+        API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode={platform}&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
         
-        headers=self.header()
+        headers=self.header(platform)
         cookies = {
             "language": "zh_CN"
         }
@@ -115,17 +114,17 @@ class B_end:
                 return False
         except Exception as e:
             logging.error(f"狀態碼: {response.status_code}")
-    def search_customer_rank(self,customer_id:int,username):
+    def search_customer_rank(self,customer_id:int,username,platform):
         
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-player-basic-information-getHeaderInfo"  
         
-        headers=self.header_rank(username)
+        headers=self.header_rank(username,platform)
         cookies = {
             "language": "zh_CN"
         }
         params={
             "customerId":customer_id,
-            "merchantCode":"gi8viet"
+            "merchantCode":platform
         }
         try:
             response=requests.get(API_URL2, headers=headers, cookies=cookies,params=params, verify=False)
@@ -147,11 +146,11 @@ class B_end:
                 return False
         except Exception as e:
             logging.error(f"狀態碼: {response.status_code}")
-    def get_register_time(self,customer_id):
+    def get_register_time(self,customer_id,platform):
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-player-basic-information-getPlayerDetail"  
         headers= headers=self.header_rank(customer_id)
         params={
-                    "merchantCode":"gi8viet",
+                    "merchantCode":platform,
                     "customerId": customer_id
 
         }
@@ -175,10 +174,10 @@ class B_end:
                 logging.error(f"{e}")
 
       
-    def get_deposit_counts(self,regester_date,player):
+    def get_deposit_counts(self,regester_date,player,platform):
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/post/ods-v2-user-member-psersonal-info"  
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        headers=self.header_rank(player)
+        headers=self.header_rank(player,platform)
         params={
                     "customerName":player,
                     "regStartDate":regester_date,
@@ -191,7 +190,7 @@ class B_end:
                     "needTotalCount":False,
                     "needTotalCount":False,
                     "privilege":False,
-                    "merchantCode":"gi8viet",
+                    "merchantCode":platform,
                     "withdrawerNamePrivilege":False
 
         }
@@ -230,15 +229,21 @@ class B_end:
 
         except Exception as e:
                 logging.error(f"{e}")        
-def main(username):
+def main(username,platform):
     credential = {
         "operatorName": "carrine03",
-        "password": "Test@1234"
+        "password": "Test@1234",
+        "merchantCode":platform
     }
+    customer_list=[]
     backend=B_end(credential)
     if backend.token:
-        customer_id=backend.search_customerid(username)
-        customer_rank=backend.search_customer_rank(customer_id,username)
-        register_time=backend.get_register_time(customer_id)
-        deposit_count=backend.get_deposit_counts(register_time,username)
-        return customer_id,customer_rank,deposit_count
+        customer_id=backend.search_customerid(username,platform)
+        customer_rank=backend.search_customer_rank(customer_id,username,platform)
+        register_time=backend.get_register_time(customer_id,platform)
+        deposit_count=backend.get_deposit_counts(register_time,username,platform)
+        customer_list.append(customer_id)
+        customer_list.append(customer_rank)
+        customer_list.append(deposit_count)
+
+        return customer_list

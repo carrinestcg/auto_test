@@ -253,7 +253,7 @@ class B_end:
         ws=wb.active
         ws.title="紅利發放結果"
         ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
-        bonusAmount=10000
+        bonusAmount=10
         bonusPointAmount=0
         #count=2
         ticketQuantity=3
@@ -263,7 +263,7 @@ class B_end:
             config=yaml.safe_load(f)
         prmotion_id_multiple=config.get("promtion_ids",[])
         prmotion_name=config.get("promtions_name",[])
-        ticket_id=config.get("ticket_id")
+        ticket_id=config.get("ticket_id_gi8viet")
         testing_account=config.get("testing_account")
         confirm_result = ''
         create_result=''
@@ -334,6 +334,7 @@ def main():
             logging.error("登入失敗 無法取得Token")
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
+
     
     
 

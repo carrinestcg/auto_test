@@ -2,6 +2,7 @@ import schedule
 import time,random
 import requests,logging,json
 from datetime import datetime,timedelta
+from dateutil.relativedelta import relativedelta
 
 logging.basicConfig(
     level=logging.INFO,
@@ -61,7 +62,7 @@ def get_token():
     return token_data.get("token")
 
 def create_ticket_cash(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-ticket-CASH-VOUCHER-create" 
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/CASH_VOUCHER" 
     payload = {
     "merchantCode": "gi8viet",
     "type": "CASH_VOUCHER",
@@ -162,7 +163,7 @@ def create_ticket_cash(token,localizations):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_raffle(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-ticket-RAFFLE-create" 
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/RAFFLE" 
     payload = {
     "merchantCode": "gi8viet",
     "type": "RAFFLE",
@@ -262,7 +263,7 @@ def create_ticket_raffle(token,localizations):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Egg(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-ticket-GOLDEN-EGG-create" 
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/GOLDEN_EGG" 
     payload = {
     "merchantCode": "gi8viet",
     "type": "GOLDEN_EGG",
@@ -396,7 +397,7 @@ def create_ticket_Egg(token,localizations):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Wheel(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-ticket-PRIZE-WHEEL-create"
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/PRIZE_WHEEL"
     payload = {
         "merchantCode": "gi8viet",
         "type": "PRIZE_WHEEL",
@@ -562,7 +563,7 @@ def create_ticket_Wheel(token,localizations):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Gift(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-ticket-GIFT-CODE-create"
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/GIFT_CODE"
     payload = {
     "merchantCode": "gi8viet",
     "type": "GIFT_CODE",
@@ -660,7 +661,10 @@ def create_ticket_Gift(token,localizations):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Free_spin(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-ticket-FREE-SPIN-create"
+    current_time=datetime.now()
+    month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/FREE_SPIN"
     payload = {
     "merchantCode": "gi8viet",
     "status": "ISSUING",
@@ -680,8 +684,8 @@ def create_ticket_Free_spin(token,localizations):
         }
     ],
     "validityType": "FIXED_TIME",
-    "fixedTimeFrom": 1751299200000,
-    "fixedTimeTo": 1753977599000,
+    "fixedTimeFrom": month_start,
+    "fixedTimeTo": end_time,
     "claimCondition": {
         "bankCardRequired": False,
         "payeeNameRequired": False,
@@ -735,91 +739,115 @@ def create_ticket_Free_spin(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def create_ticket_temu(token,localizations):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-temu_ticket-add"
+def get_temu_score(token):
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/temu_score"
+    headers ={
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Authorization": token,
+    "merchantCode":"gi8viet",
+    "Connection": "keep-alive",
+    }
+    response=requests.get(API_URL,headers=headers,verify=False)
+    response_data=response.json()
+    if response_data.get('success')==True:
+        value_list=response_data.get("value",[])
+        if value_list:
+            temu_score=value_list[0].get("id")
+            return temu_score
+        else:
+            logging.error("沒有拿到list")    
+            return None
+
+def create_ticket_temu(token,localizations,temu_score):
+    current_time=datetime.now()
+    month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
+    API_URL = "http://10.80.1.20:7001/promo-be/resources/temu_ticket"
     payload = {
-    "merchantCode": "gi8viet",
-    "defaultLanguage": "CN",
-    "localizations": localizations,
-    "initScoreConfigId": 1,
-    "ticketValidity": {
-        "validityType": "DAY_VALIDITY",
-        "fixedTimeFrom": 0,
-        "fixedTimeTo": 0,
-        "effectType": None,
-        "dayValidity": 1,
-        "hourValidity": 0
-    },
-    "claimDevice": None,
-    "hasRewardTickets": False,
-    "targetScore": 1111,
-    "ticketTurnover": {
-        "turnoverType": "MULTIPLIER",
-        "turnoverMultiplier": 111
-    },
-    "validMode": "PERIOD_VALIDITY",
-    "claimConditions": [
-        {
-            "scoreConfigId": 1,
-            "bankCardRequired": "N",
-            "payeeNameRequired": "N",
-            "addressRequired": "N",
-            "emailRequired": "N",
-            "whatsAppRequired": "N",
-            "lineRequired": "N",
-            "qqRequired": "Y",
-            "zaloRequired": "N",
-            "wechatRequired": "N",
-            "facebookRequired": "N",
-            "mobileNumRequired": "N",
-            "idNoRequired": "N",
-            "mobileNumBound": "N",
-            "conditionSelect": [
-                "qqRequired"
-            ],
-            "bankCardTypeRequired": False,
-            "depositRequired": "N",
-            "paymentMethodRequired": False,
-            "requirePaymentMethod": [],
-            "depositAmountRequired": False,
-            "depositAmountDuration": "AFTER_CLAIM",
-            "requireDepositAmount": None,
-            "depositCountRequired": False,
-            "depositCountDuration": "AFTER_CLAIM",
-            "requireDepositCount": None,
-            "betRequired": "N",
-            "betGameRequired": False,
-            "requireBetGameType": "ALL",
-            "requireBetGameVendor": "ALL",
-            "betAmountRequired": False,
-            "betAmountDuration": "AFTER_CLAIM",
-            "requireBetAmount": None,
-            "negativeProfitRequired": "N",
-            "negativeProfitAmountDuration": "AFTER_CLAIM",
-            "requireNegativeProfitAmount": None,
-            "shareContactRequired": "N",
-            "shareContactCount": None,
-            "sharedMessage": "欢迎加入 gi8viet越南彩！",
-            "sharedDescription": "",
-            "inviteFriendsCount": None,
-            "inviteeRequired": "N",
-            "inviteeCountRequired": False,
-            "requireInviteeCount": None,
-            "inviteeRewardCount": None,
-            "cycleInviteeCountRequired": False,
-            "requireCycleInviteeCount": None,
-            "cycleInviteeRewardCount": None,
-            "cycleTotalInviteeCountRequired": False,
-            "requireCycleTotalInviteeCount": None,
-            "cycleTotalInviteeRewardCount": None,
-            "telegramRequired": "N",
-            "viberRequired": "N",
-            "appleIdRequired": "N",
-            "twitterRequired": "N",
-            "birthdayRequired": "N"
-        }
-    ],
-    "rewardTicketValidityType": "TICKET_PROMOTION"
+  "defaultLanguage": "CN",
+  "localizations": localizations,
+  "targetScore": 1,
+  "initScoreConfigId": temu_score,
+  "claimConditions": [
+    {
+      "scoreConfigId": temu_score,
+      "bankCardRequired": "Y",
+      "payeeNameRequired": "Y",
+      "addressRequired": "Y",
+      "emailRequired": "Y",
+      "whatsAppRequired": "Y",
+      "lineRequired": "Y",
+      "qqRequired": "Y",
+      "zaloRequired": "Y",
+      "wechatRequired": "Y",
+      "facebookRequired": "Y",
+      "telegramRequired": "Y",
+      "viberRequired": "Y",
+      "appleIdRequired": "Y",
+      "twitterRequired": "Y",
+      "birthdayRequired": "Y",
+      "mobileNumBound": "Y",
+      "mobileNumRequired": "Y",
+      "idNoRequired": "Y",
+      "depositRequired": "Y",
+      "betRequired": "Y",
+      "negativeProfitRequired": "Y",
+      "shareContactRequired": "Y",
+      "inviteeRequired": "Y",
+      "bankCardTypeRequired": True,
+      "requireBankCardType": [
+        "BANK_ACCOUNT"
+      ],
+      "paymentMethodRequired": True,
+      "requirePaymentMethod": [
+        "10"
+      ],
+      "depositAmountRequired": True,
+      "requireDepositAmount": 100,
+      "depositCountRequired": True,
+      "requireDepositCount": 5,
+      "betGameRequired": True,
+      "requireBetGameVendor": "CQ9",
+      "requireBetGameType": "FISH",
+      "betAmountRequired": True,
+      "requireBetAmount": 100,
+      "requireNegativeProfitAmount": 100,
+      "shareContactCount": 1,
+      "sharedMessage": "sharedMessage",
+      "sharedDescription": "sharedDescription",
+      "inviteeCountRequired": True,
+      "requireInviteeCount": 10,
+      "inviteeRewardCount": 3,
+      "cycleInviteeCountRequired": True,
+      "requireCycleInviteeCount": 1,
+      "cycleInviteeRewardCount": 1,
+      "cycleTotalInviteeCountRequired": True,
+      "requireCycleTotalInviteeCount": 5,
+      "cycleTotalInviteeRewardCount": 1,
+      "priority": 1,
+      "requireBankCardTypeStr": "string",
+      "requirePaymentMethodStr": "string"
+    }
+  ],
+  "ticketValidity": {
+    "validityType": "FIXED_TIME",
+    "fixedTimeFrom": month_start,
+    "fixedTimeTo": end_time,
+    "effectType": "IMMEDIATE",
+    "dayValidity": 15,
+    "hourValidity": 10,
+    "timeZone": "GMT+8"
+  },
+  "claimDevice": None,
+  "ticketTurnover": {
+    "turnoverType": "MULTIPLIER",
+    "turnoverMultiplier": 1.5,
+    "turnoverAmount": 100
+  },
+  "rewardTickets":[],
+  "rewardTicketValidityType": None,
+  "internalRemark": None
 }
 
 
@@ -850,25 +878,20 @@ def create_ticket_temu(token,localizations):
 def main(ticket,localizations):
     token = get_token()
     ticket_dict={
-        "ALL":lambda:(
-            create_ticket_cash(token,localizations),
-            create_ticket_raffle(token,localizations),
-            create_ticket_Egg(token,localizations),
-            create_ticket_Wheel(token,localizations),
-            create_ticket_Gift(token,localizations),
-            create_ticket_Free_spin(token,localizations),
-            create_ticket_temu(token,localizations),
-        ),    
         "CASH":lambda:create_ticket_cash(token,localizations),
         "RAFFLE":lambda:create_ticket_raffle(token,localizations),
         "GOLDEN_EGG":lambda:create_ticket_Egg(token,localizations),
         "WHEEL":lambda:create_ticket_Wheel(token,localizations),
         "GIFT":lambda:create_ticket_Gift(token,localizations),
         "FREE_SPIN":lambda:create_ticket_Free_spin(token,localizations),
-        "TEMU":lambda:create_ticket_temu(token,localizations)
+        "TEMU":lambda score=None:create_ticket_temu(token,localizations,score)
     }
     if ticket in ticket_dict:
-        ticket_dict[ticket]()
+        if ticket=="TEMU":
+            score=get_temu_score(token)
+            ticket_dict[ticket](score)
+        else:
+            ticket_dict[ticket]()
 
 '''
 if __name__ == "__main__":

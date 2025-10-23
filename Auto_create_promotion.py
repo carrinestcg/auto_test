@@ -396,8 +396,8 @@ class B_end:
         
         for _ in range(2):
             for ticket,ticket_type in itertools.cycle(ticket_dict.items()):
-                #is_successs=self.REGISTER_TASK(ticket,ticket_type)
-                #is_success=self.new_register_misssion(ticket,ticket_type)
+                is_successs=self.REGISTER_TASK(ticket,ticket_type)
+                is_success=self.new_register_misssion(ticket,ticket_type)
                 code=self.get_promo_code()
                 is_success=self.create_promoCdoe_promotion(code,ticket,ticket_type)
                 if is_success:

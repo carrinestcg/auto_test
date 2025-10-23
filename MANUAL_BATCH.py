@@ -54,7 +54,7 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
                         if not any(item.get("promoClaimId")==claimid for item in clone_be_end.claimid_list):
                             clone_be_end.claimid_list.append(claim_dict)
                         else:
-                            logging.info("跳過添加")
+                            logging.info("一樣的claim_id跳過添加")
 
                 
     else:
@@ -299,7 +299,6 @@ class B_end:
         with open(yaml_path,"r",encoding="utf-8") as f:
             config=yaml.safe_load(f)
         prmotion_id_multiple=config.get("promtion_ids",[])
-        prmotion_name=config.get("promtions_name",[])
         ticket_id=config.get("ticket_id")
         testing_account=config.get("testing_account")
         create_record=[]
@@ -307,21 +306,20 @@ class B_end:
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             future_tasks=[]
             for account in testing_account:
-                for promo ,name in zip(prmotion_id_multiple,prmotion_name):
-                    ticket=next(ticket_cycle)
-                    clone_be_end = copy.copy(self) 
-                    future=executor.submit(
-                            create_bonus,  
-                            self,      
-                            account,
-                            promo,
-                            name,
-                            bonusAmount,
-                            bonusPointAmount,
-                            ticket,
-                            ticketQuantity,
-                    )
-                    future_tasks.append(future)
+                for promo in prmotion_id_multiple:
+                    for ticket in ticket_id:
+                        clone_be_end = copy.copy(self) 
+                        future=executor.submit(
+                                create_bonus,  
+                                self,      
+                                account,
+                                promo,
+                                bonusAmount,
+                                bonusPointAmount,
+                                ticket,
+                                ticketQuantity,
+                        )
+                        future_tasks.append(future)
             for future in concurrent.futures.as_completed(future_tasks):
                 result=future.result()
                 create_record.append(result)  
