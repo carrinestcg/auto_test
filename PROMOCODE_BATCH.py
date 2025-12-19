@@ -14,80 +14,32 @@ class Frontend:
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
         return unit_time
-    def header(self):
+    def header(self,CustomerId):
         unit_time=self.unit_time()
-        return {
+        return{
             'Content-Type': 'application/json',
             'X-Timestamp':unit_time,
-            "Authorization":self.token,
             'Connection': 'keep-alive',
-            'Language': 'EN',
-            'Merchant': 'gi8viet',
-            'Origin': 'http://www.sit4.sit-gi8viet.com',
-            'Referer': 'http://www.sit4.sit-gi8viet.com/',
+            'Language': 'CN',
+            'CustomerId':CustomerId,
+            'CustomerIP':'10.180.99.19',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
-            'X-Requested-With': 'XMLHttpRequest',
+           
         }
         
-        
-    def __init__(self,credential_fe:dict):
+    def __init__(self):
         self.session=requests.Session()
         self.username=''
         self.userid=''
-        self.credential_fe=credential_fe
-        self.token=None
-        self.token_expire=None
-        self.token=self.get_token_login_frontend(credential_fe['username'],credential_fe['password'])
         self.PromoCode_list=''
         self.promoID=''
         self.i=0
         self.record_data_list=''
-    def get_token_login_frontend(self, username, password):
-        try:
-
-            if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
-                return self.token
-            
-            login_url='http://www.sit4.sit-gi8viet.com/wps/session/login/unsecure'
-            
-            headers = {
-                'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
-                
-            }
-            login_data={
-                'username':username,
-                'password':password
-            } 
-            self.username=username
-            requests_data=self.session.post(login_url,json=login_data,headers=headers)
-            print(requests_data.text)
-            self.username = requests_data.json()['value']['userName']
-            self.userid = requests_data.json()['value']['id']
-            self.token=requests_data.json()['value']['token']
-
-            self.token_expire=datetime.now()+timedelta(minutes=25)
-            return self.token
-        
-        except requests.RequestException as e:
-            logging.error(f"請求失敗{e}")
-            return None
-    def is_token_valid(self):
-        
-        return (self.token is not None and 
-                self.token_expire is not None and 
-                datetime.now() < self.token_expire)
     
-    def get_promo_code_list(self):
-        if not self.is_token_valid():
-            logging.info("token 過期, 重新登入")
-            self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
-        if self.token is None:
-            return
-        current_time=datetime.now()
-        unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://www.sit4.sit-gi8viet.com/wps/relay/PROMOFE_getPromoCode?_={unit_time}"
-        headers=self.header()
+    def get_promo_code_list(self,CustomerId):
+       
+        login_URL="http://10.80.1.20:7001/promo-fe/resources/promo_code"
+        headers=self.header(CustomerId)
         
         response = self.session.get(login_URL, headers=headers, verify=False)
         response_json=response.json()
@@ -98,46 +50,40 @@ class Frontend:
         else:
             logging.error(f"沒拿到優惠碼ID")
             return 
-    def click_promo_code(self,promoCode):
-        if not self.is_token_valid():
-            logging.info("token 過期, 重新登入")
-            self.get_token_login_frontend(self.credential_fe['username'],self.credential_fe['password'])
-        if self.token is None:
-            return
-        login_URL="http://www.sit4.sit-gi8viet.com/wps/relay/PROMOFE_claimPromoCode"
-        headers=self.header()
+    def click_promo_code(self,promoCode,CustomerId):
+       
+        login_URL="http://10.80.1.20:7001/promo-fe/resources/promo_code/claim"
+        unit_time=self.unit_time()
+        headers=self.header(CustomerId)
         payload={
              "promoCode": promoCode
         }
         
-        cookies = {
-            
-            'SHELL_deviceId': 'b1c6a230-98ec-fbe9-6079-72e43344c302',
-        }
-        response = self.session.post(login_URL, headers=headers, json=payload, cookies=cookies)
+        response = self.session.post(login_URL, headers=headers, json=payload)
         response_json=response.json()
         print(response_json)
 
-        if response_json.get('success')==True:
+        if response.status_code=='200':
             logging.info(f"領取優惠碼成功")
             return True
         elif response_json.get('success')==False:
             error_message=response_json.get('message')
             logging.error(f"{error_message}")
             return False
-    def proccess_all_promoCode(self,ws):
+    def proccess_all_promoCode(self,ws,customer_id):
         update_result='沒有資料'
-        PromoCode_list=self.get_promo_code_list()
+        PromoCode_list=self.get_promo_code_list(customer_id)
         filter_list=[]
-
+        success = False
+        success_count=0
         for item in PromoCode_list:
-            description=item.get("description","")
-            if  description!='carrine優惠碼':
+            promoName=item.get("promoName","")
+            if  promoName!='CCD_Promo code_01':
                 continue
             filter_list.append(item)
             promo_dict=random.choice(filter_list)
             promoCode=promo_dict["promoCode"]
-            success=self.click_promo_code(promoCode)
+            success=self.click_promo_code(promoCode,customer_id)
 
         if success:
             success_count+=1
@@ -227,7 +173,7 @@ class B_end:
             "merchantCode":"gi8viet",
             "status":"A",
             "pageNo":1,
-            "pageSize":10
+            "pageSize":1000
         }
         headers=self.header()
         cookies = {
@@ -243,7 +189,40 @@ class B_end:
                     remainingCountDaily=item.get("remainingCountDaily")
                     remainingCount=item.get("remainingCount")
                     return remainingCountDaily,remainingCount
-                
+    def search_customerid(self,player:str):
+            
+            API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode=gi8viet&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
+            
+            headers=self.header()
+            cookies = {
+                "language": "zh_CN"
+            }
+            try:
+                response=requests.get(API_URL2, headers=headers, cookies=cookies, verify=False)
+                response.raise_for_status()
+
+                response_data=response.json()
+                if response_data.get("success") == True:
+                    value_data=response_data.get('value',{})
+                    player_list=value_data.get('list',[])
+                    if player_list:
+                        customerId=player_list[0].get("customerId")
+                        if customerId:
+                            logging.info(f"拿到玩家資訊: {player}")
+                            logging.info(f"CustomerID: {customerId}")
+                            
+                        else:
+                            logging.error("沒有拿到CustomerID")
+                        return customerId
+                    else:
+                        logging.error("沒有拿到List")
+                    
+                else:
+                    error_msg = response_data.get("message", "未知錯誤")
+                    logging.error(f"未拿到玩家資訊: {error_msg}")
+                    return False
+            except Exception as e:
+                logging.error(f"狀態碼: {response.status_code}")       
     def Bonus_record_page(self,ws):
         API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-promotion-promoCode-claim-list"  
         start_time = datetime.now().strftime("%Y/%m/%d 00:00:00")
@@ -282,6 +261,7 @@ class B_end:
 
             response_data = response.json()
             if response_data.get("success") == True:
+                print(response_data)
                 self.record_data_list=response_data.get('value',[])
                 for promo_codes in self.record_data_list:
                     promo_code=promo_codes.get("promoCode")
@@ -297,7 +277,7 @@ class B_end:
         except Exception as e:
             logging.error(f"Exception 發生: {e}")
 
-def main(username):
+def main(username:str):
     wb=Workbook()
     ws=wb.active
     ws.title="優惠碼領取結果"
@@ -313,26 +293,20 @@ def main(username):
     try:    
         backend = B_end(credential_Backend)
         if backend.token:
+            
+            customer_id=backend.search_customerid(username)
+            str_customerid=str(customer_id)
             dailyremain_count,remainingCount=backend.get_remaincount_promocode()
             logging.info(f"當日剩餘次數{dailyremain_count}")
             logging.info(f"總剩餘次數{remainingCount}")
 
         
-        credential_frontend = {
-                "username": username,
-                "password": "123qwe"
-            }
         try:   
-            frontend = Frontend(credential_frontend)
-            if frontend.token:
-                logging.info(f"登入成功 Token: {frontend.token}")
-                    #frontend.click_promo_code()
-                    #schedule.every().day.at(f"{run_time}").do(frontend.click_promo_code,promo)
-                success_count=frontend.proccess_all_promoCode(ws)
-                total_claim_count+=success_count
-            else:
-                logging.error("登入失敗 無法取得Token")
-                time.sleep(1)
+            frontend = Frontend()
+            
+            success_count=frontend.proccess_all_promoCode(ws,str_customerid)
+            total_claim_count+=success_count
+        
         except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
         time.sleep(0.5)

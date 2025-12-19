@@ -1,5 +1,22 @@
 from flask import Flask,render_template,request,jsonify,Response,json
-import MANUAL_SINGLE,MANUAL_BATCH,PROMOCODE_BATCH,FRONTEND_DEPOSIT,MANUAL_SIGN,NEW_REGISTER_API,Customer_id,auto_create_ticket,Manual_create_single_with_confirm,SameTimeLogin_manager,SIGLE_PROMO_7_TICKET,PLAYER_RANK,Condition_create_bonus,ALL_deposit_promotion,Frontend_receive_reward,Frontend_receive_ticket
+import MANUAL_SINGLE
+import MANUAL_BATCH
+import PROMOCODE_BATCH
+import FRONTEND_DEPOSIT
+import MANUAL_SIGN
+import NEW_REGISTER_API
+import Customer_id
+import auto_create_ticket
+import Manual_create_single_with_confirm
+import SameTimeLogin_manager
+import SIGLE_PROMO_7_TICKET
+import PLAYER_RANK
+import Condition_create_bonus
+import ALL_deposit_promotion
+import Frontend_receive_reward
+import Frontend_receive_ticket
+import App_download_API
+import Change_password
 from Lott_bet_without_main import implement
 from deposit_api import batch_approve
 import pandas as pd
@@ -80,6 +97,12 @@ def get_customer_data(username,platform_type):
                 customer_detail=Customer_id.main(username,platform)
                 return customer_detail
             return None,None,None
+def trigger_APP_download_API(platform_type,username):
+        print(platform_type)
+        for platform in platform_type:
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
+                App_download_API.main(platform,username)
+                
         
 @python_flask.route("/submit",methods=['POST'])
 def submit():
@@ -108,6 +131,7 @@ def submit():
 
         
         def get_script_map(username):
+            print("selected_scripts =", selected_scripts)
 
             return{
                 'MANUAL_SINGLE':lambda:MANUAL_SINGLE.main(),
@@ -126,7 +150,8 @@ def submit():
                 'PLAYER_RANK':lambda:PLAYER_RANK.main(username),
                 'Codition_create_bonus':lambda:Condition_create_bonus.main(),
                 'BONUS_BATCH':lambda:frontend_receive_reward(username,platform_type),
-                'TICKET_BATCH':lambda:frontend_receive_ticket(username,platform_type)
+                'TICKET_BATCH':lambda:frontend_receive_ticket(username,platform_type),
+                'APP_Download':lambda:trigger_APP_download_API(platform_type,username)
 
             }
         for script in selected_scripts:
@@ -147,7 +172,7 @@ def submit():
                     if action:
                         action()
                     else:
-                        print("未知腳本")
+                        print("未知腳本11")
 
         return render_template("index.html",
                             selected_scripts=selected_scripts,
@@ -216,7 +241,30 @@ def upload_excel():
                 json.dumps(data, ensure_ascii=False,indent=4),
                 content_type="application/json; charset=utf-8"
             ), 500
-    
+@python_flask.route('/Compare_Two_Excel', methods=['POST']) 
+def Compare_Two_Excel():
+    key="用户名"
+    file_1=request.get("file1")
+    file_2=request.get("file2")
+    if not file_1 or file_2:
+         return jsonify({'message': '沒有選擇檔案'}), 400
+    set1=set(pd.read_excel(file_1,[key]))
+    set2=set(pd.read_excel(file_2,[key]))
+
+    if set1==set2:
+        return jsonify({'message':'excel username一樣'})
+    else:
+        
+        different_file1=sorted(set1-set2)
+        different_file2=sorted(set2-set1)
+        print("兩個set沒有一樣")
+        print(different_file1)
+        print(different_file2)
+        return jsonify({
+             'message':'兩個set沒有一樣',
+             'different_file1':different_file1,
+             'different_file2':different_file2
+                        })
 
 
 

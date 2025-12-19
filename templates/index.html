@@ -41,7 +41,7 @@
                         <input type="text" id="ticket" name="ticket_input" style="width: 150px;" >
                     </div>
                     
-                    <div id="ticket_id-input-div">
+                    <div id="ticket_id-input-div" class="hidden">
                         <label for="ticket_id">🎫 票卷ID</label>
                         <input type="text" id="ticket_id" name="ticket_id" style="width: 150px;">
                         <small id="ticket_hint" style="color:red; display: none;" >⚠️必填</small>
@@ -194,6 +194,19 @@
                             <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
                             ✅ 品牌管理員審核充值<br>
                         </label>
+
+                    </div>
+                    <div class="deposit_select-group">
+                        <label>
+                            <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
+                            ✅ 觸發APP下載獎勵<br>
+                        </label>
+                    </div>
+                    <div class="deposit_select-group">
+                        <label>
+                            <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
+                            ✅ 變更玩家密碼<br>
+                        </label>
                     </div>
                 </div>
             </div>
@@ -206,12 +219,22 @@
         <h3>上傳檔案進行資料重複除錯測試</h3>
         <form id="uploadform" enctype="multipart/form-data" method="POST" action="/upload_excel">
             <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" >
-            <button type="submit">上傳</button>
+            <button type="submit">比對</button>
+            <small id="upload_hint" style="color:red; display: none;" >選擇上傳檔案</small>
         </form>
-    </div id="result" style="margin-top:20px">
-    </div>   
+        <div id="result" style="margin-top:20px"></div>   
+
+        <h4>檔案進行資料比對</h4>
+        <form id="Compare_Two_Excel" enctype="multipart/form-data" method="POST" action="/Compare_Two_Excel">
+            <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" >
+            <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" >
+            <button type="submit">比對</button>
+            <small id="upload_hint" style="color:red; display: none;" >選擇上傳檔案</small>
+        </form>
+        
+        <div id="result" style="margin-top:20px"></div>  
+
 <script src="static/flask_script.js"></script>
-</script>
         
     {% if selected_scripts %}
     <p style="color:rgb(0, 68, 128); font-weight: bold;">✅ 執行成功</p>

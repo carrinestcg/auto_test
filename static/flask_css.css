@@ -54,6 +54,15 @@
         border-left: 3px solid #30619a;
         padding-left: 15px;
     }
+    h4 {
+        text-align: left;
+        color: #34495e;
+        margin: 30px 0 20px 0;
+        font-size: 20px;
+        font-weight: 500;
+        border-left: 3px solid #30619a;
+        padding-left: 15px;
+    }
     label {
         display: block;
         margin-top: 6px;
@@ -303,6 +312,10 @@
         align-items: center;       
         font-size: 20px;
         color: #333;
+        flex-direction: column;
+    }
+    #loading.show{
+        display: flex !important;
     }
     .spinner{
         border: 6px solid #0d6aac;

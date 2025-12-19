@@ -32,8 +32,8 @@ class Backend:
                 "Content-Type": "application/json",
                 "Connection": "keep-alive",
                 "Language": "zh_CN",
-                "Merchant": "gi8viet",
-                "MerchantCode": "gi8viet",
+                "Merchant": "huamei",
+                "MerchantCode": "huamei",
                 "Tac-Trace-Id":"OoL7ntxjBpmiQPeM",
                 "Referer": f"http://sit-admin2.tcg.com/24782",
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
@@ -50,8 +50,8 @@ class Backend:
                 "Content-Type": "application/json",
                 "Connection": "keep-alive",
                 "Language": "zh_CN",
-                "Merchant": "gi8viet",
-                "MerchantCode": "gi8viet",
+                "Merchant": "huamei",
+                "MerchantCode": "huamei",
                 "Tac-Trace-Id":"OoL7ntxjBpmiQPeM",
                 "Referer": f"http://sit-admin2.tcg.com/24780",
                 "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
@@ -71,8 +71,8 @@ class Backend:
             "Authorization": "",
             "Connection": "keep-alive",
             "Content-Type": "application/json",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
+            "Merchant": "huamei",
+            "MerchantCode": "huamei",
             "Origin": "http://sit-admin2.tcg.com",
             "Referer": "http://sit-admin2.tcg.com/",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
@@ -96,7 +96,7 @@ class Backend:
         end_time = datetime.now().replace(hour=23,minute=59,second=59,microsecond=0)
         unix_endttime=int(end_time.timestamp()*1000)
         return unix_starttime, unix_endttime
-    def create_fisrt_deposit_promotion(self,type):
+    def create_fisrt_deposit_promotion(self,type,ticket):
         start_Time,endTime=self.unitTime()
         try: 
             url="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-depositPromotion-add"
@@ -104,8 +104,8 @@ class Backend:
             payload={
                 
             "id": "",
-            "merchantCode": "gi8viet",
-            "name": f"carrine {type} deposit",
+            "merchantCode": "huamei",
+            "name": f" Gerrard測複製 {type} deposit",
             "status": "A",
             "budget": "999888",
             "pointBudget": "999888",
@@ -117,12 +117,12 @@ class Backend:
             "depositParticipant": "A",
             "depositMethods": [],
             "depositChannels": [],
-            "productType": "RNG_OR_LIVE",
+            "productType": "ALL",
             "noExpiry": "Y",
             "startTime": start_Time,
             "startTimeString": "2025-07-14 00:00:00",
             "endTime": endTime,
-            "endTimeString": "2025-07-14 00:00:00",
+            "endTimeString": "2025-12-14 00:00:00",
             "isFixedTime": "N",
             "fixedTimeSettings": [],
             "excludeRebate": "N",
@@ -161,9 +161,9 @@ class Backend:
             "ticketClaimMethod": "MANUAL",
             "playerRemark": "5",
             "promotionTicketBudget": {
-                "1087006": {
+                ticket: {
                     "promotionId": "",
-                    "ticketId": 1087006,
+                    "ticketId": ticket,
                     "ticketName": "",
                     "ticketBudget": 0
                 }
@@ -189,7 +189,7 @@ class Backend:
                             "maxPointAmount": 150,
                             "minimumTurnover": 10,
                             "maximumTurnover": 156,
-                            "ticketId": 1087006,
+                            "ticketId": ticket,
                             "ticketType": None,
                             "ticketName": None
                         }
@@ -259,7 +259,7 @@ class Backend:
                         "totalValidBet": 0,
                         "bonusAmount": 100,
                         "pointAmount": 100,
-                        "ticketId": 1042012,
+                        "ticketId": ticket,
                         "ticketType": "GOLDEN_EGG",
                         "ticketName": "就是一般的砸金蛋"
                         }
@@ -269,7 +269,8 @@ class Backend:
                 if response_json.get('success')==True:
                     logging.info(f"創建活動成功 {type}")
                 else:
-                    logging.error(f"創建活動失敗 {type}")
+                    logging.error(f"創建活動失敗 {type}{response_json}")
+                    
             elif type=='DEPOSIT':
 
                 payload["dailyCountLimit"]=10
@@ -301,7 +302,7 @@ class Backend:
                     "turnoverMultiplier": 3,
                     "principalAndBonus": "",
                     "promotionId": None,
-                    "ticketId": 1113014,
+                    "ticketId": ticket,
                     "ticketName": "流水轉盤",
                     "ticketType": "PRIZE_WHEEL",
                     "turnoverType": "BONUS"
@@ -324,15 +325,15 @@ class Backend:
         except Exception as e:
              logging.error(f"呼叫api錯誤 {e}")
 
-    def create_new_register_Promotion(self):
+    def create_new_register_Promotion(self,ticket):
         start_Time,endTime=self.unitTime()
         URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-internal-v3-registerPromotion-add"
         header=self.header_new()
         payload = {
             "id": "",
             "promotionId": "",
-            "merchantCode": "gi8viet",
-            "name": "carrine test",
+            "merchantCode": "huamei",
+            "name": " Gerrard測複製",
             "budget": "999888",
             "description": "cccc",
             "startTime": start_Time,
@@ -413,10 +414,10 @@ class Backend:
             "allowMessage": "Y",
             "allowPushNotif": "N",
             "promotionTicketBudget": {
-                "1087006": {
+                ticket: {
                     "promotionId": 4022089,
                     "ticketBudget": 0,
-                    "ticketId": 1087006,
+                    "ticketId": ticket,
                     "ticketName": "",
                     "ticketType": None
                 }
@@ -447,7 +448,7 @@ class Backend:
                     "turnoverMultiplier": 5,
                     "minRequiredTurnover": 1,
                     "registerPromotionConfigLabels": [],
-                    "ticketId": 1087006,
+                    "ticketId": ticket,
                     "ticketType": None,
                     "ticketName": None
                 }
@@ -471,7 +472,7 @@ class Backend:
         payload={
                 "id": "",
                 "promotionId": "",
-                "merchantCode": "gi8viet",
+                "merchantCode": "huamei",
                 "name": "test ",
                 "budget": 999888,
                 "description": "s",
@@ -571,15 +572,15 @@ class Backend:
             logging.info("創建註冊送成功")
         else:
             logging.error("創建註冊送失敗")
-    def create_app_download(self):
+    def create_app_download(self,ticket):
         start_Time,endTime=self.unitTime()
         URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-internal-v3-appDownloadPromotion-add"
         header=self.header_new()
         payload={
             "id": "",
-            "merchantCode": "gi8viet",
+            "merchantCode": "huamei",
             "promotionType": "APP_DOWNLOAD",
-            "name": "app download",
+            "name": "Gerrard測複製",
             "budget": 999888,
             "pointBudget": 999888,
             "ticketClaimMethod": "MANUAL",
@@ -609,14 +610,14 @@ class Backend:
             "allowMessage": "N",
             "allowPushNotif": "N",
             "promotionTicketBudget": {
-                "1168014": {
+                ticket: {
                     "ticketBudget": 0,
-                    "ticketId": 1168014,
+                    "ticketId": ticket,
                     "ticketName": "",
                     "ticketType": "CASH_VOUCHER"
                 }
             },
-            "ticketId": 1168014,
+            "ticketId": ticket,
             "ticketName": "",
             "ticketType": "CASH_VOUCHER",
             "budgetStr": "999888",
@@ -649,124 +650,220 @@ class Backend:
 
         response=requests.post(URL,json=payload,headers=header,verify=False)
         response_json=response.json()
-        if response_json.get('success')==True:
+        if response_json.get('success'):
             logging.info("創建app下載成功")
         else:
             logging.error("創建app下載失敗")
-    def create_app_download(self):
-        URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-internal-v3-saviorPromotion-add"
-        header=self.header_new()
-        payload={
-            "id": "",
-            "merchantCode": "gi8viet",
-            "promotionType": "SAVIOR",
-            "name": "test",
-            "budget": 999888,
-            "pointBudget": 999888,
-            "ticketClaimMethod": "MANUAL",
-            "productType": "RNG_OR_LIVE",
-            "excludeValidBet": "N",
-            "noExpiry": "Y",
-            "startTime": 1757865600000,
-            "endTime": 1757951999000,
-            "forAllLabel": "Y",
-            "participant": "ALL",
-            "effectiveTime": 0,
-            "maxClaimCount": "1",
-            "maxClaimCountType": "DAILY",
-            "remark": "ccc",
-            "status": "A",
-            "txType": 3119,
-            "excludeRebate": "N",
-            "agentNames": "",
-            "operationLabels": [],
-            "linkedAnnouncementList": [],
-            "contactNumFileName": "",
-            "fileDetailList": [],
-            "totalContactNumbers": 0,
-            "promotionMessage": {
-                "contentInbox": [],
-                "defaultLanguageInbox": "CN",
-                "contentPushNotif": [],
-                "defaultLanguagePushNotif": "CN"
-            },
-            "languageInbox": "",
-            "languagePushNotif": "",
-            "allowMessage": "N",
-            "allowPushNotif": "N",
-            "promotionTicketBudget": {
-                "1168014": {
-                    "ticketBudget": 0,
-                    "ticketId": 1168014,
-                    "ticketName": "",
-                    "ticketType": "CASH_VOUCHER"
-                }
-            },
-            "budgetStr": "999888",
-            "pointBudgetStr": "999888",
-            "contactNumberRequired": "N",
-            "withdrawalAccountRequired": "N",
-            "bankCardRequired": "N",
-            "virtualWalletRequired": "N",
-            "electronicWalletRequired": "N",
-            "emailRequired": "N",
-            "qqRequired": "N",
-            "zaloRequired": "N",
-            "payeeNameRequired": "N",
-            "lineRequired": "N",
-            "wechatRequired": "N",
-            "facebookRequired": "N",
-            "whatsappRequired": "N",
-            "addressRequired": "N",
-            "telegramRequired": "N",
-            "viberRequired": "N",
-            "appleIdRequired": "N",
-            "twitterRequired": "N",
-            "idRequired": "N",
-            "birthdayRequired": "N",
-            "claimMethod": "AUTO",
-            "playerRemark": "z",
-            "saviorPromotionConfigs": [
-                {
-                    "configId": "",
-                    "saviorPromotionConfigLabels": [],
-                    "saviorPromotionConfigDetails": [
-                        {
-                            "configId": "",
-                            "deposit": 100,
-                            "netLoss": 1,
-                            "bonusPercentage": 100,
-                            "pointPercentage": 100,
-                            "ticketType": "CASH_VOUCHER",
-                            "ticketId": 1168014,
-                            "ticketName": ""
-                        }
-                    ],
-                    "bonusType": "PERCENTAGE",
-                    "minBonusAmount": 1,
-                    "maxBonusAmount": 100,
-                    "minPointAmount": 1,
-                    "maxPointAmount": 100,
-                    "turnoverMultiplier": 1,
-                    "minRequiredTurnover": "",
-                    "forAllLabel": "Y",
-                    "minTurnoverAmount": 100
-                }
-            ],
-            "startTimeString": "2025-09-15 00:00:00",
-            "endTimeString": "2025-09-15 23:59:59"
-        }
-
-
-        response=requests.post(URL,json=payload,headers=header,verify=False)
-        response_json=response.json()
-        if response_json.get('success')==True:
-            logging.info("創建app下載成功")
-        else:
-            logging.error("創建app下載失敗")
+    
 
             
-        
+    def create_Raffle(self,ticket):
+        URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-internal-promotion-rafflePromotion-add"
+        start_Time,endTime=self.unitTime()
+        header=self.header_new()
+        payload={
+                "id": "",
+                "merchantCode": "huamei",
+                "promotionType": "RAFFLE",
+                "name": "test",
+                "budget": 0,
+                "productType": "ALL",
+                "excludeValidBet": "N",
+                "noExpiry": "Y",
+                "startTime": start_Time,
+                "endTime": endTime,
+                "forAllLabel": "Y",
+                "participant": "ALL",
+                "effectiveTime": "",
+                "remark": "c",
+                "status": "A",
+                "txType": 6131,
+                "excludeRebate": "N",
+                "maxClaimCount": 1,
+                "maxClaimCountType": "DAILY",
+                "agentNames": "",
+                "operationLabels": [],
+                "linkedAnnouncementList": [],
+                "contactNumFileName": "",
+                "fileDetailList": [],
+                "totalContactNumbers": 0,
+                "uniqueIp": "N",
+                "roundClaiming": "ALL_PROMOTION",
+                "claimMethod": "MANUAL",
+                "claimDuration": 5,
+                "scheduleType": "HOURLY",
+                "rounds": 5,
+                "countdownNotice": 5,
+                "maxRaffleCount": 5,
+                "amount": 5,
+                "appRequirement": "N",
+                "forDeletionList": [],
+                "triggerOnline": "Y",
+                "triggerDeposit": "N",
+                "triggerBet": "N",
+                "rafflePromotionConfigs": [
+                    {
+                        "configId": "",
+                        "rafflePromotionConfigLabels": [],
+                        "depositAmount": "",
+                        "validBet": "",
+                        "turnoverMultiplier": 1,
+                        "forAllLabel": "Y"
+                    }
+                ],
+                "rafflePromotionRoundSettings": [
+                    {
+                        "roundId": "",
+                        "raffleTimeFrom": "00:00:00",
+                        "raffleTimeTo": "00:00:00",
+                        "fixedRaffleTime": "00:00:00"
+                    }
+                ],
+                "prizeType": "TICKET",
+                "ticketType": "RAFFLE",
+                "ticketId": ticket,
+                "ticketName": "",
+                "raffleBudget": "999888",
+                "quantity": 0,
+                "promotionMessage": {
+                    "contentInbox": [],
+                    "defaultLanguageInbox": "CN",
+                    "contentPushNotif": [],
+                    "defaultLanguagePushNotif": "CN"
+                },
+                "languageInbox": "",
+                "languagePushNotif": "",
+                "allowMessage": "N",
+                "allowPushNotif": "N",
+                "contactNumberRequired": "N",
+                "withdrawalAccountRequired": "N",
+                "bankCardRequired": "N",
+                "virtualWalletRequired": "N",
+                "electronicWalletRequired": "N",
+                "emailRequired": "N",
+                "qqRequired": "N",
+                "zaloRequired": "N",
+                "payeeNameRequired": "N",
+                "lineRequired": "N",
+                "wechatRequired": "N",
+                "facebookRequired": "N",
+                "whatsappRequired": "N",
+                "addressRequired": "N",
+                "telegramRequired": "N",
+                "viberRequired": "N",
+                "appleIdRequired": "N",
+                "twitterRequired": "N",
+                "idRequired": "N",
+                "birthdayRequired": "N",
+                "kycRequired": "N",
+                "ticketClaimMethod": "MANUAL",
+                "playerRemark": "幸运抽奖 test",
+                "startTimeString": "2025-12-02 00:00:00",
+                "endTimeString": "2025-12-02 23:59:59"
+            }
+        response=requests.post(URL,json=payload,headers=header,verify=False)
+        response_json=response.json()
+        if response_json.get('success'):
+            logging.info("創建幸運抽獎成功")
+        else:
+            logging.error("創建幸運抽獎失敗")
+    def create_lucky_bet(self,ticket):
+        URL="http://sit-admin2.tcg.com/tac/api/relay/post/promo-promotion-lucky-bet-create"
+        start_Time,endTime=self.unitTime()
+        header=self.header_new()
+        payload={
+                "status": "A",
+                "promoName": "ccc",
+                "gamingMappingEnabled": "N",
+                "noExpiry": "Y",
+                "startTime": 1764649190000,
+                "scheduleType": "DAILY",
+                "claimLimitFixedCount": 1,
+                "claimLimitType": "FIXED",
+                "totalClaimLimitEnabled": "N",
+                "totalClaimLimitCount": None,
+                "winningLimitAmtEnabled": "N",
+                "minValidBetAmt": 1,
+                "bonusType": "FIXED",
+                "ruleType": "LAST_DIGIT",
+                "rewardConfigs": [
+                    {
+                        "rewardAmountLimit": None,
+                        "winningRule": "11",
+                        "bonus": 1,
+                        "point": 11,
+                        "turnoverMultiplier": 1,
+                        "betAmountMultiplier": None,
+                        "betNumCount": None,
+                        "betNumTarget": None,
+                        "ticketRewards": [
+                            {
+                                "ticketId": 1197050,
+                                "ticketQuantity": 1
+                            }
+                        ]
+                    }
+                ],
+                "excludeRebate": "N",
+                "remark": "1",
+                "description": "1",
+                "endTime": 1764649190000,
+                "scheduleInterval": None,
+                "claimLimitConfigs": [
+                    {
+                        "amount": None,
+                        "limitCount": 1
+                    }
+                ],
+                "participant": {
+                    "participant": "ALL",
+                    "claimMethod": "MANUAL"
+                },
+                "participantCondition": {
+                    "withdrawalAccountRequired": "N",
+                    "payeeNameRequired": "N",
+                    "contactNumberRequired": "N",
+                    "mobileVerified": None,
+                    "idRequired": "N",
+                    "idNumHasAuthenticateRequired": "N",
+                    "addressRequired": "N",
+                    "emailRequired": "N",
+                    "whatsappRequired": "N",
+                    "lineRequired": "N",
+                    "qqRequired": "N",
+                    "zaloRequired": "N",
+                    "wechatRequired": "N",
+                    "facebookRequired": "N",
+                    "depositRequired": "N",
+                    "depositAmtRequired": "N",
+                    "depositAmtDuration": None,
+                    "requiredDepositAmount": None,
+                    "depositCountRequired": "N",
+                    "depositCountDuration": None,
+                    "depositCount": None,
+                    "minTurnoverRequired": "N",
+                    "minTurnoverDuration": None,
+                    "minTurnoverAmt": None,
+                    "gameType": None,
+                    "gameVendor": None,
+                    "kycRequired": "N"
+                },
+                "announcementList": [],
+                "message": {
+                    "inbox": {
+                        "active": "N"
+                    },
+                    "notification": {
+                        "active": "N"
+                    }
+                }
+            }
+        response=requests.post(URL,json=payload,headers=header,verify=False)
+        response_json=response.json()
+        if response_json.get('success'):
+            logging.info("創建幸運抽獎成功")
+        else:
+            logging.error("創建幸運抽獎失敗")
 
     
 if __name__ == "__main__":
@@ -780,9 +877,17 @@ if __name__ == "__main__":
         if backend.token:
             logging.info("backend class有成功運作")
             deposit_list=['DEPOSIT','FIRST_DEPOSIT','SECOND_DEPOSIT','THIRD_DEPOSIT','FOURTH_DEPOSIT','FIFTH_DEPOSIT','DEPOSIT_BET_BONUS','DEPOSIT_COUNT']
+            ticket_list=[1225023]
+            
+            '''
             for promo_type in deposit_list:
-                backend.create_fisrt_deposit_promotion(promo_type)
-            #backend.create_new_register_Promotion()
+                for ticket in ticket_list:
+                    backend.create_fisrt_deposit_promotion(promo_type,ticket)
+                    '''
+            for ticket in ticket_list:
+                backend.create_Raffle(ticket)
+            #backend.create_Raffle(ticket)
+            #backend.create_new_register_Promotion(ticket)
             #backend.create_Register()
             #backend.create_app_download()
         else:

@@ -27,8 +27,8 @@ def header(token,merchant):
 def get_token(merchant):
     login_url="http://sit-admin2.tcg.com/tac/api/login/password"
     payload={
-        "operatorName": "carrine03",
-        "password": "Test@1234"
+        "operatorName": "parisv01",
+        "password": "Aa123456@"
     }
     headers = {
         "Accept": "application/json, text/plain, */*",
@@ -122,17 +122,18 @@ def Search_Customer_bonus(token,player:str,merchant:str):
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
+        if response_data.get("success"):
             customer_list=response_data.get("value",[])
             
             if customer_list:
                 customer_info=customer_list[0]
                 CustomerID=customer_info.get("customerId")
                 claimid=customer_info.get("id")
+                promoType=customer_info.get("promotionType")
     
                 if CustomerID and claimid:
-                    logging.info(f"拿到 CustomerID: {CustomerID} 和 claimid: {claimid}")
-                    return CustomerID, claimid
+                    logging.info(f"拿到 CustomerID: {CustomerID} 和 claimid: {claimid} {promoType}")
+                    return CustomerID, claimid,promoType
         else:
                 logging.error("回應中找不到 customerId 或 claimid")
                 return None, None 
@@ -148,13 +149,13 @@ def Search_Customer_bonus(token,player:str,merchant:str):
         logging.error(f"其他錯誤: {e}")
         return None, None
   
-def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ):
+def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ,promoType:str):
     API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-approveClaimStatus?claimStatus=I&customerId={Customerid}&claimId={claimid}" 
     payload = {
     "claimStatus": "I",
     "customerId":str(Customerid),
     "claimId": str(claimid),
-    "internalRemark": "g"
+    "promoType":promoType
     
 }
 
@@ -166,7 +167,6 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ):
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         response.raise_for_status()
         
-        
         response_data = response.json()
         
         if response_data.get("success") == True:
@@ -174,7 +174,7 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ):
             return True
         else:
             error_msg = response_data.get("value" )
-            logging.error(f"未審核成功 value: {error_msg}")
+            logging.error(f"未審核成功 value: {error_msg}{response_data}")
             return False
             
     except requests.RequestException as e:
@@ -193,7 +193,7 @@ def main(username,promotionid,ticket_id,platform):
         print("取得的 token:", token)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
-    bonusAmount=10
+    bonusAmount=1000
     bonusPointAmount=20
     #bonusAmount_list= [1,2,3]
     #bonusPointAmount_list=[2,3,4]
@@ -201,9 +201,9 @@ def main(username,promotionid,ticket_id,platform):
     ticketQuantity=1
     create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,ticketQuantity=ticketQuantity,prmotion_id=promotionid,merchant=platform)
         
-    Customerid,claimid = Search_Customer_bonus(token,username,platform)
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:
-        Confirm_Customer_bonus(token,Customerid,claimid,platform)
+        Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType)
     else:
         logging.error("沒有拿到ID")
 

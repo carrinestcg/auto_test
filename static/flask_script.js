@@ -13,16 +13,18 @@ function toggleInput() {
     const register_checkbox = document.getElementById("frontend-checkbox_new");
     const deposit_checkbox = document.getElementById('DEPOSIT_API_script');
     const manual_checkbox = document.getElementById("frontend-checkbox_manual");
+    const APP_Download_CheckBox=document.getElementById("APP_Download_API");
     const ticket_select_checkbox = document.getElementById("frontend-checkbox_7_Ticket");
     const receive_reward = document.getElementById("frontend-bonus-batch");
     const receive_ticket = document.getElementById("frontend-ticket-batch");
+    const Change_password=document.getElementById("Change_password");
     const hasSelectTicket = Array.from(ticket_select.selectedOptions).length > 0;
     const hasPlatformSelect = Array.from(manual_platform_select.selectedOptions).length > 0;
     
 
     amountInputDiv.classList.toggle("hidden", !requireamount);
     ticket_select.style.display = checkbox.checked ? "block" : "none";
-    manual_platform_select.style.display = (register_checkbox.checked || deposit_checkbox.checked || manual_checkbox.checked||ticket_select_checkbox.checked||receive_reward.checked||receive_ticket.checked||customer_detail.checked) ? "block" : "none";
+    manual_platform_select.style.display = (register_checkbox.checked || deposit_checkbox.checked || manual_checkbox.checked||ticket_select_checkbox.checked||receive_reward.checked||receive_ticket.checked||customer_detail.checked||Change_password.checked||APP_Download_CheckBox.checked) ? "block" : "none";
     ticket_input.style.display = (checkbox.checked && hasSelectTicket) ? "block" : "none";
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
     ticket_id_input.classList.toggle("hidden", !requireTicket_input);
@@ -57,6 +59,7 @@ function checkpassword() {
         document.getElementById("amount_hint").style.display = "none";
     }
     });
+
     
     if (needUsername && !usernameInputDiv.value.trim()) {
         document.getElementById("username_hint").style.display = "inline";
@@ -97,7 +100,7 @@ document.getElementById('unselectALL').addEventListener('click', (e) => {
     toggleInput();
 });
 
-['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select']
+['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select','frontend-checkbox_manual']
     .forEach(id => {
         document.getElementById(id).addEventListener('change', function() {
             const alloption = this.querySelector('option[value="ALL"]');
@@ -111,7 +114,7 @@ document.getElementById('unselectALL').addEventListener('click', (e) => {
         });
     });
 
-['frontend-checkbox_select', 'frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select']
+['frontend-checkbox_select', 'frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select','frontend-checkbox_manual']
     .forEach(id => {
         document.getElementById(id).addEventListener('mousedown', function(e) {
             e.preventDefault();
@@ -133,8 +136,17 @@ function switchTab(evt, tabId) {
 
 window.addEventListener('load', () => {
     toggleInput();
+    const loading=document.getElementById('loading');
+    if(loading){
+        loading.classList.remove('show');
+    }
 });
-
+window.addEventListener('pageshow', (event) => {
+    const loading = document.getElementById('loading');
+    if (loading) {
+        loading.classList.remove('show');
+    }
+});
 let formState = {};
 document.querySelectorAll('input, select').forEach(el => {
     el.addEventListener('input', () => {
@@ -148,13 +160,24 @@ document.querySelectorAll('input, select').forEach(el => {
 const form=document.getElementById('myForm');
 const loading =document.getElementById('loading');
 
+let isSubmitting= false;
 form.addEventListener('submit',function(e){
+    if(isSubmitting){
+        console.log('Form is submitting...');
+        return true;
+    }
+    e.preventDefault();
     if(!checkpassword()){
-        e.preventDefault();
         return false;
     }
-    loading.style.display='flex';
-    return true;
+    isSubmitting=true;
+
+    loading.classList.add('show');
+    setTimeout(()=>{
+        console.log('Submitting form...');
+        form.submit();
+    },100);
+    return false;
 });
 
 document.getElementById('uploadform').addEventListener('submit',async(e)=>{
@@ -162,30 +185,84 @@ document.getElementById('uploadform').addEventListener('submit',async(e)=>{
     const formdata=new FormData();
     const fileInput=document.getElementById('fileInput');
     const loading=document.getElementById('loading');
-    if (!fileInput.file.length){
+    const uploadHint=document.getElementById('upload_hint');
+    if (!fileInput.files.length){
+        uploadHint.style.display="inline";
         alert('請選擇要上傳的 Excel 檔案');
         return;
+    }else{
+        uploadHint.style.display="none";
     };
-    loading.style.display="flex";
+    loading.classList.add('show');
     formdata.append('file', fileInput.files[0]);
-    const response=await fetch('/upload_excel',{
-        method:'POST',
-        body:formdata
-    });
-    const data=await response.json();
-    document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
-    if (data.full_dupes){
-        let html="<table border=1 cellpadding='5'<tr>";
-        Object.keys(data.full_dupes[0]).forEach(k=>html+=`<th>${k}</th>`);
-        html += "</tr>";
-
-        data.full_dupes.forEach(row=>{
-            html+="<tr>";
-            Object.values(row).forEach(v => html+=`<td>${v ?? ''}</td>`);
-            html += "</tr>";
+        try{
+        const response=await fetch('/upload_excel',{
+            method:'POST',
+            body:formdata
         });
-        html+="</table";
-        document.getElementById('result').innerHTML+=html;
+        const data=await response.json();
+        document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
+        if (data.full_dupes){
+            let html="<table border=1 cellpadding='5'<tr>";
+            Object.keys(data.full_dupes[0]).forEach(k=>html+=`<th>${k}</th>`);
+            html += "</tr>";
+
+            data.full_dupes.forEach(row=>{
+                html+="<tr>";
+                Object.values(row).forEach(v => html+=`<td>${v ?? ''}</td>`);
+                html += "</tr>";
+            });
+            html+="</table>";
+            document.getElementById('result').innerHTML+=html;
+        }
+    }catch(err){
+        alert("上傳失敗：" + err);
+    }
+    finally{
+        loading.classList.remove('show');
+    }
+});
+document.getElementById('Compare_Two_Excel').addEventListener('submit',async(e)=>{
+    e.preventDefault();
+    const formdata=new FormData();
+    const fileInput_1=document.getElementById('fileInput_1');
+    const fileInput_2=document.getElementById('fileInput_2');
+    const loading=document.getElementById('loading');
+    const uploadHint=document.getElementById('upload_hint');
+    if (!fileInput_1.files.length||!fileInput_2.files.length){
+        uploadHint.style.display="inline";
+        alert('請選擇要上傳的 Excel 檔案');
+        return;
+    }else{
+        uploadHint.style.display="none";
     };
-    alert(data.message);
+    loading.classList.add('show');
+    formdata.append('file1', fileInput_1.files[0]);
+    formdata.append('file2', fileInput_2.files[0]);
+        try{
+        const response=await fetch('/Compare_Two_Excel',{
+            method:'POST',
+            body:formdata
+        });
+        const data=await response.json();
+        document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
+        if (data.full_dupes){
+            let html="<table border=1 cellpadding='5'<tr>";
+            Object.keys(data.full_dupes[0]).forEach(k=>html+=`<th>${k}</th>`);
+            html += "</tr>";
+
+            data.full_dupes.forEach(row=>{
+                html+="<tr>";
+                Object.values(row).forEach(v => html+=`<td>${v ?? ''}</td>`);
+                html += "</tr>";
+            });
+            html+="</table>";
+            document.getElementById('result').innerHTML+=html;
+        }
+    }catch(err){
+        alert("上傳失敗：" + err);
+    }
+    finally{
+        loading.classList.remove('show');
+    }
 });
