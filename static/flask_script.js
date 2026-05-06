@@ -1,15 +1,31 @@
+/** Checkbox helper — must be module-level; toggleDepositAmount / toggleExtraPromo use it. */
+const isChecked = (id) => document.getElementById(id)?.checked;
+
 function toggleInput() {
     toggleAmount();
     toggleTicket();
     togglePromotion();
     togglePlatform();
     toggleRoundID();
+    toggleDepositAmount();
+    toggleExtraPromo();
+}
+function toggleDepositAmount(){
+    const depositAmountDiv = document.getElementById("deposit-amount-input-div");
+    const requestDepositInput = isChecked("Extra_Reward_api");
+    if (!depositAmountDiv) return;
+    depositAmountDiv.classList.toggle("hidden", !requestDepositInput);
 }
 
+function toggleExtraPromo(){
+    const extraPromoWrap = document.getElementById("extra_reward_promo_id-input-div");
+    const requestExtraPromo = isChecked("Extra_Reward_api");
+    if (!extraPromoWrap) return;
+    extraPromoWrap.classList.toggle("hidden", !requestExtraPromo);
+}
 function toggleAmount(){
-    const isChecked = id => document.getElementById(id)?.checked;
     const amountInputDiv = document.getElementById("amount-input-div");
-    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member");
+    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api");
     if (!amountInputDiv) return
     amountInputDiv.classList.toggle("hidden", !requireamount);
 }
@@ -18,7 +34,8 @@ function toggleTicket() {
     const ticket_input = document.getElementById("ticket-input-div");
     const ticket_id_input = document.getElementById("ticket_id-input-div");
     const manual_cb = document.getElementById("frontend-checkbox_manual");
-    const requireTicket_input = manual_cb && manual_cb.checked;
+    const requireTicket_input =
+        (manual_cb && manual_cb.checked) || isChecked("Extra_Reward_api");
     const checkbox = document.getElementById("frontend-checkbox_ticket");
     const hasSelectTicket = ticket_select && Array.from(ticket_select.selectedOptions).length > 0;
 
@@ -29,7 +46,7 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked;
+    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked;
     
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 
@@ -303,6 +320,21 @@ function runSelectScript(){
                 round_id:document.getElementById("round_id").value
             }
         break;
+
+        case "Extra_Reward_api": {
+            const rawTickets = document.getElementById("ticket_id").value.trim();
+            const ticket_id_list = rawTickets
+                ? rawTickets.split(/[\s,]+/).filter(Boolean)
+                : [];
+            extraData = {
+                ticket_id_list,
+                amount: document.getElementById("amount").value,
+                promotion_id: document.getElementById("promotion_id").value,
+                "deposit-amount-id": document.getElementById("deposit-amount-id").value,
+                extra_promo_id: document.getElementById("extra_promo_id").value,
+            };
+            break;
+        }
 
         default:
         extraData={};
