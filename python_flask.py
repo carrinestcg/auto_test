@@ -303,9 +303,11 @@ def api_PostCard_Code():
         
 @python_flask.route('/api/Extra_Reward_api',methods=['POST']) #幸運注單補派獎API
 def api_Extra_Reward():
-    data=request.get_json(silent=True)
+    data = request.get_json(silent=True)
+    if not data:
+        return jsonify({"success": False, "message": "Missing request body"}), 400
     username=data["username"]
-    ticket_id_list=data["ticket_id_list"]
+    ticket_id_list = data.get("ticket_id_list", [])
     ticketQuantity=data["amount"]
     promotion_id=data["promotion_id"]
     amount=data["deposit-amount-id"]
@@ -361,7 +363,7 @@ def api_manual_create_single():
     "summary": result.stdout.split("short test summary info")[-1]
     }
     
-@python_flask.route('/api/Single_Manual_create',methods=['POST']) #回歸測試 翻倍獎勵
+@python_flask.route('/api/test_Extra_bonus',methods=['POST']) #回歸測試 翻倍獎勵
 def api_test_Extra_bonus():
     
     result = subprocess.run(
