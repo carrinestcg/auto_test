@@ -58,6 +58,18 @@
                         <small id="ticket_hint" class="field-hint">此欄位必填</small>
                     </div>
 
+                    <div id="extra_reward_promo_id-input-div" class="input-group hidden">
+                        <label for="extra_promo_id">翻倍活動 ID</label>
+                        <input type="text" id="extra_promo_id" name="extra_promo_id">
+                        <small id="promo_hint" class="field-hint">此欄位必填</small>
+                    </div>
+
+                    <div id="deposit-amount-input-div" class="input-group hidden">
+                        <label for="deposit-amount-id">翻倍充值金額 ID</label>
+                        <input type="text" id="deposit-amount-id" name="deposit_amount">
+                        <small id="deposit_hint" class="field-hint">此欄位必填</small>
+                    </div>
+
                     <div class="multi-select-wrapper input-group">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
                         <select multiple id="frontend-checkbox_manual_platform" size="5" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
@@ -215,6 +227,10 @@
                         領取郵寄碼
                     </label>
                     <label>
+                        <input type="checkbox" name="script" value="Extra_Reward_api" id="Extra_Reward_api" onchange="toggleInput()">
+                        觸發翻倍獎勵
+                    </label>
+                    <label>
                         <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
                         變更玩家密碼
                     </label>
@@ -225,6 +241,10 @@
                     <label>
                         <input type="checkbox" name="script" value="Single_Manual_create" id="Single_Manual_create" onchange="toggleInput()">
                         創建個人module
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="test_Extra_bonus" id="test_Extra_bonus" onchange="toggleInput()">
+                        翻倍獎勵module
                     </label>
                 </div>    
             </div>
