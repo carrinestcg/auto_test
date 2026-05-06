@@ -30,7 +30,9 @@ import threading
 import asyncio
 import subprocess
 import sys
-import os
+import Extra_Reward
+import test_Extra_bonus
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -38,7 +40,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 python_flask=Flask(__name__)
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 @python_flask.route("/")
 def hello():
     return render_template("index.html")
@@ -136,7 +138,7 @@ def get_customer_data(username,platform_type):
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 customer_detail=Customer_id.main(username,platform)
                 return customer_detail
-            return None,None,None
+        return None,None,None
         
 def trigger_APP_download_API(platform_type,username):
         print(platform_type)
@@ -144,7 +146,7 @@ def trigger_APP_download_API(platform_type,username):
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 result=App_download_API.main(platform,username)
                 return result
-
+isSuccess = False
 def trigger_change_password_API(username,platform_type):
         print(platform_type)
         for platform in platform_type:
@@ -298,6 +300,32 @@ def api_PostCard_Code():
                 "message": "PostCard Bonus receive Failed"
                 }
             ),500
+        
+@python_flask.route('/api/Extra_Reward_api',methods=['POST']) #幸運注單補派獎API
+def api_Extra_Reward():
+    data=request.get_json(silent=True)
+    username=data["username"]
+    ticket_id_list=data["ticket_id_list"]
+    ticketQuantity=data["amount"]
+    promotion_id=data["promotion_id"]
+    amount=data["deposit-amount-id"]
+    Extra_Promo_ID=data["extra_promo_id"]
+    isSuccess=Extra_Reward.main(username, ticket_id_list, ticketQuantity, promotion_id, amount, Extra_Promo_ID)
+    
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Extra Reward receive Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Extra Reward receive Failed"
+                }
+            ),500
 @python_flask.route('/api/Change_password',methods=['POST']) #變更密碼API
 def api_Change_password():
     data=request.json
@@ -323,8 +351,8 @@ def api_Change_password():
 def api_manual_create_single():
     
     result = subprocess.run(
-    [sys.executable,"-m","pytest", "test_manual_bonus.py::TestSingleBonus", "-v"],
-    cwd=BASE_DIR,
+    [sys.executable, "-m", "pytest", "test_manual_bonus.py::TestSingleBonus", "-v"],
+    cwd="/Users/user/Documents/GitHub/auto_test",
     capture_output=True,
     text=True
     )   
@@ -332,6 +360,21 @@ def api_manual_create_single():
     "success": result.returncode == 0,
     "summary": result.stdout.split("short test summary info")[-1]
     }
+    
+@python_flask.route('/api/Single_Manual_create',methods=['POST']) #回歸測試 翻倍獎勵
+def api_test_Extra_bonus():
+    
+    result = subprocess.run(
+    [sys.executable, "-m", "pytest", "test_Extra_bonus.py::TestExtraBonus", "-v"],
+    cwd="/Users/user/Documents/GitHub/auto_test",
+    capture_output=True,
+    text=True
+    )   
+    return {
+    "success": result.returncode == 0,
+    "summary": result.stdout.split("short test summary info")[-1]
+    }
+    
 @python_flask.route('/api/TICKET_BATCH',methods=['POST']) #前台領取票券API
 def api_frontend_receive_ticket():
     data=request.json
@@ -632,12 +675,12 @@ def upload_excel():
 @python_flask.route('/Compare_Two_Excel', methods=['POST']) 
 def Compare_Two_Excel():
     key="用户名"
-    file_1=request.get("file1")
-    file_2=request.get("file2")
-    if not file_1 or file_2:
+    file_1=request.files.get("file1")
+    file_2=request.files.get("file2")
+    if not file_1 or not file_2:
          return jsonify({'message': '沒有選擇檔案'}), 400
-    set1=set(pd.read_excel(file_1,[key]))
-    set2=set(pd.read_excel(file_2,[key]))
+    set1=set(pd.read_excel(file_1)[key])
+    set2=set(pd.read_excel(file_2)[key])
 
     if set1==set2:
         return jsonify({'message':'excel username一樣'})
