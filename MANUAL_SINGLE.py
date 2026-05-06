@@ -101,14 +101,11 @@ class B_end:
             logging.info(f"響應內容: {response_data}")
             
             
-            if response_data.get("success") == True:
-                logging.info(f"手動紅利發放成功 ")
-                return True
-            else:
-                error_msg = response_data.get("message", "未知錯誤")
-                logging.error(f"手動紅利發放失敗: {error_msg}")
-                return False
-                
+            assert response_data.get("success"), f"創建失敗：{response_data.get('message')}"
+            return True
+        
+        except AssertionError:
+            raise        
         except requests.RequestException as e:
             logging.error(f"HTTP錯誤 {e}")
             return False
@@ -143,7 +140,7 @@ class B_end:
             response_data = response.json()
             
             
-            if response_data.get("success") == True:
+            if response_data.get("success") :
                 customer_list=response_data.get("value",[])
                 
                 if not customer_list:
@@ -153,14 +150,16 @@ class B_end:
                 CustomerID=customer_info.get("customerId")
                 claimid=customer_info.get("id")
         
-                if CustomerID and claimid:
-                    return CustomerID, claimid
+                assert CustomerID is not None, "查無 CustomerID"
+                assert claimid is not None, "查無 claimid"
+                return CustomerID, claimid
                 
             else:
                     logging.error("回應中找不到 customerId 或 claimid")
                     return None, None 
             
-                
+        except AssertionError:
+            raise    
         except requests.RequestException as e:
             logging.error(f"HTTP錯誤 {e}")
             return None, None
@@ -184,14 +183,11 @@ class B_end:
             response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
             response_data = response.json()
             
-            if response_data.get("success") == True:
-                logging.info(f"審核活動紅利成功 ")
-                return True
-            else:
-                error_msg = response_data.get("value" )
-                logging.error(f"未審核成功 value: {error_msg}")
-                return False
-                
+            assert response_data.get("success"), f"審核失敗{response_data.get('message')}"
+            return True
+        
+        except AssertionError:
+            raise
         except requests.RequestException as e:
             logging.error(f"HTTP錯誤 {e}")
             return False
@@ -204,7 +200,7 @@ class B_end:
     def Bonus_record_page(self):
         
       
-        API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
+        API_URL2="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
         start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
         headers={
@@ -237,7 +233,7 @@ class B_end:
             response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
 
             response_data=response.json()
-            if response_data.get("success") == True:
+            if response_data.get("success"):
                 self.record_data_list=response_data.get('value',[])
                 return True
             else:
@@ -305,7 +301,7 @@ class B_end:
                         ]
                     )
             if self.Bonus_record_page():
-                Bonus_record={str(item.get("promotionClaimId") for item in self.record_data_list)}
+                Bonus_record={str(item.get("promotionClaimId")) for item in self.record_data_list}
 
                 for row in ws.iter_rows(min_row=2,max_row=ws.max_row):
                     claimid=row[10].value

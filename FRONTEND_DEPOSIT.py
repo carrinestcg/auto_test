@@ -164,12 +164,12 @@ class Frontend:
         logging.info(f"總共失敗{success_fail}筆")
         
         
-def main(username,password,amount):
+def main(username,amount):
         
         #填入玩家帳號
         credential = {
             "username": username,
-            "password": password
+            "password": "123qwe"
         }
         try:    
             frontend = Frontend(credential)

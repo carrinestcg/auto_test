@@ -2,254 +2,293 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>Test Automation Management</title>
-    <link rel="icon" href="/static/VSjcAXOaOj.ico" type="image/x-icon">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="static/flask_css.css">
+    <meta name="description" content="測試自動化管理 — 前台／後台腳本執行與 Excel 比對">
+    <title>Test Automation Management</title>
+    <link rel="icon" href="{{ url_for('static', filename='VSjcAXOaOj.ico') }}" type="image/x-icon">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flask_css.css') }}">
 </head>
-<body>
-    <div class="main_container">
+<body class="app">
+    <header class="app-header">
         <h1>Test Automation Management</h1>
-        <form id="myForm" method="POST" action="/submit" onsubmit="return checkpassword()">
-            <div class="container">
+        <p>選擇測試腳本、帳號與平台後執行；下方可上傳 Excel 進行重複資料與雙檔比對。</p>
+    </header>
+
+    <div id="myForm">
+        <section class="card" aria-labelledby="config-heading">
+            <h2 id="config-heading" class="section-title">帳號與執行</h2>
+            <div class="account-wrap">
                 <div class="account-config">
-                    <div class="input-group">
-                        <label for="username">👤 用戶帳號</label>
-                        <input type="text" id="username" name="username">
-                        <small id="username_hint" style="color:red; display: none;">⚠️必填</small>
+                    <div class="account-column account-field-col">
+                        <div class="input-group">
+                            <label for="username">玩家帳號</label>
+                            <input type="text" id="username" name="username" autocomplete="username" class="account-line-input">
+                            <small id="username_hint" class="field-hint">此欄位必填</small>
+                        </div>
+                        <div id="ticket-input-div" class="input-group hidden">
+                            <label for="ticket_input">票券名稱</label>
+                            <input type="text" id="ticket_input" name="ticket_input" class="account-line-input">
+                        </div>
                     </div>
-                    
-                    <div class="input-group">
-                        <label for="password">🔐 用戶密碼</label>
-                        <input type="text" id="password" name="password" placeholder="密碼 (預設123qwe)">
-                        <small id="password_hint" style="color:red; display: none;">⚠️必填</small>
+
+                    <div class="input-group account-field-col">
+                        <label for="password">用戶密碼</label>
+                        <input type="text" id="password" name="password" class="account-line-input" placeholder="tcgdemov3 預設為 qwe123" autocomplete="current-password">
+                        <small id="password_hint" class="field-hint">此欄位必填</small>
                     </div>
-                    
-                    <div id="amount-input-div" class="hidden">
-                        <label for="amount">💰請輸入金額</label>
-                        <input type="number" id="amount" name="amount" style="width:150px;">
-                        <small id="amount_hint" style="color:red; display: none;">⚠️必填</small>
+
+                    <div id="amount-input-div" class="input-group hidden">
+                        <label for="amount">輸入數量</label>
+                        <input type="number" id="amount" name="amount" min="0" step="1">
+                        <small id="amount_hint" class="field-hint">此欄位必填</small>
                     </div>
-                    
-                    <div id="promotion_id-input-div" class="hidden">
-                        <label for="promotion_id">🎯 請輸入活動id</label>
-                        <input type="text" id="promotion_id" name="promotion_id" style="width:150px;">
+
+                    <div id="promotion_id-input-div" class="input-group hidden">
+                        <label for="promotion_id">活動 ID</label>
+                        <input type="text" id="promotion_id" name="promotion_id">
                     </div>
-                    
-                    <div id="ticket-input-div" style="display:none;">
-                        <label for="ticket">🎫 票卷名稱</label>
-                        <input type="text" id="ticket" name="ticket_input" style="width: 150px;" >
+                    <div id="round_id-input-div" class="input-group hidden">
+                        <label for="round_id">Round ID</label>
+                        <input type="text" id="round_id" name="round_id" class="input-narrow">
                     </div>
-                    
-                    <div id="ticket_id-input-div" class="hidden">
-                        <label for="ticket_id">🎫 票卷ID</label>
-                        <input type="text" id="ticket_id" name="ticket_id" style="width: 150px;">
-                        <small id="ticket_hint" style="color:red; display: none;" >⚠️必填</small>
+
+                    <div id="ticket_id-input-div" class="input-group hidden">
+                        <label for="ticket_id">票券 ID</label>
+                        <input type="text" id="ticket_id" name="ticket_id">
+                        <small id="ticket_hint" class="field-hint">此欄位必填</small>
                     </div>
-                    <div class="multi-select-wrapper">
-                        <select multiple id="frontend-checkbox_manual_platform" size="5" name="platform_type_manual" style="display: none; border-radius: 6px;" class="multi-select" onchange="toggleInput()">
-                            <option value="gi8viet" selected>🏆 gi8viet</option>
-                            <option value="huamei">🎊 Huamei</option>
-                            <option value="tcgdemov3">🎪 tcgdemov3</option>
-                            <option value="rollbet">🎁 rollbet</option>
-                            <option value="lodibet">🎆 lodibet</option>
+
+                    <div class="multi-select-wrapper input-group">
+                        <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
+                        <select multiple id="frontend-checkbox_manual_platform" size="5" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
+                            <option value="gi8viet" selected>gi8viet</option>
+                            <option value="huamei">Huamei</option>
+                            <option value="tcgdemov3">tcgdemov3</option>
+                            <option value="rollbet">rollbet</option>
+                            <option value="lodibet">lodibet</option>
+                            <option value="jkdscus1">jkdscus1</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group field-ticket-select">
+                        <label class="field-label" for="frontend-checkbox_select">票券類型（可複選）</label>
+                        <select multiple id="frontend-checkbox_select" size="5" name="ticket_type" class="multi-select hidden" onchange="toggleInput()">
+                        <option value="CASH" selected>現金兌換券</option>
+                        <option value="RAFFLE">幸運紅包</option>
+                        <option value="GOLDEN_EGG">砸金蛋</option>
+                        <option value="WHEEL">幸運大轉盤</option>
+                        <option value="GIFT">商品兌換券</option>
+                        <option value="FREE_SPIN">FREE_SPIN</option>
+                        <option value="TEMU">拼多多</option>
                         </select>
                     </div>
 
                     <div class="button-group">
-                        <button type="submit">🚀 開始測試</button>
-                        <button type="button" id="selectALL">✅ 全選</button>
-                        <button type="button" id="unselectALL">❌ 取消全選</button>
+                        <button type="button" class="btn-primary" onclick="runSelectScript()">開始測試</button>
                     </div>
-                
                 </div>
             </div>
-            <h2>測試功能選擇</h2>
-        
-            <div class="tab">
-                <button type="button" class="tab-button active" onclick="switchTab(event,'Frontend')">💨 前台功能 Frontend</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'Backend')">🔍 後台功能 Backend</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'Player Management')">玩家管理 Player Management</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'Promotion / Ticket')">票券管理 Promotion / Ticket</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'TestingTooLTab')">測試工具 TestingTool</button>
+        </section>
+
+        <section class="card tabs-wrap" aria-labelledby="scripts-heading">
+            <h2 id="scripts-heading" class="section-title">測試功能選擇</h2>
+
+            <div class="tab" role="tablist">
+                <button type="button" class="tab-button active" onclick="switchTab(event,'Frontend')" role="tab" aria-selected="true">前台 Frontend</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'Backend')" role="tab" aria-selected="false">後台 Backend</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'Player Management')" role="tab" aria-selected="false">玩家管理</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'Promotion / Ticket')" role="tab" aria-selected="false">票券／活動</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="false">測試工具</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">回歸測試</button>
             </div>
 
-            <div id="Frontend" class="tabcontent active">
+            <div id="Frontend" class="tabcontent active" role="tabpanel">
                 <div class="script-grid">
                     <label>
                         <input type="checkbox" name="script" value="PROMOCODE_BATCH" id="frontend-promo-batch" onchange="toggleInput()">
-                        🎫 前台領取優惠碼<br>
+                        前台領取優惠碼
                     </label>
-
                     <label>
                         <input type="checkbox" name="script" value="BONUS_BATCH" id="frontend-bonus-batch" onchange="toggleInput()">
-                        🎫 前台領取獎勵<br>
+                        前台領取獎勵
                     </label>
-
                     <label>
                         <input type="checkbox" name="script" value="TICKET_BATCH" id="frontend-ticket-batch" onchange="toggleInput()">
-                        🎫 前台領取票券<br>
+                        前台領取票券
                     </label>
-                    
                     <label>
                         <input type="checkbox" name="script" value="LOTTERY_BET" id="frontend-checkbox_lott" onchange="toggleInput()">
-                        🎲 前台彩票投注<br>
+                        前台彩票投注
                     </label>
-                    
                     <label>
                         <input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">
-                        💳 用戶前台充值<br>
+                        用戶前台充值
                     </label>
-                    
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_SIGN">
-                        🥇 前台手工報名活動<br>
+                        前台手工報名活動
                     </label>
-                    
                     <label>
                         <input type="checkbox" name="script" value="ALL_deposit_promotion" id="deposit_promotion_complete" onchange="toggleInput()">
-                        👑 達成存款活動<br>
+                        達成存款活動
                     </label>
-                    
                 </div>
             </div>
-            <div id="Backend" class="tabcontent">
+
+            <div id="Backend" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_SINGLE">
-                        🎯 手動紅利發放單一審核<br>
+                        手動紅利發放單一審核
                     </label>
-                    
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_BATCH">
-                        📦手動紅利發放批量審核<br>
+                        手動紅利發放批量審核
                     </label>
-
                     <label>
                         <input type="checkbox" name="script" value="Codition_create_bonus">
-                        📦 條件派發<br>
+                        條件派發
                     </label>
-                    
                     <label>
-                        <input type="checkbox" name="script" value="SIGLE_PROMO_7_TICKET" id="frontend-checkbox_7_Ticket" onchange="toggleInput()">🎆 派發七種票卷<br>
+                        <input type="checkbox" name="script" value="SIGLE_PROMO_7_TICKET" id="frontend-checkbox_7_Ticket" onchange="toggleInput()">
+                        派發七種票券
                     </label>
-
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_CREATE_SINGLE_CONFIRM" id="frontend-checkbox_manual" onchange="toggleInput()">
-                        ⚡手動紅利發放單一玩家_審核<br>
+                        手動紅利發放單一玩家審核
                     </label>
-
                     <label>
                         <input type="checkbox" name="script" value="PLAYER_RANK" id="frontend-player-rank" onchange="toggleInput()">
-                        👑 手動達成升級獎勵<br>
+                        手動達成升級獎勵
                     </label>
                 </div>
             </div>
-            
-            <div id="Player Management" class="tablinkS tabcontent script-grid">
+
+            <div id="Player Management" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <div class="select-group_platform">
                         <label>
                             <input type="checkbox" name="script" value="auto_create_player" id="frontend-checkbox_new" onchange="toggleInput()">
-                            👤 新建代理帳號玩家
+                            新建代理帳號
                         </label>
-
+                        <label>
+                            <input type="checkbox" name="script" value="create_member_player" id="frontend-checkbox_member" onchange="toggleInput()">
+                            新建會員帳號
+                        </label>
                     </div>
-                    
                     <label>
                         <input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">
-                        🔍 查詢玩家資訊<br>
+                        查詢玩家資訊
                     </label>
-                    
-                </div>
-            </div>
-            <div id="Promotion / Ticket" class="tablinkS tabcontent script-grid">
-                <div class="select-group">
-                    <label>
-                        <input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">
-                        🎫 創建票卷
-                    </label>
-                    
-                    <select multiple id="frontend-checkbox_select" size="5" name="ticket_type" style="display: none; border-radius: 6px;" class="multi-select" onchange="toggleInput()">
-                        <option value="CASH" selected>💰 現金兌換卷</option>
-                        <option value="RAFFLE">🧧 幸運紅包</option>
-                        <option value="GOLDEN_EGG">🥚 砸金蛋</option>
-                        <option value="WHEEL">🎡 幸運大轉盤</option>
-                        <option value="GIFT">🎁 商品兌換卷</option>
-                        <option value="FREE_SPIN">🎰 FREE_SPIN</option>
-                        <option value="TEMU">🛒 拼多多</option>
-                    </select>
                 </div>
             </div>
 
-            <div id="TestingTooLTab" class="tablinkS tabcontent script-grid">
+            <div id="Promotion / Ticket" class="tabcontent" role="tabpanel">
+                <div class="select-group script-grid">
+                    <label>
+                        <input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">
+                        創建票券
+                    </label>
+                </div>
+            </div>
+
+            <div id="TestingTooLTab" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <label>
                         <input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">
-                        👥 品牌管理員並行操作測試試算<br>
+                        品牌管理員並行操作測試
                     </label>
-                    
-                    <div class="deposit_select-group">
-                        <label>
-                            <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
-                            ✅ 品牌管理員審核充值<br>
-                        </label>
-
-                    </div>
-                    <div class="deposit_select-group">
-                        <label>
-                            <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
-                            ✅ 觸發APP下載獎勵<br>
-                        </label>
-                    </div>
-                    <div class="deposit_select-group">
-                        <label>
-                            <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
-                            ✅ 變更玩家密碼<br>
-                        </label>
-                    </div>
+                    <label>
+                        <input type="checkbox" name="script" value="Compensation_api" id="Compensation_api" onchange="toggleInput()">
+                        幸運注單補派獎
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
+                        品牌管理員審核充值
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
+                        觸發 APP 下載獎勵
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="PostCard_api" id="PostCard_api" onchange="toggleInput()">
+                        領取郵寄碼
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
+                        變更玩家密碼
+                    </label>
                 </div>
             </div>
-            <div id="loading">
-                <div class="spinner"></div>
-                <div style="margin-top:10px;">   執行中.. </div>
+            <div id="SanityTooLTab" class="tabcontent" role="tabpanel">
+                <div class="script-grid">
+                    <label>
+                        <input type="checkbox" name="script" value="Single_Manual_create" id="Single_Manual_create" onchange="toggleInput()">
+                        創建個人module
+                    </label>
+                </div>    
             </div>
-            
-        </form>
-        <h3>上傳檔案進行資料重複除錯測試</h3>
-        <form id="uploadform" enctype="multipart/form-data" method="POST" action="/upload_excel">
-            <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" >
-            <button type="submit">比對</button>
-            <small id="upload_hint" style="color:red; display: none;" >選擇上傳檔案</small>
-        </form>
-        <div id="result" style="margin-top:20px"></div>   
+        </section>
 
-        <h4>檔案進行資料比對</h4>
-        <form id="Compare_Two_Excel" enctype="multipart/form-data" method="POST" action="/Compare_Two_Excel">
-            <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" >
-            <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" >
-            <button type="submit">比對</button>
-            <small id="upload_hint" style="color:red; display: none;" >選擇上傳檔案</small>
-        </form>
-        
-        <div id="result" style="margin-top:20px"></div>  
+        <div id="loading" aria-live="polite" aria-busy="true">
+            <div class="spinner" role="status"></div>
+            <div>執行中…</div>
+        </div>
+    </div>
 
-<script src="static/flask_script.js"></script>
-        
+    <section class="card" aria-labelledby="upload-dedupe-heading">
+        <h2 id="upload-dedupe-heading" class="section-title">Excel 重複除錯</h2>
+        <p class="subsection-title">單檔上傳</p>
+        <form id="uploadform" enctype="multipart/form-data" method="POST" action="/upload_excel" class="upload-block">
+            <div class="upload-row">
+                <input type="file" id="fileInput" name="file" accept=".xlsx,.xls">
+                <button type="submit" class="btn-outline">比對</button>
+            </div>
+            <small id="upload_hint" class="field-hint">請選擇要上傳的檔案</small>
+        </form>
+    </section>
+
+    <section class="card" aria-labelledby="upload-compare-heading">
+        <h2 id="upload-compare-heading" class="section-title">雙檔 Excel 比對</h2>
+        <form id="Compare_Two_Excel" enctype="multipart/form-data" method="POST" action="/Compare_Two_Excel" class="upload-block">
+            <div class="upload-row">
+                <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" aria-label="第一個 Excel 檔">
+                <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" aria-label="第二個 Excel 檔">
+                <button type="submit" class="btn-outline">比對</button>
+            </div>
+            <small id="upload_hint_compare" class="field-hint">請選擇兩個要上傳的檔案</small>
+        </form>
+    </section>
+
+    <div id="result" aria-live="polite"></div>
+
+    <div id="result-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-header">
+        <div class="modal-content">
+            <div id="modal-header" class="modal-header"></div>
+            <pre id="modal-body" class="modal-body"></pre>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" onclick="closeResultModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='flask_script.js') }}"></script>
+
     {% if selected_scripts %}
-    <p style="color:rgb(0, 68, 128); font-weight: bold;">✅ 執行成功</p>
-    <ul>
-        {% for script in selected_scripts %}
+    <div class="card">
+        <p class="exec-success">執行成功</p>
+        <ul>
+            {% for script in selected_scripts %}
             <li>{{ script }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %} 
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
     {% if customer_Id %}
     <script>
-        alert("Customer ID:{{customer_Id}}\n"+"Customer rank:{{customer_rank}}\n"+"Deposit_Count:{{deposit_count}}")
-    
-    </script>    
-    {% endif %}      
-    
+        alert("Customer ID: {{ customer_Id }}\nCustomer rank: {{ customer_rank }}\nDeposit_Count: {{ deposit_count }}");
+    </script>
+    {% endif %}
 </body>
 </html>

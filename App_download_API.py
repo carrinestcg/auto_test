@@ -1,7 +1,7 @@
 import requests
 import logging
 import random
-from Search_Customer_id import main_batch
+from DB_connect import DB_connect
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,45 +27,62 @@ def appDowload(CustomerId:str,CustomerName,Merchant,CustomerIP,uuid):
     resposne_json=resposne.json()
     if resposne_json.get("success"):
         logging.info("app下載獎勵觸發完成")
+        return True
     else:
         logging.error(f"觸發失敗{resposne.text}")
+        return False
 
 def main(Merchant,CustomerName):
     
     if Merchant=="gi8viet":
-        CustomerName=str(input("CustomerName:"))
-        CustomerId=(main_batch(CustomerName,Merchant))
+        
+        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
         
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
         
-        appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        isSuccess=appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        if isSuccess:
+            return True
+        else:
+            return False
     elif Merchant=="huamei":
 
-        CustomerName=str(input("CustomerName:"))
-        CustomerId=main_batch(CustomerName,Merchant)
+        
+        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
         
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
         
-        appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        isSuccess=appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        if isSuccess:
+            return True
+        else:
+            return False
     elif Merchant=="tcgdemov3":
         
-        CustomerName=str(input("CustomerName:"))
-        CustomerId=(main_batch(CustomerName,Merchant))
+        
+        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
 
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
     
-        appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        isSuccess=appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        if isSuccess:
+            return True
+        else:
+            return False
     elif Merchant=="lodibet":
         Merchant="lodibet"
-        CustomerName=str(input("CustomerName:"))
-        CustomerId=(main_batch(CustomerName,Merchant))
+        
+        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
         
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
     
-        appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
-    
+        isSuccess=appDowload(CustomerId,CustomerName,Merchant,CustomerIP,uuid)
+        if isSuccess:
+            return True
+        else:
+            return False
 

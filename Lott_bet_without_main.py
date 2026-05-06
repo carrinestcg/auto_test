@@ -164,12 +164,12 @@ class Frontend:
             return True
         else:
             return False
-def implement(username,password,amount):
+def implement(username,amount):
         
             try:    
                 credential = {
                     "username": username,
-                    "password": password
+                    "password": "123qwe"
                 }
                 frontend = Frontend(credential)
                 if frontend.token:

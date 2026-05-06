@@ -1,5 +1,8 @@
-import yaml,os
-import requests,logging,json
+import yaml
+import os
+import requests
+import logging
+import json
 from datetime import datetime,timedelta
 
 logging.basicConfig(
@@ -15,7 +18,6 @@ def header(token,merchant):
     "Content-Type": "application/json",
     "Connection": "keep-alive",
     "Language": "zh_CN",
-    "Merchant": "gi8viet",
     "Origin": "http://sit-admin2.tcg.com",
     "Referer": "http://sit-admin2.tcg.com/24785",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
@@ -55,8 +57,8 @@ def get_token(merchant):
     token_data=requests_data.json()
     return token_data.get("token")
 
-def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int,merchant:str):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim?" 
+def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,amount:int,prmotion_id:int,merchant:str):
+    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/prom-promotion-manual-reward-claims-post?pid=20251" 
     payload = {
     "merchantCode": merchant,
     "customerName": player,
@@ -65,7 +67,11 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
     "promotionId": prmotion_id,
     "toReqAmount": 5,
     "ticketId": ticketId,
-    "ticketQuantity": ticketQuantity
+    "ticketQuantity": amount,
+    #"scheduleTime": "1771100157000",
+    "isSendApp": "Y",
+    "appTitle": "title",
+    "appMessage": "恭喜您成功领取 {promotionName} 活动获得 金额 {bonus} 票卷 {ticket}"
 }
 
     headers = header(token,merchant)
@@ -80,8 +86,8 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
         response_data = response.json()
         
         
-        if response_data.get("success") == True:
-            logging.info(f"手動紅利發放成功 ")
+        if response_data.get("success") :
+            logging.info("手動紅利發放成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -169,8 +175,8 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ,promoT
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"審核活動紅利成功 ")
+        if response_data.get("success") :
+            logging.info("審核活動紅利成功 ")
             return True
         else:
             error_msg = response_data.get("value" )
@@ -186,7 +192,7 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ,promoT
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def main(username,promotionid,ticket_id,platform):
+def main(username,promotionid,ticket_id,platform,amount):
     
     try:
         token = get_token(platform)
@@ -198,8 +204,7 @@ def main(username,promotionid,ticket_id,platform):
     #bonusAmount_list= [1,2,3]
     #bonusPointAmount_list=[2,3,4]
     #填入玩家帳號
-    ticketQuantity=1
-    create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,ticketQuantity=ticketQuantity,prmotion_id=promotionid,merchant=platform)
+    create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,amount=amount,prmotion_id=promotionid,merchant=platform)
         
     Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:

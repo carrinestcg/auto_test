@@ -1,6 +1,6 @@
-import requests,logging,datetime
-from datetime import datetime
-import yaml,os
+import requests
+import logging
+from DB_connect import DB_connect
 
 logging.basicConfig(
     level=logging.INFO,
@@ -37,7 +37,7 @@ def get_token():
         return token_data.get("token")
     
     except Exception as e:
-        logging.error("拿取token發生異常")
+        logging.error(f"拿取token發生異常{e}")
 
 def header(token,MerchantCode):
     return {
@@ -57,7 +57,7 @@ def header(token,MerchantCode):
     }
 def create_agent(token,player:str,platform:str):
 
-    API_URL = f"http://sit-admin2.tcg.com/mcs_console/api/agentInfo/createAgent" 
+    API_URL = "http://sit-admin2.tcg.com/mcs_console/api/agentInfo/createAgent" 
     params={
         "agentName": player,
         "masterAgentType":2,
@@ -128,7 +128,7 @@ def create_agent(token,player:str,platform:str):
         logging.info(response.text)
 
         
-        if response_data.get("success") == True:
+        if response_data.get("success") :
             logging.info(f"新建代理玩家成功: {player}")
             return platform
         else:
@@ -145,73 +145,32 @@ def create_agent(token,player:str,platform:str):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-
-def search_customerid(token,player:str,MerchantCode:str):
     
-    API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/player-search-non-bankcard?merchantCode={MerchantCode}&isWildcard=false&sortType=desc&pageable=true&data={player}&searchCode=USERNAME"  
-    
-    headers={
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Authorization": token,
-        "Content-Type": "application/json",
-        "Connection": "keep-alive",
-        "Language": "zh_CN",
-        "Merchant": str(MerchantCode),
-        "MerchantCode": str(MerchantCode),
-        "Origin": "http://sit-admin2.tcg.com",
-        "Referer": "http://sit-admin2.tcg.com/311792",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-        "environment": "TCG3",
-        "notPending": "true",
-        "platform": "TCG"
-    }
-    cookies = {
-        "language": "zh_CN"
-    }
-    try:
-        response=requests.get(API_URL2, headers=headers, cookies=cookies, verify=False)
-        response.raise_for_status()
-
-        response_data=response.json()
-        if response_data.get("success") == True:
-            value_data=response_data.get('value',{})
-            player_list=value_data.get('list',[])
-            if player_list:
-                customerId=player_list[0].get("customerId")
-                if customerId:
-                    logging.info(f"CustomerID: {customerId}")
-                else:
-                    logging.error("沒有拿到CustomerID")
-                return customerId
-            else:
-                logging.error("沒有拿到List")
-            
-        else:
-            error_msg = response_data.get("message", "未知錯誤")
-            logging.error(f"未拿到玩家資訊: {error_msg}")
-            return False
-    except Exception as e:
-        logging.error(f"狀態碼: {response.status_code}")
-
-def reset_to_123qwe(customerId:int):
+def reset_to_123qwe(customerId:int,merchantCode):
     URL="http://10.80.1.22:7001/tcg-uss-ae/password"
     headers={
-        "Accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
         "Content-Type": "application/json",
         "Connection": "keep-alive",
         "Accept":"application/json"
     }
-    payload={ 
-        "customerId": customerId, 
-        "needLogInToChangePassword": True, 
-        "password": "123qwe" 
-  }
+    if merchantCode == 'tcgdemov3':
+        payload={ 
+            "customerId": customerId, 
+            "needLogInToChangePassword": True, 
+            "password": "qwe123" 
+    }
+    else:
+        payload={ 
+            "customerId": customerId, 
+            "needLogInToChangePassword": True, 
+            "password": "123qwe" 
+    }
     response=requests.put(URL,headers=headers,json=payload,verify=False)
     response_data=response.json()
-    if response_data.get("success")==True:
-        return logging.info("修改密碼成功")
+    if response_data.get("success"):
+        logging.info("修改密碼成功")
+        return True
     else:
         return logging.info("修改密碼失敗")
 
@@ -224,11 +183,16 @@ def main(platform,username):
         print("啟動時取得 token 發生錯誤:", e)
         
     platform=create_agent(token,username,platform)
-    customer_id=search_customerid(token,username,platform)
+    customer_id=DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='{platform}@{username}'")
+    print(customer_id)
     if customer_id:
-        reset_to_123qwe(customer_id)
+        if reset_to_123qwe(customer_id,platform):
+            return 1, customer_id
+        else:
+            return 2, customer_id
     else:
         logging.error("沒有拿到CustomerID")
+        return False, None
 
         
 

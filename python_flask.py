@@ -17,175 +17,563 @@ import Frontend_receive_reward
 import Frontend_receive_ticket
 import App_download_API
 import Change_password
-from Lott_bet_without_main import implement
+import Lott_bet_without_main
+import Compensation_api
+import PostCard_Code
+import test_manual_bonus
+import pytest
+from Create_member_Account import async_create_main
 from deposit_api import batch_approve
 import pandas as pd
-python_flask=Flask(__name__)
+import logging
+import threading
+import asyncio
+import subprocess
+import sys
+import os
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+python_flask=Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 @python_flask.route("/")
 def hello():
     return render_template("index.html")
+def auto_create_member_player(platform_type,username,amount):
+        for platform in platform_type:
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
+                try:
+                    result =asyncio.run(async_create_main(platform,username,amount))
+                    if isinstance(result, tuple) and len(result) == 2:
+                        return result
+                    else:
+                        return 0,None
+                except Exception as e:
+                    logging.error(f"創建玩家 {username} 發生錯誤: {e}")
+                    return 0,None
+        return 0, None
 def auto_create_player(platform_type,username):
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
-                NEW_REGISTER_API.main(platform,username)
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
+                try:
+                    result =NEW_REGISTER_API.main(platform,username)
+                    if isinstance(result, tuple) and len(result) == 2:
+                        return result
+                    else:
+                        return 0,None
+                except Exception as e:
+                    logging.error(f"創建玩家 {username} 發生錯誤: {e}")
+                    return 0,None
+        return 0, None
 
 def batch_approve_func(deposit_platform_type):
         for platform in deposit_platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 batch_approve(platform)
 
-def manual_create_bonus(username,promotion,ticket_id,platform_type):
+def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
-                Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform)
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
+                Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
 
 def manual_create_7_type_tcket(username,promotion,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 SIGLE_PROMO_7_TICKET.main(username,promotion,platform)
 
-def auto_create_ticket_func(ticket_type):
-    ticket_input=request.form.get('ticket_input')
-    for ticket in ticket_type:
-        if ticket in ['CASH','FREE_SPIN','TEMU']:
+def auto_create_ticket_func(ticket_type,ticket_input,platform_type):
+    for platform in platform_type:
+        if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
+            for ticket in ticket_type:
+                if ticket in ['CASH','FREE_SPIN','TEMU']:
 
-            ticket_name=f"{ticket_input}_{ticket}"
-            localizations = [
-                    {
-                        "language": "CN",
-                        "name": ticket_name,
-                        "description": None,
-                        "lossMessage": None,
-                        "imageUrl": None,
-                        "imageName": None
-                    }
-                ]
-            auto_create_ticket.main(ticket,localizations)
-        elif ticket in ['RAFFLE','GOLDEN_EGG' ,'WHEEL','GIFT']:
-            ticket_name=f"{ticket_input}_{ticket}"
-            localizations = [
-                    {
-                        "language": "CN",
-                        "name": ticket_name,
-                        "description": None,
-                        "lossMessage": "loss",
-                        "imageUrl": None,
-                        "imageName": None
-                    }
-                ]
-            auto_create_ticket.main(ticket,localizations)
+                    ticket_name=f"{ticket_input}_{ticket}"
+                    localizations = [
+                            {
+                                "language": "CN",
+                                "name": ticket_name,
+                                "description": None,
+                                "lossMessage": None,
+                                "imageUrl": None,
+                                "imageName": None
+                            }
+                        ]
+                    auto_create_ticket.main(ticket,localizations,platform)
+                elif ticket in ['RAFFLE','GOLDEN_EGG' ,'WHEEL','GIFT']:
+                    ticket_name=f"{ticket_input}_{ticket}"
+                    localizations = [
+                            {
+                                "language": "CN",
+                                "name": ticket_name,
+                                "description": None,
+                                "lossMessage": "loss",
+                                "imageUrl": None,
+                                "imageName": None
+                            }
+                        ]
+                    auto_create_ticket.main(ticket,localizations,platform)
 
 def frontend_receive_reward(username,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 Frontend_receive_reward.main(username,platform)
 
 def frontend_receive_ticket(username,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 Frontend_receive_ticket.main(username,platform)
 
 def get_customer_data(username,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 customer_detail=Customer_id.main(username,platform)
                 return customer_detail
             return None,None,None
+        
 def trigger_APP_download_API(platform_type,username):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet'):
-                App_download_API.main(platform,username)
-                
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
+                result=App_download_API.main(platform,username)
+                return result
+
+def trigger_change_password_API(username,platform_type):
+        print(platform_type)
+        for platform in platform_type:
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
+                isSuccess=Change_password.main(username,platform)
+        return isSuccess
+ 
+def lottery_bet(username,amount):
+        Lott_bet_without_main.implement(username,amount)
         
-@python_flask.route("/submit",methods=['POST'])
-def submit():
-    try:
-        selected_scripts=request.form.getlist('script')
-        ticket_type=request.form.getlist('ticket_type')
-        username_raw=request.form.get('username',"")
-        password=request.form.get('password')
-        amount=request.form.get('amount')
-        promotion=request.form.get('promotion_id')
-        platform_type=request.form.getlist('platform_type_manual')
-        ticket_id=request.form.get('ticket_id')
-        usernames=[]
-        customer_Id = None
-        customer_Rank = None
-        Deposit_Count = None
-        promo=None
-        ticket = None
-        platform=None
-        customer_data = [None, None, None] 
-        for u in username_raw.split(","):
-            cleaned=u.strip()
-            if cleaned:
-                usernames.append(cleaned)
-                print(usernames)
+@python_flask.route('/api/PROMOCODE_BATCH',methods=['POST']) #APP下載獎勵API
+def api_PROMOCODE_BATCH():
+    data=request.json
+    username=data["username"]
+    isSuccess=PROMOCODE_BATCH.main(username)
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Success Received PromoCode"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Receive PromoCode Failed"
+                }
+            ),400
+@python_flask.route('/api/SameTimeLogin',methods=['POST']) #APP下載獎勵API
+def api_SameTimeLogin():
+    isSuccess=SameTimeLogin_manager.main()
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "SameTimeLogin Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "SameTimeLogin Failed"
+                }
+            ),400
+@python_flask.route('/api/PLAYER_RANK',methods=['POST']) #APP下載獎勵API
+def api_PLAYER_RANK():
+    data=request.json
+    username=data["username"]
+    isSuccess=PLAYER_RANK.main(username)
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Success Received PromoCode"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Receive PromoCode Failed"
+                }
+            ),400
+@python_flask.route('/api/Codition_create_bonus',methods=['POST']) #APP下載獎勵API
+def api_Codition_create_bonus():
+    isSuccess=Condition_create_bonus.main()
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Success Received PromoCode"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Receive PromoCode Failed"
+                }
+            ),400
 
-        
-        def get_script_map(username):
-            print("selected_scripts =", selected_scripts)
-
-            return{
-                'MANUAL_SINGLE':lambda:MANUAL_SINGLE.main(),
-                'SIGLE_PROMO_7_TICKET':lambda:manual_create_7_type_tcket(username,promotion,platform_type),
-                'MANUAL_BATCH':lambda:MANUAL_BATCH.main(),
-                "MANUAL_CREATE_SINGLE_CONFIRM":lambda:manual_create_bonus(username,promotion,ticket_id,platform_type),
-                'PROMOCODE_BATCH':lambda:PROMOCODE_BATCH.main(username),
-                'LOTTERY_BET':lambda:implement(username,password,amount),
-                'FRONTEND_DEPOSIT':lambda:FRONTEND_DEPOSIT.main(username,password,amount),
-                'DEPOSIT_API':lambda:batch_approve_func(platform_type),
-                'MANUAL_SIGN':lambda:MANUAL_SIGN.main(),
-                'auto_create_player':lambda:auto_create_player(platform_type,username),
-                'Customer_id':lambda:customer_data.__setitem__(slice(0,3),get_customer_data(username,platform_type)),
-                'auto_create_ticket':lambda:auto_create_ticket_func(ticket_type),
-                'SameTimeLogin':lambda:SameTimeLogin_manager.main(),
-                'PLAYER_RANK':lambda:PLAYER_RANK.main(username),
-                'Codition_create_bonus':lambda:Condition_create_bonus.main(),
-                'BONUS_BATCH':lambda:frontend_receive_reward(username,platform_type),
-                'TICKET_BATCH':lambda:frontend_receive_ticket(username,platform_type),
-                'APP_Download':lambda:trigger_APP_download_API(platform_type,username)
-
+@python_flask.route('/api/APP_Download',methods=['POST']) #APP下載獎勵API
+def api_app_download():
+    data=request.get_json(silent=True)
+    if not data:
+        return jsonify(
+        {
+            "success": False,
+            "message": "Triiger API Failed"
             }
-        for script in selected_scripts:
-            if script in ['MANUAL_SINGLE', 'MANUAL_BATCH', 'DEPOSIT_API', 'MANUAL_SIGN', 
-                            'auto_create_ticket', 'SameTimeLogin', 'Codition_create_bonus']:
-                script_map=get_script_map(None)
-                action=script_map.get(script)
-                if action:
-                    action()
-                else:
-                    print("未知腳本")
-            elif script == 'ALL_deposit_promotion':
-                ALL_deposit_promotion.main(usernames,password),
-            else:
-                for username in usernames:
-                    script_map=get_script_map(username)
-                    action=script_map.get(script)
-                    if action:
-                        action()
-                    else:
-                        print("未知腳本11")
+        ),400
+        
+    username=data["username"]
+    platforms=data["platforms"]  
+    result=trigger_APP_download_API(platforms,username)
+    if result:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Triiger API Successfully"
+                }
+            )
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Triiger API Successfully but restrict"
+                }
+            )
+@python_flask.route('/api/Compensation_api',methods=['POST']) #幸運注單補派獎API
+def api_Compensation():
+    data=request.get_json(silent=True)
+    round_id=data["round_id"]
+    isSuccess=Compensation_api.main(round_id)
+    
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Compensation Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Compensation Failed"
+                }
+            ),500
 
-        return render_template("index.html",
-                            selected_scripts=selected_scripts,
-                            customer_Id=customer_data[0],
-                            customer_rank=customer_data[1],
-                            deposit_count=customer_data[2],
-                            ticket=ticket,
-                            promotion=promotion,
-                            platform=platform,
-                            ticket_type=ticket_type,
-                            )
+@python_flask.route('/api/PostCard_api',methods=['POST']) #幸運注單補派獎API
+def api_PostCard_Code():
+    data=request.get_json(silent=True)
+    username=data["username"]
+    platforms=data["platforms"] 
+    isSuccess=PostCard_Code.main(username,platforms)
+    
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "PostCard Bonus receive Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "PostCard Bonus receive Failed"
+                }
+            ),500
+@python_flask.route('/api/Change_password',methods=['POST']) #變更密碼API
+def api_Change_password():
+    data=request.json
+    username=data["username"]
+    platforms=data["platforms"] 
+    isSuccess=trigger_change_password_API(username,platforms)
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Change password Successfully"
+                }
+            )
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Change password Failed"
+                }
+            )
+        
+@python_flask.route('/api/Single_Manual_create',methods=['POST']) #回歸測試 創建個人
+def api_manual_create_single():
+    
+    result = subprocess.run(
+    [sys.executable,"-m","pytest", "test_manual_bonus.py::TestSingleBonus", "-v"],
+    cwd=BASE_DIR,
+    capture_output=True,
+    text=True
+    )   
+    return {
+    "success": result.returncode == 0,
+    "summary": result.stdout.split("short test summary info")[-1]
+    }
+@python_flask.route('/api/TICKET_BATCH',methods=['POST']) #前台領取票券API
+def api_frontend_receive_ticket():
+    data=request.json
+    username=data["username"]
+    platforms=data["platforms"]  
+    frontend_receive_ticket(username,platforms)
+    
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+    
+@python_flask.route('/api/BONUS_BATCH',methods=['POST']) #前台領取獎勵API
+def api_frontend_receive_reward():
+    data=request.json
+    username=data["username"]
+    platforms=data["platforms"]  
+    frontend_receive_reward(username,platforms)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+
+@python_flask.route('/api/LOTTERY_BET',methods=['POST']) #前台領取獎勵API
+def api_lottery_bet():
+    data=request.json
+    username=data["username"]
+    amount=data["amount"]
+    lottery_bet(username,amount)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+    
+@python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台領取獎勵API
+def api_Deposit():
+    data=request.json
+    username=data["username"]
+    amount=data["amount"]
+    FRONTEND_DEPOSIT.main(username,amount),
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+
+@python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #前台領取獎勵API
+def api_Manual_Sign():
+    data=request.json
+    '''
+    username=data["username"]
+    amount=data["amount"]
+    '''
+    MANUAL_SIGN.main()
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+@python_flask.route('/api/get_customer_data',methods=['POST']) #查詢玩家資訊API
+def api_get_customer_data():
+    data=request.json
+    username=data["username"]
+    platforms=data["platforms"]  
+    get_customer_data(username,platforms)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+@python_flask.route('/api/auto_create_ticket',methods=['POST']) #創建票券API
+def api_auto_create_ticket_func():
+    data=request.json
+    ticket_type=data.get("ticket_type",[]) 
+    ticket_input=data.get("ticket_input","")
+    platforms=data["platforms"]  
+    auto_create_ticket_func(ticket_type,ticket_input,platforms)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+@python_flask.route('/api/SIGLE_PROMO_7_TICKET',methods=['POST']) #創建7種票券API
+def api_auto_create_7_ticket():
+    data=request.json
+    promotion_id=data["promotion_id"]
+    username=data["username"]
+    platforms=data["platforms"]  
+    manual_create_7_type_tcket(username,promotion_id,platforms)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+@python_flask.route('/api/MANUAL_CREATE_SINGLE_CONFIRM',methods=['POST']) #手動紅利派發API
+def api_manual_create_bonus():
+    data=request.json
+    promotion_id=data["promotion_id"]
+    username=data["username"]
+    platforms=data["platforms"]  
+    amount=data["amount"]
+    promotion_id=data["promotion_id"]
+    ticket_id=data["ticket_id"]
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    if promotion_id:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Triiger API Successfully"
+                }
+            )
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Missing promotion_id"
+                }
+            )
+        
+        
+@python_flask.route('/api/MANUAL_BATCH',methods=['POST']) #手動紅利派發API
+def api_manual_batch():
+    data=request.json
+    MANUAL_BATCH.main()
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+   
+@python_flask.route('/api/DEPOSIT_API',methods=['POST']) #品牌管理員自動審核API
+def api_batch_approve_func():
+    data=request.json
+    platforms=data["platforms"]  
+    batch_approve_func(platforms)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Triiger API Successfully"
+            }
+        )
+@python_flask.route('/api/auto_create_player',methods=['POST']) #創建代理玩家API
+def api_auto_create_player():
+    data=request.json
+    platforms=data["platforms"]  
+    username=data["username"]
+    result_code, customer_id=auto_create_player(platforms,username)
+    if result_code==1:
+        success = True,
+        message = "Create player and Change password Successfully",
+    
+    elif result_code==2:
+        success = True,
+        message = "Create player success but Change password Failed",
+        
+    elif not result_code:
+        success = False,
+        message = "Create player Failed"
+    return jsonify(
+            {
+                "success": success,
+                "message": message,
+                "data":{
+                    "customer_id":customer_id
+                }
+                }
+            )
+@python_flask.route('/api/create_member_player',methods=['POST']) #新建會員玩家
+def  auto_create_member_account():
+    
+        data=request.json
+        username=data["username"]
+        amount=data["amount"]
+        platforms=data["platforms"] 
+        t=threading.Thread(
+            target=auto_create_member_player,
+            args=(platforms,username,amount),
+            daemon=True
+        )
+        t.start()
+        return jsonify(
+            {
+                "success": True,
+                "message": "Async create player & wallet triggered"
+            }
+        )
+    
+        
+        
+@python_flask.route('/api/Customer_id',methods=['POST']) #查看玩家ID API
+def api_check_player_detail():
+    try:
+        data=request.json
+        username=data["username"]
+        customer_id=Customer_id.main(username)
+        if customer_id:
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Triiger API Successfully",
+                    "data": {
+                        "customer_id":customer_id
+                        }
+                    }
+                )
+        else:
+            return jsonify(
+                {
+                    "success": False,
+                    "message": "Not receive customer_id",
+                    "data": {
+                        "customer_id":customer_id
+                        }
+                    }
+                )
     except Exception as e:
-         return render_template("index.html", error=str(e))
+        return jsonify({
+            "success": False,
+            "message": str(e)
+        }), 500
 
 @python_flask.route('/upload_excel', methods=['POST']) 
 def upload_excel():

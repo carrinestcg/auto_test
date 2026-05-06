@@ -1,0 +1,799 @@
+nohup: ignoring input
+ * Serving Flask app 'python_flask'
+ * Debug mode: on
+2026-05-04 10:20:25 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:9830
+ * Running on http://10.80.1.49:9830
+2026-05-04 10:20:25 - INFO - [33mPress CTRL+C to quit[0m
+2026-05-04 10:20:25 - INFO -  * Restarting with watchdog (inotify)
+2026-05-04 10:20:27 - WARNING -  * Debugger is active!
+2026-05-04 10:20:27 - INFO -  * Debugger PIN: 118-230-208
+2026-05-04 10:20:30 - INFO - 172.18.32.72 - - [04/May/2026 10:20:30] "GET / HTTP/1.1" 200 -
+2026-05-04 10:20:30 - INFO - 172.18.32.72 - - [04/May/2026 10:20:30] "[36mGET /static/flask_css.css HTTP/1.1[0m" 304 -
+2026-05-04 10:20:30 - INFO - 172.18.32.72 - - [04/May/2026 10:20:30] "[36mGET /static/flask_script.js HTTP/1.1[0m" 304 -
+2026-05-04 10:20:30 - INFO - 172.18.32.72 - - [04/May/2026 10:20:30] "[36mGET /static/VSjcAXOaOj.ico HTTP/1.1[0m" 304 -
+2026-05-04 10:20:38 - INFO - 172.18.32.72 - - [04/May/2026 10:20:38] "GET / HTTP/1.1" 200 -
+2026-05-04 10:20:38 - INFO - 172.18.32.72 - - [04/May/2026 10:20:38] "[36mGET /static/flask_css.css HTTP/1.1[0m" 304 -
+2026-05-04 10:20:38 - INFO - 172.18.32.72 - - [04/May/2026 10:20:38] "[36mGET /static/flask_script.js HTTP/1.1[0m" 304 -
+2026-05-04 10:29:28 - INFO - 172.18.32.72 - - [04/May/2026 10:29:28] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 10:29:47 - INFO - 172.18.32.72 - - [04/May/2026 10:29:47] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 10:29:56 - INFO - 172.18.32.72 - - [04/May/2026 10:29:56] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 10:30:41 - INFO - 172.18.32.72 - - [04/May/2026 10:30:41] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 10:30:41 - INFO - 狀態碼200
+2026-05-04 10:30:42 - INFO - 160673416279
+2026-05-04 10:30:44 - ERROR - 'NoneType' object has no attribute 'get'
+2026-05-04 10:30:44 - ERROR - 審核失敗
+2026-05-04 10:30:44 - INFO - 172.18.32.72 - - [04/May/2026 10:30:44] "[35m[1mPOST /api/PostCard_api HTTP/1.1[0m" 500 -
+2026-05-04 10:48:57 - INFO - 狀態碼200
+2026-05-04 10:48:57 - INFO - 169297955943
+2026-05-04 10:48:59 - ERROR - 'NoneType' object has no attribute 'get'
+2026-05-04 10:48:59 - ERROR - 審核失敗
+2026-05-04 10:48:59 - INFO - 172.18.32.72 - - [04/May/2026 10:48:59] "[35m[1mPOST /api/PostCard_api HTTP/1.1[0m" 500 -
+2026-05-04 10:49:00 - INFO - 手動紅利發放成功 
+2026-05-04 10:49:01 - INFO - 拿到 CustomerID: 6486506 和 claimid: 36496966 MANUAL
+2026-05-04 10:49:02 - INFO - 審核活動紅利成功 
+2026-05-04 10:49:02 - INFO - 172.18.32.72 - - [04/May/2026 10:49:02] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 10:54:41 - INFO - 172.18.32.72 - - [04/May/2026 10:54:41] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 10:56:10 - INFO - 手動紅利發放成功 
+2026-05-04 10:56:10 - INFO - 拿到 CustomerID: 6486506 和 claimid: 36496969 MANUAL
+2026-05-04 10:56:11 - INFO - 審核活動紅利成功 
+2026-05-04 10:56:11 - INFO - 172.18.32.72 - - [04/May/2026 10:56:11] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 10:56:55 - INFO - 已進入 batch_approve 函數
+2026-05-04 10:56:57 - INFO - 搜尋充值對象成功: 
+2026-05-04 10:56:57 - INFO - 總共拿到 5 個存款對象
+2026-05-04 10:56:57 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 10:56:57 - INFO - 成功批准ID: 3312165381430 , 金額: 100
+2026-05-04 10:56:57 - INFO - 批量處理充值完成
+2026-05-04 10:56:57 - INFO - 總計: 1 條記錄
+2026-05-04 10:56:57 - INFO - 成功: 1 條
+2026-05-04 10:56:57 - INFO - 失敗: 0 條
+2026-05-04 10:56:57 - INFO - 172.18.32.72 - - [04/May/2026 10:56:57] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 10:58:31 - INFO - 已進入 batch_approve 函數
+2026-05-04 10:58:42 - INFO - 搜尋充值對象成功: 
+2026-05-04 10:58:42 - INFO - 總共拿到 6 個存款對象
+2026-05-04 10:58:42 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 10:58:51 - INFO - 成功批准ID: 3312165381435 , 金額: 100
+2026-05-04 10:58:51 - INFO - 批量處理充值完成
+2026-05-04 10:58:51 - INFO - 總計: 1 條記錄
+2026-05-04 10:58:51 - INFO - 成功: 1 條
+2026-05-04 10:58:51 - INFO - 失敗: 0 條
+2026-05-04 10:58:51 - INFO - 172.18.32.72 - - [04/May/2026 10:58:51] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:00:40 - INFO - 手動紅利發放成功 
+2026-05-04 11:00:40 - INFO - 拿到 CustomerID: 6486506 和 claimid: 36522659 MANUAL
+2026-05-04 11:00:40 - INFO - 審核活動紅利成功 
+2026-05-04 11:00:40 - INFO - 172.18.32.72 - - [04/May/2026 11:00:40] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 11:05:56 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:05:58 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:05:58 - INFO - 總共拿到 7 個存款對象
+2026-05-04 11:05:58 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:05:58 - INFO - 成功批准ID: 3312165381436 , 金額: 100
+2026-05-04 11:05:58 - INFO - 批量處理充值完成
+2026-05-04 11:05:58 - INFO - 總計: 1 條記錄
+2026-05-04 11:05:58 - INFO - 成功: 1 條
+2026-05-04 11:05:58 - INFO - 失敗: 0 條
+2026-05-04 11:05:58 - INFO - 172.18.32.72 - - [04/May/2026 11:05:58] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:08:02 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:08:04 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:08:04 - INFO - 總共拿到 8 個存款對象
+2026-05-04 11:08:04 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:08:05 - INFO - 成功批准ID: 3312165381437 , 金額: 100
+2026-05-04 11:08:05 - INFO - 批量處理充值完成
+2026-05-04 11:08:05 - INFO - 總計: 1 條記錄
+2026-05-04 11:08:05 - INFO - 成功: 1 條
+2026-05-04 11:08:05 - INFO - 失敗: 0 條
+2026-05-04 11:08:05 - INFO - 172.18.32.72 - - [04/May/2026 11:08:05] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:08:49 - INFO - {"success":true,"errorCode":null,"message":"Success!","value":null,"totalPageCount":0,"footerValue":null}
+2026-05-04 11:08:49 - INFO - 新建代理玩家成功: five024
+2026-05-04 11:08:49 - INFO - 修改密碼成功
+2026-05-04 11:08:49 - INFO - 172.18.32.72 - - [04/May/2026 11:08:49] "POST /api/auto_create_player HTTP/1.1" 200 -
+2026-05-04 11:09:28 - INFO - 手動紅利發放成功 
+2026-05-04 11:09:28 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527260 MANUAL
+2026-05-04 11:09:28 - INFO - 審核活動紅利成功 
+2026-05-04 11:09:28 - INFO - 172.18.32.72 - - [04/May/2026 11:09:28] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 11:12:00 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:12:02 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:12:02 - INFO - 總共拿到 9 個存款對象
+2026-05-04 11:12:02 - INFO - 正在處理第1/1的充值list,金額200
+2026-05-04 11:12:02 - INFO - 成功批准ID: 3312165381440 , 金額: 200
+2026-05-04 11:12:02 - INFO - 批量處理充值完成
+2026-05-04 11:12:02 - INFO - 總計: 1 條記錄
+2026-05-04 11:12:02 - INFO - 成功: 1 條
+2026-05-04 11:12:02 - INFO - 失敗: 0 條
+2026-05-04 11:12:02 - INFO - 172.18.32.72 - - [04/May/2026 11:12:02] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:14:01 - INFO - 172.18.32.72 - - [04/May/2026 11:14:01] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 11:15:20 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:15:21 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:15:21 - INFO - 總共拿到 10 個存款對象
+2026-05-04 11:15:21 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:15:22 - INFO - 成功批准ID: 3312165381441 , 金額: 100
+2026-05-04 11:15:22 - INFO - 批量處理充值完成
+2026-05-04 11:15:22 - INFO - 總計: 1 條記錄
+2026-05-04 11:15:22 - INFO - 成功: 1 條
+2026-05-04 11:15:22 - INFO - 失敗: 0 條
+2026-05-04 11:15:22 - INFO - 172.18.32.72 - - [04/May/2026 11:15:22] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:17:26 - INFO - 手動紅利發放成功 
+2026-05-04 11:17:26 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527264 MANUAL
+2026-05-04 11:17:26 - INFO - 審核活動紅利成功 
+2026-05-04 11:17:26 - INFO - 172.18.32.72 - - [04/May/2026 11:17:26] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 11:19:25 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:19:26 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:19:26 - INFO - 總共拿到 12 個存款對象
+2026-05-04 11:19:26 - INFO - 正在處理第1/1的充值list,金額200
+2026-05-04 11:19:27 - INFO - 成功批准ID: 3312165381444 , 金額: 200
+2026-05-04 11:19:27 - INFO - 批量處理充值完成
+2026-05-04 11:19:27 - INFO - 總計: 1 條記錄
+2026-05-04 11:19:27 - INFO - 成功: 1 條
+2026-05-04 11:19:27 - INFO - 失敗: 0 條
+2026-05-04 11:19:27 - INFO - 172.18.32.72 - - [04/May/2026 11:19:27] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:24:48 - INFO - 手動紅利發放成功 
+2026-05-04 11:24:48 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527276 MANUAL
+2026-05-04 11:24:48 - INFO - 審核活動紅利成功 
+2026-05-04 11:24:48 - INFO - 172.18.32.72 - - [04/May/2026 11:24:48] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 11:26:05 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:26:07 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:26:07 - INFO - 總共拿到 13 個存款對象
+2026-05-04 11:26:07 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:26:08 - INFO - 成功批准ID: 3312165381448 , 金額: 100
+2026-05-04 11:26:08 - INFO - 批量處理充值完成
+2026-05-04 11:26:08 - INFO - 總計: 1 條記錄
+2026-05-04 11:26:08 - INFO - 成功: 1 條
+2026-05-04 11:26:08 - INFO - 失敗: 0 條
+2026-05-04 11:26:08 - INFO - 172.18.32.72 - - [04/May/2026 11:26:08] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:27:34 - INFO - 手動紅利發放成功 
+2026-05-04 11:27:34 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527280 MANUAL
+2026-05-04 11:27:34 - INFO - 審核活動紅利成功 
+2026-05-04 11:27:34 - INFO - 172.18.32.72 - - [04/May/2026 11:27:34] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 11:28:38 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:28:43 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:28:43 - INFO - 總共拿到 15 個存款對象
+2026-05-04 11:28:43 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:28:57 - INFO - 成功批准ID: 3312165381452 , 金額: 100
+2026-05-04 11:28:57 - INFO - 批量處理充值完成
+2026-05-04 11:28:57 - INFO - 總計: 1 條記錄
+2026-05-04 11:28:57 - INFO - 成功: 1 條
+2026-05-04 11:28:57 - INFO - 失敗: 0 條
+2026-05-04 11:28:57 - INFO - 172.18.32.72 - - [04/May/2026 11:28:57] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:31:02 - INFO - 手動紅利發放成功 
+2026-05-04 11:31:03 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527289 MANUAL
+2026-05-04 11:31:03 - INFO - 審核活動紅利成功 
+2026-05-04 11:31:03 - INFO - 172.18.32.72 - - [04/May/2026 11:31:03] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 11:31:48 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:31:50 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:31:50 - INFO - 總共拿到 16 個存款對象
+2026-05-04 11:31:50 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:31:50 - INFO - 成功批准ID: 3312165381456 , 金額: 100
+2026-05-04 11:31:50 - INFO - 批量處理充值完成
+2026-05-04 11:31:50 - INFO - 總計: 1 條記錄
+2026-05-04 11:31:50 - INFO - 成功: 1 條
+2026-05-04 11:31:50 - INFO - 失敗: 0 條
+2026-05-04 11:31:50 - INFO - 172.18.32.72 - - [04/May/2026 11:31:50] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:34:56 - ERROR - 手動紅利發放失敗: cash_voucher_x_ticket_quantity_exceeded
+2026-05-04 11:34:56 - INFO - 172.18.32.72 - - [04/May/2026 11:34:56] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2026-05-04 11:57:57 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:57:59 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:57:59 - INFO - 總共拿到 20 個存款對象
+2026-05-04 11:57:59 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 11:57:59 - INFO - 成功批准ID: 3312165381468 , 金額: 100
+2026-05-04 11:57:59 - INFO - 批量處理充值完成
+2026-05-04 11:57:59 - INFO - 總計: 1 條記錄
+2026-05-04 11:57:59 - INFO - 成功: 1 條
+2026-05-04 11:57:59 - INFO - 失敗: 0 條
+2026-05-04 11:57:59 - INFO - 172.18.32.72 - - [04/May/2026 11:57:59] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 11:59:56 - INFO - 已進入 batch_approve 函數
+2026-05-04 11:59:58 - INFO - 搜尋充值對象成功: 
+2026-05-04 11:59:58 - INFO - 總共拿到 21 個存款對象
+2026-05-04 11:59:58 - INFO - 正在處理第1/1的充值list,金額200
+2026-05-04 11:59:58 - INFO - 成功批准ID: 3312165381469 , 金額: 200
+2026-05-04 11:59:58 - INFO - 批量處理充值完成
+2026-05-04 11:59:58 - INFO - 總計: 1 條記錄
+2026-05-04 11:59:58 - INFO - 成功: 1 條
+2026-05-04 11:59:58 - INFO - 失敗: 0 條
+2026-05-04 11:59:58 - INFO - 172.18.32.72 - - [04/May/2026 11:59:58] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 12:01:58 - INFO - 已進入 batch_approve 函數
+2026-05-04 12:02:00 - INFO - 搜尋充值對象成功: 
+2026-05-04 12:02:00 - INFO - 總共拿到 22 個存款對象
+2026-05-04 12:02:00 - INFO - 正在處理第1/1的充值list,金額200
+2026-05-04 12:02:00 - INFO - 成功批准ID: 3312165381471 , 金額: 200
+2026-05-04 12:02:00 - INFO - 批量處理充值完成
+2026-05-04 12:02:00 - INFO - 總計: 1 條記錄
+2026-05-04 12:02:00 - INFO - 成功: 1 條
+2026-05-04 12:02:00 - INFO - 失敗: 0 條
+2026-05-04 12:02:00 - INFO - 172.18.32.72 - - [04/May/2026 12:02:00] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 12:03:53 - INFO - 已進入 batch_approve 函數
+2026-05-04 12:03:55 - INFO - 搜尋充值對象成功: 
+2026-05-04 12:03:55 - INFO - 總共拿到 23 個存款對象
+2026-05-04 12:03:55 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 12:03:57 - INFO - 成功批准ID: 3312165381473 , 金額: 100
+2026-05-04 12:03:57 - INFO - 批量處理充值完成
+2026-05-04 12:03:57 - INFO - 總計: 1 條記錄
+2026-05-04 12:03:57 - INFO - 成功: 1 條
+2026-05-04 12:03:57 - INFO - 失敗: 0 條
+2026-05-04 12:03:57 - INFO - 172.18.32.72 - - [04/May/2026 12:03:57] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 12:13:01 - INFO - 手動紅利發放成功 
+2026-05-04 12:13:01 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527351 MANUAL
+2026-05-04 12:13:02 - INFO - 審核活動紅利成功 
+2026-05-04 12:13:02 - INFO - 172.18.32.72 - - [04/May/2026 12:13:02] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 12:20:19 - INFO - 已進入 batch_approve 函數
+2026-05-04 12:20:21 - INFO - 搜尋充值對象成功: 
+2026-05-04 12:20:21 - INFO - 總共拿到 24 個存款對象
+2026-05-04 12:20:21 - INFO - 正在處理第1/1的充值list,金額200
+2026-05-04 12:20:21 - INFO - 成功批准ID: 3312165381483 , 金額: 200
+2026-05-04 12:20:21 - INFO - 批量處理充值完成
+2026-05-04 12:20:21 - INFO - 總計: 1 條記錄
+2026-05-04 12:20:21 - INFO - 成功: 1 條
+2026-05-04 12:20:21 - INFO - 失敗: 0 條
+2026-05-04 12:20:21 - INFO - 172.18.32.72 - - [04/May/2026 12:20:21] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 12:26:04 - INFO - 已進入 batch_approve 函數
+2026-05-04 12:26:06 - INFO - 搜尋充值對象成功: 
+2026-05-04 12:26:06 - INFO - 總共拿到 25 個存款對象
+2026-05-04 12:26:06 - INFO - 正在處理第1/1的充值list,金額100
+2026-05-04 12:26:06 - INFO - 成功批准ID: 3312165381485 , 金額: 100
+2026-05-04 12:26:06 - INFO - 批量處理充值完成
+2026-05-04 12:26:06 - INFO - 總計: 1 條記錄
+2026-05-04 12:26:06 - INFO - 成功: 1 條
+2026-05-04 12:26:06 - INFO - 失敗: 0 條
+2026-05-04 12:26:06 - INFO - 172.18.32.72 - - [04/May/2026 12:26:06] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 12:32:53 - INFO - 172.18.32.72 - - [04/May/2026 12:32:53] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 12:39:10 - INFO - 手動紅利發放成功 
+2026-05-04 12:39:10 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527368 MANUAL
+2026-05-04 12:39:10 - INFO - 審核活動紅利成功 
+2026-05-04 12:39:10 - INFO - 172.18.32.72 - - [04/May/2026 12:39:10] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:35:25 - INFO - 手動紅利發放成功 
+2026-05-04 14:35:25 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527382 MANUAL
+2026-05-04 14:35:25 - INFO - 審核活動紅利成功 
+2026-05-04 14:35:25 - INFO - 172.18.32.72 - - [04/May/2026 14:35:25] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:44:53 - INFO - 狀態碼200
+2026-05-04 14:44:53 - INFO - 創建票卷成功 
+2026-05-04 14:44:53 - INFO - 狀態碼200
+2026-05-04 14:44:53 - INFO - 創建票卷成功 
+2026-05-04 14:44:53 - INFO - 狀態碼200
+2026-05-04 14:44:53 - INFO - 創建票卷成功 
+2026-05-04 14:44:53 - INFO - 狀態碼200
+2026-05-04 14:44:53 - INFO - 創建票卷成功 
+2026-05-04 14:44:53 - INFO - 172.18.32.72 - - [04/May/2026 14:44:53] "POST /api/auto_create_ticket HTTP/1.1" 200 -
+2026-05-04 14:46:51 - INFO - 狀態碼200
+2026-05-04 14:46:51 - INFO - 創建票卷成功 
+2026-05-04 14:46:51 - INFO - 狀態碼200
+2026-05-04 14:46:52 - INFO - 創建票卷成功 
+2026-05-04 14:46:52 - INFO - 狀態碼200
+2026-05-04 14:46:52 - INFO - 創建票卷成功 
+2026-05-04 14:46:52 - INFO - 狀態碼200
+2026-05-04 14:46:52 - INFO - 創建票卷成功 
+2026-05-04 14:46:52 - INFO - 172.18.32.72 - - [04/May/2026 14:46:52] "POST /api/auto_create_ticket HTTP/1.1" 200 -
+2026-05-04 14:51:41 - INFO - 手動紅利發放成功 
+2026-05-04 14:51:41 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527392 MANUAL
+2026-05-04 14:51:41 - INFO - 審核活動紅利成功 
+2026-05-04 14:51:41 - INFO - 172.18.32.72 - - [04/May/2026 14:51:41] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:51:47 - INFO - 手動紅利發放成功 
+2026-05-04 14:51:47 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527393 MANUAL
+2026-05-04 14:51:47 - INFO - 審核活動紅利成功 
+2026-05-04 14:51:47 - INFO - 172.18.32.72 - - [04/May/2026 14:51:47] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:51:57 - INFO - 手動紅利發放成功 
+2026-05-04 14:51:57 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527394 MANUAL
+2026-05-04 14:51:57 - INFO - 審核活動紅利成功 
+2026-05-04 14:51:57 - INFO - 172.18.32.72 - - [04/May/2026 14:51:57] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:52:02 - INFO - 手動紅利發放成功 
+2026-05-04 14:52:02 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527395 MANUAL
+2026-05-04 14:52:02 - INFO - 審核活動紅利成功 
+2026-05-04 14:52:02 - INFO - 172.18.32.72 - - [04/May/2026 14:52:02] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:52:12 - INFO - 手動紅利發放成功 
+2026-05-04 14:52:12 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527396 MANUAL
+2026-05-04 14:52:12 - INFO - 審核活動紅利成功 
+2026-05-04 14:52:12 - INFO - 172.18.32.72 - - [04/May/2026 14:52:12] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 14:52:18 - INFO - 手動紅利發放成功 
+2026-05-04 14:52:18 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527397 MANUAL
+2026-05-04 14:52:18 - INFO - 審核活動紅利成功 
+2026-05-04 14:52:18 - INFO - 172.18.32.72 - - [04/May/2026 14:52:18] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:01 - INFO - {"success":true,"errorCode":null,"message":"Success!","value":null,"totalPageCount":0,"footerValue":null}
+2026-05-04 15:07:01 - INFO - 新建代理玩家成功: five025
+2026-05-04 15:07:01 - INFO - 修改密碼成功
+2026-05-04 15:07:01 - INFO - 172.18.32.72 - - [04/May/2026 15:07:01] "POST /api/auto_create_player HTTP/1.1" 200 -
+2026-05-04 15:07:10 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:10 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527413 MANUAL
+2026-05-04 15:07:10 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:10 - INFO - 172.18.32.72 - - [04/May/2026 15:07:10] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:22 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:22 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527414 MANUAL
+2026-05-04 15:07:22 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:22 - INFO - 172.18.32.72 - - [04/May/2026 15:07:22] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:28 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:28 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527415 MANUAL
+2026-05-04 15:07:28 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:28 - INFO - 172.18.32.72 - - [04/May/2026 15:07:28] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:33 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:33 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527416 MANUAL
+2026-05-04 15:07:33 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:33 - INFO - 172.18.32.72 - - [04/May/2026 15:07:33] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:38 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:39 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527417 MANUAL
+2026-05-04 15:07:39 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:39 - INFO - 172.18.32.72 - - [04/May/2026 15:07:39] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:44 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:44 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527418 MANUAL
+2026-05-04 15:07:44 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:44 - INFO - 172.18.32.72 - - [04/May/2026 15:07:44] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:07:50 - INFO - 手動紅利發放成功 
+2026-05-04 15:07:50 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527419 MANUAL
+2026-05-04 15:07:50 - INFO - 審核活動紅利成功 
+2026-05-04 15:07:50 - INFO - 172.18.32.72 - - [04/May/2026 15:07:50] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:08:05 - INFO - 手動紅利發放成功 
+2026-05-04 15:08:05 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527420 MANUAL
+2026-05-04 15:08:06 - INFO - 審核活動紅利成功 
+2026-05-04 15:08:06 - INFO - 172.18.32.72 - - [04/May/2026 15:08:06] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:08:11 - INFO - 手動紅利發放成功 
+2026-05-04 15:08:11 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527421 MANUAL
+2026-05-04 15:08:12 - INFO - 審核活動紅利成功 
+2026-05-04 15:08:12 - INFO - 172.18.32.72 - - [04/May/2026 15:08:12] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:11:29 - INFO - 手動紅利發放成功 
+2026-05-04 15:11:29 - INFO - 拿到 CustomerID: 8149503 和 claimid: 36527430 MANUAL
+2026-05-04 15:11:29 - INFO - 審核活動紅利成功 
+2026-05-04 15:11:29 - INFO - 172.18.32.72 - - [04/May/2026 15:11:29] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:15:15 - INFO - 172.18.32.72 - - [04/May/2026 15:15:15] "POST /api/Customer_id HTTP/1.1" 200 -
+2026-05-04 15:23:35 - INFO - 手動紅利發放成功 
+2026-05-04 15:23:35 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527445 MANUAL
+2026-05-04 15:23:37 - INFO - 審核活動紅利成功 
+2026-05-04 15:23:37 - INFO - 172.18.32.72 - - [04/May/2026 15:23:37] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:31:55 - INFO - 已進入 batch_approve 函數
+2026-05-04 15:31:55 - INFO - 172.18.32.72 - - [04/May/2026 15:31:55] "[35m[1mPOST /api/DEPOSIT_API HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/requests/models.py", line 976, in json
+    return complexjson.loads(self.text, **kwargs)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/3.13.1/lib/python3.13/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/qauser/.pyenv/versions/3.13.1/lib/python3.13/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/3.13.1/lib/python3.13/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/qauser/pcd_test/auto_test/deposit_api.py", line 147, in batch_approve
+    token=get_token()
+  File "/home/qauser/pcd_test/auto_test/deposit_api.py", line 52, in get_token
+    token_data=requests_data.json()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/requests/models.py", line 980, in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 490, in api_batch_approve_func
+    batch_approve_func(platforms)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 75, in batch_approve_func
+    batch_approve(platform)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/deposit_api.py", line 168, in batch_approve
+    logging.error(f"處理充值 ID: {deposit_Info['depositId']} 時發生錯誤: {e}")
+                                  ~~~~~~~~~~~~^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+2026-05-04 15:32:05 - INFO - 已進入 batch_approve 函數
+2026-05-04 15:32:05 - INFO - 172.18.32.72 - - [04/May/2026 15:32:05] "[35m[1mPOST /api/DEPOSIT_API HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/requests/models.py", line 976, in json
+    return complexjson.loads(self.text, **kwargs)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/3.13.1/lib/python3.13/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/qauser/.pyenv/versions/3.13.1/lib/python3.13/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/3.13.1/lib/python3.13/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/qauser/pcd_test/auto_test/deposit_api.py", line 147, in batch_approve
+    token=get_token()
+  File "/home/qauser/pcd_test/auto_test/deposit_api.py", line 52, in get_token
+    token_data=requests_data.json()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/requests/models.py", line 980, in json
+    raise RequestsJSONDecodeError(e.msg, e.doc, e.pos)
+requests.exceptions.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 490, in api_batch_approve_func
+    batch_approve_func(platforms)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 75, in batch_approve_func
+    batch_approve(platform)
+    ~~~~~~~~~~~~~^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/deposit_api.py", line 168, in batch_approve
+    logging.error(f"處理充值 ID: {deposit_Info['depositId']} 時發生錯誤: {e}")
+                                  ~~~~~~~~~~~~^^^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+2026-05-04 15:46:25 - INFO - token 將在2026-05-04 16:11:25.136942過期 
+2026-05-04 15:46:25 - INFO - 登入成功 Token: 845800ef-c7ab-493b-b64e-776cc764dbc4
+2026-05-04 15:46:25 - INFO - 總共可領2個獎勵
+2026-05-04 15:46:25 - INFO - 成功領取獎勵 交易ID: 36527288
+2026-05-04 15:46:25 - INFO - 領取成功
+2026-05-04 15:46:26 - ERROR - 啟動時發生錯誤: 400 Client Error: Bad Request for url: http://sit4.sit-gi8viet.com/wps/relay/MCSFE_claimIssuedPromotion
+2026-05-04 15:46:26 - INFO - 172.18.32.72 - - [04/May/2026 15:46:26] "POST /api/BONUS_BATCH HTTP/1.1" 200 -
+2026-05-04 15:47:02 - INFO - 手動紅利發放成功 
+2026-05-04 15:47:02 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527456 MANUAL
+2026-05-04 15:47:03 - INFO - 審核活動紅利成功 
+2026-05-04 15:47:03 - INFO - 172.18.32.72 - - [04/May/2026 15:47:03] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:47:10 - INFO - 手動紅利發放成功 
+2026-05-04 15:47:10 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527457 MANUAL
+2026-05-04 15:47:11 - INFO - 審核活動紅利成功 
+2026-05-04 15:47:11 - INFO - 172.18.32.72 - - [04/May/2026 15:47:11] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:49:52 - INFO - 手動紅利發放成功 
+2026-05-04 15:49:52 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527459 MANUAL
+2026-05-04 15:49:53 - INFO - 審核活動紅利成功 
+2026-05-04 15:49:53 - INFO - 172.18.32.72 - - [04/May/2026 15:49:53] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:50:31 - INFO - 手動紅利發放成功 
+2026-05-04 15:50:32 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527460 MANUAL
+2026-05-04 15:50:32 - INFO - 審核活動紅利成功 
+2026-05-04 15:50:32 - INFO - 172.18.32.72 - - [04/May/2026 15:50:32] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 15:50:32 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:50:36 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:50:40 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:50:44 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:50:48 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:50:52 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:50:56 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:51:00 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:51:04 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 15:51:08 - INFO - 172.18.32.72 - - [04/May/2026 15:51:08] "[31m[1mPOST /api/Codition_create_bonus HTTP/1.1[0m" 400 -
+2026-05-04 16:03:11 - ERROR - 手動紅利發放失敗: promotion_user_blacklisted
+2026-05-04 16:03:11 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:03:11 - INFO - 172.18.32.72 - - [04/May/2026 16:03:11] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2026-05-04 16:03:28 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:03:30 - ERROR - 手動紅利發放失敗: promotion_user_blacklisted
+2026-05-04 16:03:30 - INFO - 172.18.32.72 - - [04/May/2026 16:03:30] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2026-05-04 16:03:33 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:03:42 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:03:58 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:04:03 - INFO - 172.18.32.72 - - [04/May/2026 16:04:03] "GET / HTTP/1.1" 200 -
+2026-05-04 16:04:03 - INFO - 172.18.32.72 - - [04/May/2026 16:04:03] "[36mGET /static/flask_css.css HTTP/1.1[0m" 304 -
+2026-05-04 16:04:03 - INFO - 172.18.32.72 - - [04/May/2026 16:04:03] "[36mGET /static/flask_script.js HTTP/1.1[0m" 304 -
+2026-05-04 16:04:04 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:04:08 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:04:12 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:04:16 - ERROR - 條件派發失敗: ticket not found. ticketId: 1129014
+2026-05-04 16:04:20 - INFO - 172.18.32.72 - - [04/May/2026 16:04:20] "[31m[1mPOST /api/Codition_create_bonus HTTP/1.1[0m" 400 -
+2026-05-04 16:04:24 - ERROR - 手動紅利發放失敗: promotion_user_blacklisted
+2026-05-04 16:04:24 - INFO - 172.18.32.72 - - [04/May/2026 16:04:24] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2026-05-04 16:05:06 - INFO - 手動紅利發放成功 
+2026-05-04 16:05:06 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527471 MANUAL
+2026-05-04 16:05:06 - INFO - 審核活動紅利成功 
+2026-05-04 16:05:06 - INFO - 172.18.32.72 - - [04/May/2026 16:05:06] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:07:50 - INFO - 手動紅利發放成功 
+2026-05-04 16:07:50 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527481 MANUAL
+2026-05-04 16:07:50 - INFO - 審核活動紅利成功 
+2026-05-04 16:07:50 - INFO - 172.18.32.72 - - [04/May/2026 16:07:50] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:10:17 - ERROR - 手動紅利發放失敗: promotion_user_blacklisted
+2026-05-04 16:10:17 - INFO - 172.18.32.72 - - [04/May/2026 16:10:17] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2026-05-04 16:11:28 - INFO - 手動紅利發放成功 
+2026-05-04 16:11:28 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527489 MANUAL
+2026-05-04 16:11:28 - INFO - 審核活動紅利成功 
+2026-05-04 16:11:28 - INFO - 172.18.32.72 - - [04/May/2026 16:11:28] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:12:24 - INFO - 已進入 batch_approve 函數
+2026-05-04 16:12:26 - INFO - 搜尋充值對象成功: 
+2026-05-04 16:12:26 - INFO - 總共拿到 65 個存款對象
+2026-05-04 16:12:26 - INFO - 正在處理第1/2的充值list,金額250
+2026-05-04 16:12:26 - INFO - 成功批准ID: 3312165381571 , 金額: 250
+2026-05-04 16:12:26 - INFO - 正在處理第2/2的充值list,金額100
+2026-05-04 16:12:26 - INFO - 成功批准ID: 3312165381526 , 金額: 100
+2026-05-04 16:12:26 - INFO - 批量處理充值完成
+2026-05-04 16:12:26 - INFO - 總計: 2 條記錄
+2026-05-04 16:12:26 - INFO - 成功: 2 條
+2026-05-04 16:12:26 - INFO - 失敗: 0 條
+2026-05-04 16:12:26 - INFO - 172.18.32.72 - - [04/May/2026 16:12:26] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 16:13:16 - INFO - 已進入 batch_approve 函數
+2026-05-04 16:13:18 - INFO - 搜尋充值對象成功: 
+2026-05-04 16:13:18 - INFO - 總共拿到 66 個存款對象
+2026-05-04 16:13:18 - INFO - 正在處理第1/1的充值list,金額250
+2026-05-04 16:13:18 - INFO - 成功批准ID: 3312165381572 , 金額: 250
+2026-05-04 16:13:18 - INFO - 批量處理充值完成
+2026-05-04 16:13:18 - INFO - 總計: 1 條記錄
+2026-05-04 16:13:18 - INFO - 成功: 1 條
+2026-05-04 16:13:18 - INFO - 失敗: 0 條
+2026-05-04 16:13:18 - INFO - 172.18.32.72 - - [04/May/2026 16:13:18] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-04 16:17:16 - INFO - 手動紅利發放成功 
+2026-05-04 16:17:16 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527526 MANUAL
+2026-05-04 16:17:16 - INFO - 審核活動紅利成功 
+2026-05-04 16:17:16 - INFO - 172.18.32.72 - - [04/May/2026 16:17:16] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:27:44 - ERROR - 手動紅利發放失敗: promotion_user_blacklisted
+2026-05-04 16:27:44 - INFO - 172.18.32.72 - - [04/May/2026 16:27:44] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2026-05-04 16:28:06 - INFO - 手動紅利發放成功 
+2026-05-04 16:28:07 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527548 MANUAL
+2026-05-04 16:28:10 - INFO - 審核活動紅利成功 
+2026-05-04 16:28:10 - INFO - 172.18.32.72 - - [04/May/2026 16:28:10] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:30:52 - INFO - 手動紅利發放成功 
+2026-05-04 16:30:52 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527549 MANUAL
+2026-05-04 16:30:52 - INFO - 審核活動紅利成功 
+2026-05-04 16:30:52 - INFO - 172.18.32.72 - - [04/May/2026 16:30:52] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:31:54 - INFO - 手動紅利發放成功 
+2026-05-04 16:31:54 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527550 MANUAL
+2026-05-04 16:31:54 - INFO - 審核活動紅利成功 
+2026-05-04 16:31:54 - INFO - 172.18.32.72 - - [04/May/2026 16:31:54] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:55:38 - INFO - 手動紅利發放成功 
+2026-05-04 16:55:38 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527573 MANUAL
+2026-05-04 16:55:39 - INFO - 審核活動紅利成功 
+2026-05-04 16:55:39 - INFO - 172.18.32.72 - - [04/May/2026 16:55:39] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:55:44 - INFO - 手動紅利發放成功 
+2026-05-04 16:55:44 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527574 MANUAL
+2026-05-04 16:55:44 - INFO - 審核活動紅利成功 
+2026-05-04 16:55:44 - INFO - 172.18.32.72 - - [04/May/2026 16:55:44] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:55:50 - INFO - 手動紅利發放成功 
+2026-05-04 16:55:51 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527575 MANUAL
+2026-05-04 16:55:51 - INFO - 審核活動紅利成功 
+2026-05-04 16:55:51 - INFO - 172.18.32.72 - - [04/May/2026 16:55:51] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:55:56 - INFO - 手動紅利發放成功 
+2026-05-04 16:55:56 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527576 MANUAL
+2026-05-04 16:55:56 - INFO - 審核活動紅利成功 
+2026-05-04 16:55:56 - INFO - 172.18.32.72 - - [04/May/2026 16:55:56] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:56:02 - INFO - 手動紅利發放成功 
+2026-05-04 16:56:03 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527577 MANUAL
+2026-05-04 16:56:03 - INFO - 審核活動紅利成功 
+2026-05-04 16:56:03 - INFO - 172.18.32.72 - - [04/May/2026 16:56:03] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:56:08 - INFO - 手動紅利發放成功 
+2026-05-04 16:56:08 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527578 MANUAL
+2026-05-04 16:56:08 - INFO - 審核活動紅利成功 
+2026-05-04 16:56:08 - INFO - 172.18.32.72 - - [04/May/2026 16:56:08] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:59:38 - INFO - 手動紅利發放成功 
+2026-05-04 16:59:38 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527586 MANUAL
+2026-05-04 16:59:39 - INFO - 審核活動紅利成功 
+2026-05-04 16:59:39 - INFO - 172.18.32.72 - - [04/May/2026 16:59:39] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 16:59:44 - INFO - 手動紅利發放成功 
+2026-05-04 16:59:44 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36527587 MANUAL
+2026-05-04 16:59:44 - INFO - 審核活動紅利成功 
+2026-05-04 16:59:44 - INFO - 172.18.32.72 - - [04/May/2026 16:59:44] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-04 17:09:41 - INFO - {"success":true,"errorCode":null,"message":"Success!","value":null,"totalPageCount":0,"footerValue":null}
+2026-05-04 17:09:41 - INFO - 新建代理玩家成功: five026
+2026-05-04 17:09:41 - INFO - 修改密碼成功
+2026-05-04 17:09:41 - INFO - 172.18.32.72 - - [04/May/2026 17:09:41] "POST /api/auto_create_player HTTP/1.1" 200 -
+2026-05-04 17:11:39 - INFO - {"success":true,"errorCode":null,"message":"Success!","value":null,"totalPageCount":0,"footerValue":null}
+2026-05-04 17:11:39 - INFO - 新建代理玩家成功: five027
+2026-05-04 17:11:39 - INFO - 修改密碼成功
+2026-05-04 17:11:39 - INFO - 172.18.32.72 - - [04/May/2026 17:11:39] "POST /api/auto_create_player HTTP/1.1" 200 -
+2026-05-04 17:17:14 - INFO - 已進入 batch_approve 函數
+2026-05-04 17:17:16 - INFO - 搜尋充值對象成功: 
+2026-05-04 17:17:16 - INFO - 總共拿到 73 個存款對象
+2026-05-04 17:17:16 - INFO - 正在處理第1/1的充值list,金額250
+2026-05-04 17:17:16 - INFO - 成功批准ID: 3312165381591 , 金額: 250
+2026-05-04 17:17:16 - INFO - 批量處理充值完成
+2026-05-04 17:17:16 - INFO - 總計: 1 條記錄
+2026-05-04 17:17:16 - INFO - 成功: 1 條
+2026-05-04 17:17:16 - INFO - 失敗: 0 條
+2026-05-04 17:17:16 - INFO - 172.18.32.72 - - [04/May/2026 17:17:16] "POST /api/DEPOSIT_API HTTP/1.1" 200 -
+2026-05-05 10:17:25 - INFO - 172.18.32.72 - - [05/May/2026 10:17:25] "GET / HTTP/1.1" 200 -
+2026-05-05 10:17:26 - INFO - 172.18.32.72 - - [05/May/2026 10:17:26] "[36mGET /static/flask_css.css HTTP/1.1[0m" 304 -
+2026-05-05 10:17:26 - INFO - 172.18.32.72 - - [05/May/2026 10:17:26] "[36mGET /static/flask_script.js HTTP/1.1[0m" 304 -
+2026-05-05 10:17:26 - INFO - 172.18.32.72 - - [05/May/2026 10:17:26] "[36mGET /static/VSjcAXOaOj.ico HTTP/1.1[0m" 304 -
+2026-05-05 11:01:00 - INFO - 手動紅利發放成功 
+2026-05-05 11:01:00 - ERROR - HTTP錯誤 502 Server Error: Bad Gateway for url: http://sit-admin2.tcg.com/tac/api/relay/get/mcs-manualPromotion-search?merchantCode=gi8viet&status=P&customerName=five024&searchDateMode=issuedDateSearch&startTime=2026-05-04+00%3A00%3A00&endTime=2026-05-05+23%3A59%3A59&pageSize=10&pageNo=1
+2026-05-05 11:01:00 - INFO - 172.18.32.72 - - [05/May/2026 11:01:00] "[35m[1mPOST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1[0m" 500 -
+Traceback (most recent call last):
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2213, in __call__
+    return self.wsgi_app(environ, start_response)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2193, in wsgi_app
+    response = self.handle_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+  File "/home/qauser/.pyenv/versions/qaauto/lib/python3.13/site-packages/flask/app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 457, in api_manual_create_bonus
+    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/python_flask.py", line 81, in manual_create_bonus
+    Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/qauser/pcd_test/auto_test/Manual_create_single_with_confirm.py", line 209, in main
+    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: not enough values to unpack (expected 3, got 2)
+2026-05-05 11:07:23 - INFO - 手動紅利發放成功 
+2026-05-05 11:07:26 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36620839 APP_DOWNLOAD
+2026-05-05 11:07:29 - INFO - 審核活動紅利成功 
+2026-05-05 11:07:29 - INFO - 172.18.32.72 - - [05/May/2026 11:07:29] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-05 12:47:02 - INFO - 手動紅利發放成功 
+2026-05-05 12:47:02 - INFO - 拿到 CustomerID: 8149492 和 claimid: 36621167 APP_DOWNLOAD
+2026-05-05 12:47:02 - INFO - 審核活動紅利成功 
+2026-05-05 12:47:02 - INFO - 172.18.32.72 - - [05/May/2026 12:47:02] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-05 12:47:10 - INFO - 手動紅利發放成功 
+2026-05-05 12:47:10 - INFO - 拿到 CustomerID: 6486506 和 claimid: 36621168 APP_DOWNLOAD
+2026-05-05 12:47:10 - INFO - 審核活動紅利成功 
+2026-05-05 12:47:10 - INFO - 172.18.32.72 - - [05/May/2026 12:47:10] "POST /api/MANUAL_CREATE_SINGLE_CONFIRM HTTP/1.1" 200 -
+2026-05-05 18:50:06 - INFO - 172.18.32.72 - - [05/May/2026 18:50:06] "POST /api/Single_Manual_create HTTP/1.1" 200 -
+2026-05-06 10:06:57 - INFO - 172.18.32.72 - - [06/May/2026 10:06:57] "GET / HTTP/1.1" 200 -
+2026-05-06 10:06:58 - INFO - 172.18.32.72 - - [06/May/2026 10:06:58] "[36mGET /static/flask_css.css HTTP/1.1[0m" 304 -
+2026-05-06 10:06:58 - INFO - 172.18.32.72 - - [06/May/2026 10:06:58] "[36mGET /static/flask_script.js HTTP/1.1[0m" 304 -
+2026-05-06 10:06:58 - INFO - 172.18.32.72 - - [06/May/2026 10:06:58] "[36mGET /static/VSjcAXOaOj.ico HTTP/1.1[0m" 304 -

@@ -9,7 +9,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-def header(token):
+def header(token,merchantCode):
     return{
     "Accept": "application/json, text/plain, */*",
     "Accept-Language": "en-US,en;q=0.9",
@@ -17,12 +17,12 @@ def header(token):
     "Content-Type": "application/json",
     "Connection": "keep-alive",
     "Language": "zh_CN",
-    "Merchant": "gi8viet",
+    "Merchant": merchantCode,
     "Origin": "http://sit-admin2.tcg.com",
     "Referer": "http://sit-admin2.tcg.com/24786",
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
     "environment": "TCG3",
-    "merchantCode": "gi8viet",
+    "merchantCode": merchantCode,
     "platform": "TCG"
     }
 def cookie():
@@ -61,7 +61,7 @@ def get_token():
     token_data=requests_data.json()
     return token_data.get("token")
 
-def create_ticket_cash(token,localizations):
+def create_ticket_cash(token,localizations,merchantCode):
     API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/CASH_VOUCHER" 
     payload = {
     "merchantCode": "gi8viet",
@@ -138,15 +138,15 @@ def create_ticket_cash(token,localizations):
     }
 }
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success") :
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -162,7 +162,7 @@ def create_ticket_cash(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def create_ticket_raffle(token,localizations):
+def create_ticket_raffle(token,localizations,merchantCode):
     API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/RAFFLE" 
     payload = {
     "merchantCode": "gi8viet",
@@ -238,15 +238,15 @@ def create_ticket_raffle(token,localizations):
     }
 }
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success") :
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -262,7 +262,7 @@ def create_ticket_raffle(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def create_ticket_Egg(token,localizations):
+def create_ticket_Egg(token,localizations,merchantCode):
     API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/GOLDEN_EGG" 
     payload = {
     "merchantCode": "gi8viet",
@@ -372,15 +372,15 @@ def create_ticket_Egg(token,localizations):
     }
 }
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success") :
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -396,7 +396,7 @@ def create_ticket_Egg(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def create_ticket_Wheel(token,localizations):
+def create_ticket_Wheel(token,localizations,merchantCode):
     API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/PRIZE_WHEEL"
     payload = {
         "merchantCode": "gi8viet",
@@ -537,7 +537,7 @@ def create_ticket_Wheel(token,localizations):
     }
 
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     
     try:
@@ -545,8 +545,8 @@ def create_ticket_Wheel(token,localizations):
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success"):
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -562,7 +562,7 @@ def create_ticket_Wheel(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def create_ticket_Gift(token,localizations):
+def create_ticket_Gift(token,localizations,merchantCode):
     API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/GIFT_CODE"
     payload = {
     "merchantCode": "gi8viet",
@@ -636,15 +636,15 @@ def create_ticket_Gift(token,localizations):
     }
 }
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success") :
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -660,7 +660,7 @@ def create_ticket_Gift(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def create_ticket_Free_spin(token,localizations):
+def create_ticket_Free_spin(token,localizations,merchantCode):
     current_time=datetime.now()
     month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
@@ -678,14 +678,14 @@ def create_ticket_Free_spin(token,localizations):
     "configs": [
         {
             "type": "FREE_GAME",
-            "planId": 1072,
-            "freeSpinCount": 4,
+            "planId": 3624,
+            "freeSpinCount": 5,
             "vendorCode": "JL"
         }
     ],
     "validityType": "FIXED_TIME",
-    "fixedTimeFrom": month_start,
-    "fixedTimeTo": end_time,
+    "fixedTimeFrom": 1772726400000,
+    "fixedTimeTo": 1777564799000,
     "claimCondition": {
         "bankCardRequired": False,
         "payeeNameRequired": False,
@@ -715,15 +715,15 @@ def create_ticket_Free_spin(token,localizations):
 }
 
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success") :
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -739,18 +739,18 @@ def create_ticket_Free_spin(token,localizations):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def get_temu_score(token):
+def get_temu_score(token,merchantCode):
     API_URL = "http://10.80.1.20:7001/promo-be/resources/temu_score"
     headers ={
     "Accept": "*/*",
     "Accept-Encoding": "gzip, deflate, br",
     "Authorization": token,
-    "merchantCode":"gi8viet",
+    "merchantCode":merchantCode,
     "Connection": "keep-alive",
     }
     response=requests.get(API_URL,headers=headers,verify=False)
     response_data=response.json()
-    if response_data.get('success')==True:
+    if response_data.get('success'):
         value_list=response_data.get("value",[])
         if value_list:
             temu_score=value_list[0].get("id")
@@ -759,7 +759,7 @@ def get_temu_score(token):
             logging.error("沒有拿到list")    
             return None
 
-def create_ticket_temu(token,localizations,temu_score):
+def create_ticket_temu(token,localizations,temu_score,merchantCode):
     current_time=datetime.now()
     month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
@@ -851,15 +851,15 @@ def create_ticket_temu(token,localizations,temu_score):
 }
 
 
-    headers =header(token)
+    headers =header(token,merchantCode)
     cookies = cookie()
     try:
         response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
-            logging.info(f"創建票卷成功 ")
+        if response_data.get("success"):
+            logging.info("創建票卷成功 ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
@@ -875,20 +875,20 @@ def create_ticket_temu(token,localizations,temu_score):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def main(ticket,localizations):
+def main(ticket,localizations,merchantCode):
     token = get_token()
     ticket_dict={
-        "CASH":lambda:create_ticket_cash(token,localizations),
-        "RAFFLE":lambda:create_ticket_raffle(token,localizations),
-        "GOLDEN_EGG":lambda:create_ticket_Egg(token,localizations),
-        "WHEEL":lambda:create_ticket_Wheel(token,localizations),
-        "GIFT":lambda:create_ticket_Gift(token,localizations),
-        "FREE_SPIN":lambda:create_ticket_Free_spin(token,localizations),
-        "TEMU":lambda score=None:create_ticket_temu(token,localizations,score)
+        "CASH":lambda:create_ticket_cash(token,localizations,merchantCode),
+        "RAFFLE":lambda:create_ticket_raffle(token,localizations,merchantCode),
+        "GOLDEN_EGG":lambda:create_ticket_Egg(token,localizations,merchantCode),
+        "WHEEL":lambda:create_ticket_Wheel(token,localizations,merchantCode),
+        "GIFT":lambda:create_ticket_Gift(token,localizations,merchantCode),
+        "FREE_SPIN":lambda:create_ticket_Free_spin(token,localizations,merchantCode),
+        "TEMU":lambda score=None:create_ticket_temu(token,localizations,score,merchantCode)
     }
     if ticket in ticket_dict:
         if ticket=="TEMU":
-            score=get_temu_score(token)
+            score=get_temu_score(token,merchantCode)
             ticket_dict[ticket](score)
         else:
             ticket_dict[ticket]()

@@ -1,10 +1,13 @@
-import yaml,os
+import yaml
+import os
 import time
-import requests,logging
+import requests
+import logging
 from datetime import datetime
 from openpyxl import Workbook
 from itertools import cycle
-import threading,copy
+import threading
+import copy
 import concurrent.futures
 
 logging.basicConfig(
@@ -150,7 +153,7 @@ class B_end:
             
             response_data = response.json()
             
-            if response_data.get("success") == True:
+            if response_data.get("success") :
                 logging.info(f"手動紅利發放成功, 玩家帳號{player} ")
                 self.success_count+=1
                 return True
@@ -192,7 +195,7 @@ class B_end:
             
             response_data = response.json()
             
-            if response_data.get("success") == True:
+            if response_data.get("success") :
                 customer_list=response_data.get("value",[])
                 
                 if not customer_list:
@@ -222,7 +225,7 @@ class B_end:
             return None, None,None
     
     def Confirm_Customer_bonus(self):
-        API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-batchApproveRejectManualPromotion" 
+        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-batchApproveRejectManualPromotion" 
         payload = {
             "status": "I",
             "promotionClaims": self.claimid_list
@@ -234,8 +237,8 @@ class B_end:
             response.raise_for_status()
             logging.info(self.claimid_list)
             response_data = response.json()
-            if response_data.get("success") == True:
-                logging.info(f"批量審核活動紅利成功 ")
+            if response_data.get("success") :
+                logging.info("批量審核活動紅利成功 ")
                 return True
             else:
                 error_msg = response_data.get("value")
@@ -254,7 +257,7 @@ class B_end:
     def Bonus_record_page(self,testing_account):
         
       
-        API_URL2=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
+        API_URL2="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
         start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
         headers=self.header()
@@ -276,7 +279,7 @@ class B_end:
             response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
 
             response_data=response.json()
-            if response_data.get("success") == True:
+            if response_data.get("success") :
                 self.record_data_list=response_data.get('value',{})
                 return True
             else:
@@ -284,7 +287,7 @@ class B_end:
                 return False
             
         except Exception as e:
-            logging.error(f"狀態碼: {response.status_code}")
+            logging.error(f"狀態碼: {response.status_code}{e}")
     def process_procedure(self):
         wb=Workbook()
         ws=wb.active

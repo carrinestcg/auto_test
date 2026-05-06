@@ -52,14 +52,14 @@ class B_end:
         return token
     
     '''=====註冊任務====='''
-    def REGISTER_TASK(self,ticket:int,ticket_type:str):
+    def REGISTER_TASK(self,ticket:int,ticket_type:str,merchantCode):
         start_time = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)
         unix_starttime=int(start_time.timestamp()*1000)
         end_time = datetime.now().replace(hour=23,minute=59,second=59,microsecond=0)
         unix_starttime=int(end_time.timestamp()*1000)
         API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/promo-promotion-register-task-create"
         
-        headers=get_common_header(self.token_data,referer=24780)
+        headers=get_common_header(self.token_data,merchantCode,referer=24780)
         cookies = {
             "language": "zh_CN"
         }
@@ -114,7 +114,7 @@ class B_end:
 
             response_data=response.json()
             print(response_data)
-            if response_data.get("success") == True:
+            if response_data.get("success") :
                 return True  
             else:
 
@@ -124,14 +124,14 @@ class B_end:
             logging.error(f"api錯誤{e}")
 
     '''=====新手任務====='''
-    def new_register_misssion(self,ticket:int,ticket_type:str):
+    def new_register_misssion(self,ticket:int,ticket_type:str,merchantCode):
         start_time = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)
         unix_starttime=int(start_time.timestamp()*1000)
         end_time = datetime.now().replace(hour=23,minute=59,second=59,microsecond=0)
         unix_starttime=int(end_time.timestamp()*1000)
         API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-internal-v3-registerPromotion-add"
         
-        headers=get_common_header(self.token_data,referer=24781)
+        headers=get_common_header(self.token_data,merchantCode,referer=24781)
         cookies = {
             "language": "zh_CN"
         }
@@ -270,7 +270,7 @@ class B_end:
             response.raise_for_status()
 
             response_data=response.json()
-            if response_data.get("success") == True:
+            if response_data.get("success") :
                 value=response_data.get("value",{})
                 id=value.get("id")
                 logging.info(f"創建新手任務成功 活動id:{id}")
@@ -281,9 +281,9 @@ class B_end:
         
         except Exception as e:
             logging.error(f"api錯誤{e}")
-    def get_promo_code(self):
+    def get_promo_code(self,merchantCode):
         URL="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-promotion-promoCode-genCode?merchantCode=gi8viet"
-        headers=get_common_header(self.token_data,referer=24784)
+        headers=get_common_header(self.token_data,merchantCode,referer=24784)
         cookies={
             "Cookie":"language=zh_CN"
         }
@@ -294,22 +294,22 @@ class B_end:
         response_data=response.json()
         print(response_data)
         try:
-            if response_data.get("success")==True:
+            if response_data.get("success"):
                 value=response_data.get("value")
                 logging.info(f"建立一組優惠碼{value}")
                 return value
             else:
-                logging.error(f"建立優惠碼失敗")
+                logging.error("建立優惠碼失敗")
                 return None
         except Exception as e:
             logging.error(f"建立優惠碼失敗{e}")
-    def create_promoCdoe_promotion(self,code,ticket,ticket_type):
+    def create_promoCdoe_promotion(self,code,ticket,ticket_type,merchantCode):
         start_time = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0)
         unix_starttime=int(start_time.timestamp()*1000)
         end_time = datetime.now().replace(hour=23,minute=59,second=59,microsecond=0)
         unix_starttime=int(end_time.timestamp()*1000)
         URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-promotion-promoCode-create"
-        headers=get_common_header(self.token_data,referer=24784)
+        headers=get_common_header(self.token_data,merchantCode,referer=24784)
         cookies={
                     "Cookie":"language=zh_CN"
                 }
@@ -370,7 +370,7 @@ class B_end:
         response_data=response.json()
         print(response_data)
         try:
-            if response_data.get("success")==True:
+            if response_data.get("success"):
                 value=response_data.get("value")
                 logging.info(f"建立一組優惠碼{value}")
                 return value
@@ -380,7 +380,7 @@ class B_end:
         except Exception as e:
             logging.error(f"建立優惠碼失敗{e}")
 
-    def process_procedure(self):
+    def process_procedure(self,merchantCode):
         
         ticket_dict={
             1087007:"CASH_VOUCHER",
@@ -396,10 +396,10 @@ class B_end:
         
         for _ in range(2):
             for ticket,ticket_type in itertools.cycle(ticket_dict.items()):
-                is_successs=self.REGISTER_TASK(ticket,ticket_type)
-                is_success=self.new_register_misssion(ticket,ticket_type)
+                is_successs=self.REGISTER_TASK(ticket,ticket_type,merchantCode)
+                is_success=self.new_register_misssion(ticket,ticket_type,merchantCode)
                 code=self.get_promo_code()
-                is_success=self.create_promoCdoe_promotion(code,ticket,ticket_type)
+                is_success=self.create_promoCdoe_promotion(code,ticket,ticket_type,merchantCode)
                 if is_success:
                     logging.info("創建活動成功")
                 else:
@@ -407,7 +407,7 @@ class B_end:
     
             
         
-if __name__ == "__main__":
+def main(merchantCode):
     credential = {
         "operatorName": "carrine03",
         "password": "Test@1234"
@@ -415,7 +415,7 @@ if __name__ == "__main__":
     try:
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure()
+            b_end.process_procedure(merchantCode)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
 
