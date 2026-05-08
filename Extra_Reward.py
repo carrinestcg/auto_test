@@ -557,7 +557,7 @@ def main(username, ticket_id_list:list, ticketQuantity, promotion_id, amount, Ex
             # 領票後 extra_reward 未套用列表可能延遲寫入，略為等待再查 claim
             time.sleep(3)
             frontend.deposit_QAD(username, amount, Extra_Promo_ID)
-            batch_approve()
+            batch_approve(merchantCode)
             return True
             
         
