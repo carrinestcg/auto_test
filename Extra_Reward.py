@@ -226,15 +226,18 @@ class Backend:
                 
                 if not customer_list:
                     logging.error("回應中找不到 customerlist")
-                    return None, None, None
-
-                customer_info=customer_list[0]
-                CustomerID=customer_info.get("customerId")
-                claimid=customer_info.get("id")
-                promotion_type=customer_info.get("promotionType")
-        
-                if CustomerID and claimid:
-                    return CustomerID, claimid,promotion_type
+                    return []
+                
+                claimid_list = []
+                for customer_info in customer_list:
+                    claimid = customer_info.get("id")
+                    promotion_type = customer_info.get("promotionType")
+                    if claimid:
+                        claimid_list.append({
+                            "promoClaimId": claimid,
+                            "promotionType": promotion_type
+                        })
+                return claimid_list
                 
             else:
                     logging.error("回應中找不到 customerId 或 claimid")
@@ -534,18 +537,10 @@ def main(username, ticket_id_list:list, ticketQuantity, promotion_id, amount, Ex
         if backend.token:
             backend.create_bonus(username,bonusAmount=bonus,bonusPointAmount=point,ticketId_list=ticket_id_list,ticketQuantity=ticketQuantity,prmotion_id=promotion_id)
         
-            CustomerID,claimid,promotion_type = backend.Search_Customer_bonus(username)
-            if claimid is not None :
-                claimid_list.append({
-                    "promoClaimId":claimid,
-                    "promotionType":promotion_type
-                }
-                )
-                    
-            else:
-                logging.error("沒有claimid")
+            claimid_list = backend.Search_Customer_bonus(username)
+            logging.info(f"拿到 {len(claimid_list)} 筆 claimId")
             backend.Confirm_Customer_bonus(claimid_list)
-                
+                            
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
         
