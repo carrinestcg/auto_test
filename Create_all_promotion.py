@@ -3342,7 +3342,7 @@ class Backend:
         if response_json.get('success'):
             logging.info("創建翻倍獎勵成功")
         else:
-            print(response_json)
+            logging.error(response_json)
             logging.error("創建翻倍獎勵失敗")
         
 def create_promotion(prom_type:int,merchantCode):
