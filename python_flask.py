@@ -667,6 +667,7 @@ PROMO_TYPE_MAP = {
     "sign_new": 18,
     "sign_month": 19,
     "ALL": 20,
+    "extra_reward": 21
 }
 
 @python_flask.route("/api/Create_all_promotion", methods=["POST"])

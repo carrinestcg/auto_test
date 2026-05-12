@@ -3309,6 +3309,42 @@ class Backend:
         else:
             print(response_json)
             logging.error("創建自定義簽到失敗")
+            
+    def Extra_Reward(self,merchantCode,refer=24800):
+        URL="http://sit-admin2.tcg.com/tac/api/relay/post/promo-promotion-extra-reward"
+        start_Time, endTime, start_str, end_str = self.unitTime()
+        header=self.header(merchantCode,refer)
+        
+        payload={
+            "name": "test",
+            "startTime": start_Time,
+            "endTime": endTime,
+            "playerRemark": "c",
+            "internalRemark": "",
+            "hourValidity": 0,
+            "minuteValidity": 30,
+            "rewardType": "BONUS",
+            "multiplierMode": "FIXED",
+            "configReqs": [
+                {
+                    "requireMinRewardAmount": None,
+                    "requireMaxRewardAmount": None,
+                    "requireMinDepositAmount": 200,
+                    "requireMaxDepositAmount": 200,
+                    "rewardMultiplier": 5
+                }
+            ],
+            "turnoverMultiplier": 5,
+            "excludeRebate": "N"
+        }
+        response=requests.post(URL,json=payload,headers=header,verify=False)
+        response_json=response.json()
+        if response_json.get('success'):
+            logging.info("創建翻倍獎勵成功")
+        else:
+            print(response_json)
+            logging.error("創建翻倍獎勵失敗")
+        
 def create_promotion(prom_type:int,merchantCode):
     #789tatlbf5 #7kkkf2 #789mxnf2 #grandfinf2 #gtppf3 #gvs5rvd #holly01
     credential_be = {
@@ -3452,6 +3488,8 @@ def create_promotion(prom_type:int,merchantCode):
                     backend.Sign_in_task_month(ticket_list[0],merchantCode,refer=24781)
                 
                     backend.Sign_in_task_choice(ticket_list[0],merchantCode,refer=24781)
+                case 21:
+                    backend.Extra_Reward(merchantCode,refer=24800)
             
         else:
             logging.error("沒有拿到後台token:")        
