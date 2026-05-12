@@ -3313,12 +3313,13 @@ class Backend:
     def Extra_Reward(self,merchantCode,refer=24800):
         URL="http://sit-admin2.tcg.com/tac/api/relay/post/promo-promotion-extra-reward"
         start_Time, endTime, start_str, end_str = self.unitTime()
-        new_satrt_time=start_Time+timedelta(minutes=3)
+        new_start_time = datetime.now() + timedelta(minutes=3)
+        new_start_ts = int(new_start_time.timestamp() * 1000)
         header=self.header(merchantCode,refer)
         
         payload={
             "name": "test",
-            "startTime": new_satrt_time,
+            "startTime": new_start_ts,
             "endTime": endTime,
             "playerRemark": "c",
             "internalRemark": "",
