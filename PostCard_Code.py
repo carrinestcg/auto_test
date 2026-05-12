@@ -26,6 +26,7 @@ class PostCard:
             "Merchant": merchantCode,
             "Origin": "http://sit-admin2.tcg.com",
             "Referer": "http://sit-admin2.tcg.com/20000",
+            "customTimezone": "Etc/GMT-8",
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
             "environment": "TCG3",
             "merchantCode": merchantCode,
@@ -149,16 +150,23 @@ class PostCard:
                 "pid":247814
             }
             headers = self.header(merchantCode)
-            cookies = {
-            "language": "zh_CN"
-            }
-            response=requests.get(API_URL, params=param,cookies=cookies,verify=False, headers=headers)
+            
+            response=requests.get(API_URL, params=param,verify=False, headers=headers)
             response.raise_for_status()
             response_data = response.json()
+            logging.info(f"Search 完整回傳: {response_data}")
+            if not response_data.get("success"):
+                logging.error(f"API 回傳失敗: {response_data}")
+                return None
             if response_data.get("success"):
                 value=response_data.get("value")
                 claimId=value.get("claimId")
-                return claimId
+                if claimId:
+                    logging.info(f"拿到claimId{claimId}")
+                    return claimId
+                else:
+                    logging.error("沒有拿到claimId")
+
             else:
                 logging.error(response_data)
                 return None
@@ -183,8 +191,10 @@ class PostCard:
             response_data = response.json()
             if response_data.get("success"):
                 logging.info("成功審核")
+                return True
             else:
                 logging.error("審核失敗")
+                return False
                 
         except Exception as e:
             logging.error(f"{e}")
@@ -193,9 +203,16 @@ class PostCard:
         
         postcardCode=self.request_code(username)
         claimId=self.Search_request_code(postcardCode,merchantCode)
-        self.Approve_request_code(claimId,merchantCode)
+        result = self.Approve_request_code(claimId,merchantCode)
+        if result:
+            return True
+        else:
+            return False
         
 def main(username,merchantCode):
+    if isinstance(merchantCode, list):
+        merchantCode = merchantCode[0]
+    print(merchantCode)
     credential = {
         "operatorName": "carrine03",
         "password": "Test@1234"
@@ -204,7 +221,10 @@ def main(username,merchantCode):
         merchantCode=str(merchantCode)
         b_end=PostCard(credential)
         if b_end.token:
-            b_end.implement(username,merchantCode)
+            if b_end.implement(username,merchantCode):
+                return True
+            else:
+                return False
 
     except Exception as e:
         logging.error(e)
