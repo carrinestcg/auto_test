@@ -1,4 +1,9 @@
-import requests,logging,time,yaml,os,random
+import requests
+import logging
+import time
+import yaml
+import os
+import random
 from datetime import datetime,timedelta
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -57,7 +62,7 @@ class Frontend:
     def Join_promotion(self,promo:int,account:str):
         apply_amount=0
         success_fail=0
-        login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_signUpPromotionJoin"
+        login_URL="http://www.sit-gi8viet.com/wps/relay/MCSFE_signUpPromotionJoin"
 
         headers={
                     'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -77,20 +82,17 @@ class Frontend:
         payload={
                     "promotionId": promo
                 }
-        cookies={
-                    'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
-                }
+        
+        response = self.session.post(login_URL, headers=headers, json=payload, verify=False)
+        response_json = response.json()
                 
-        response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
-        response_json=response.json()
-                
-        if response_json.get('success')==True:
+        if response_json.get('success'):
                 logging.info(f"玩家{account}成功報名")
-                apply_amount+=1
+                apply_amount += 1
                     
         else:
                 logging.error(f"玩家{account}報名失敗 已有報名紀錄")
-                success_fail+=1
+                success_fail += 1
         time.sleep(1)
             
 class Backend:
@@ -152,8 +154,8 @@ class Backend:
         logging.info(f"登入API回傳: {token}")
         return token
     def get_record_id(self,account:str):
-    
-        API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/get/mcs-signUpList-search-get"
+        record_ids = []
+        API_URL3="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-signUpList-search-get"
         
         headers=self.header()
         cookies = {
@@ -164,7 +166,6 @@ class Backend:
             "userName": account,
             "promotionName": "",
             "status": "",
-            "pointAmount": 100,
             "pageSize": 10,
             "pageNo": 1,
             "merchantCode": "gi8viet",
@@ -174,21 +175,49 @@ class Backend:
 
             response_data=response.json()
             logging.info(f"完整回應: {response_data}")
-            if response_data.get("success") == True:
+            if response_data.get("success"):
                 record_id_list=response_data.get("value")
-                first_record=record_id_list[0]
-                record_id=first_record.get("recordId")
-                logging.info("拿到recordid")
-                return record_id  
+                for value in record_id_list:
+                    record_id=value.get("recordId")
+                    logging.info("拿到recordid")
+                    record_ids.append(record_id)
+                return record_ids
             else:
                 logging.error("沒有拿到recordid")
                 return False
         
         except Exception as e:
             logging.error(f"API呼叫失敗{e}")
-    def Approve_to_send_bounus(self,account:str,promo_id:int,record_id:int):
-    
-        API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-signUpList-approve-create"
+            
+    def get_payload__detail(self,record_id):
+        API_URL3="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-signUpList-getCustomerSignUpConfig-get"
+        params={
+            "recordId": record_id
+        }
+        headers=self.header()
+        response=requests.get(API_URL3, params=params, headers=headers, verify = False)
+        response_json=response.json()
+        if response_json.get("success"):
+            value_dict=response_json.get("value")
+            logging.info(value_dict)
+            return value_dict
+        else:
+            logging.error(response_json)
+            return None
+        
+    def Approve_to_send_bounus(self,account:str,promo_id:int,record_id:int, value_dict:dict):
+        configId           = value_dict.get("configId")
+        bonus_amount        = value_dict.get("bonusAmount")
+        point_amount        = value_dict.get("pointAmount")
+        ticket_id           = value_dict.get("ticketId")
+        min_required_to     = value_dict.get("minRequiredTo")
+        turnover_multiplier = value_dict.get("turnoverMultiplier")
+        forAllLabel         = value_dict.get("forAllLabel", "Y")
+        ticket_name         = value_dict.get("ticketName", None)
+        ticket_type         = value_dict.get("ticketType", None)
+        ticket_quantity     = value_dict.get("ticketQuantity", None)
+        sign_up_labels      = value_dict.get("signUpPromotionConfigLabels", None)
+        API_URL3="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-signUpList-approve-create"
         
         headers=self.header()
         cookies = {
@@ -197,29 +226,29 @@ class Backend:
 
         payload={
             "promotionId": promo_id,
-            "configId": 310016,
-            "bonusAmount": 100,
-            "pointAmount": 100,
-            "turnoverMultiplier": 15,
-            "minRequiredTo": 1,
-            "forAllLabel": "Y",
-            "ticketId": 1087007,
-            "ticketName": None,
-            "ticketType": "CASH_VOUCHER",
-            "ticketQuantity": 0,
-            "signUpPromotionConfigLabels": None,
+            "configId": configId,
+            "bonusAmount": bonus_amount,
+            "pointAmount": point_amount,
+            "turnoverMultiplier": turnover_multiplier,
+            "minRequiredTo": min_required_to,
+            "forAllLabel": forAllLabel,
+            "ticketId": ticket_id,
+            "ticketName": ticket_name,
+            "ticketType": ticket_type,
+            "ticketQuantity": ticket_quantity,
+            "signUpPromotionConfigLabels": sign_up_labels,
             "customerName": account,
             "recordId": record_id,
-            "turnoverAmount": "1500.00",
-            "bonusBudget": 859888,
-            "pointsBudget": 999888,
-            "ticketTotalQuantity": 0
+            "turnoverAmount": 0,
+            "ticketTotalQuantity": ticket_quantity,
+            "bonusBudget": 999555,
+            "pointsBudget": 999555
         }
         try:
             response=requests.post(API_URL3, cookies=cookies, json=payload,headers=headers, verify=False)
 
             response_data=response.json()
-            if response_data.get("success") == True:
+            if response_data.get("success"):
                 logging.info("派發手工報名活動成功")
                 return True  
             else:
@@ -229,41 +258,36 @@ class Backend:
         except Exception as e:
             logging.error(f"API呼叫失敗{e}")
     
-def main():
+def main(username, promo_id):
 
     password = "123qwe"
     credential_be = {
             "operatorName": "carrine03",
             "password": "Test@1234"
     }
-    current_dir=os.path.dirname(__file__)
-    yaml_path=os.path.join(current_dir,"config.yaml")
-    with open(yaml_path,"r",encoding="utf-8") as f:
-        config=yaml.safe_load(f)
-    testing_account_list=config.get("testing_account")
-    promo_id=4023102
-    for account in testing_account_list:
-        credential_fe = {
-                "username": account,
-                "password": password
-        }
-        try:
-            frontend = Frontend(credential_fe)
-            if frontend.token:
-                frontend.Join_promotion(promo_id,account)
-                time.sleep(0.5) 
-        except Exception as e:
-            logging.error(f"啟動時發生錯誤: {e}")    
+    credential_fe = {
+            "username": username,
+            "password": password
+    }
+    try:
+        frontend = Frontend(credential_fe)
+        if frontend.token:
+            frontend.Join_promotion(promo_id,username)
+            time.sleep(0.5) 
+    except Exception as e:
+        logging.error(f"啟動時發生錯誤: {e}")    
     try:
         backend=Backend(credential_be)    
         if backend.token:
-            for account in testing_account_list:    
-                record_id=backend.get_record_id(str(account))
-                if record_id:
-                    backend.Approve_to_send_bounus(str(account),promo_id,record_id)        
+            record_list=backend.get_record_id(str(username))
+            for record in record_list:
+                if record:
+                    value_dict=backend.get_payload__detail(record)
+                    backend.Approve_to_send_bounus(str(username),promo_id,record, value_dict)        
         else:
                 logging.error("登入失敗 無法取得Token")
     except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
+
 
     

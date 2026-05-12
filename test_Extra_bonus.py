@@ -49,10 +49,10 @@ def test_get_extra_reward_flow(extra_claim_id_list):
     
     
 def test_deposit_to_get_extra_reward(extra_claim_id_list):
-    
+    merchantCode="gi9viet"
     frontend = Frontend(CREDENTIAL_FE)
     frontend.deposit_QAD(USERNAME, AMOUNT, EXTRA_PROMOTION_ID)
-    batch_approve()
+    batch_approve(merchantCode)
     
     backend=Backend(CREDENTIAL_BE)
     
