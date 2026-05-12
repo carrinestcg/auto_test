@@ -13,6 +13,7 @@ import SIGLE_PROMO_7_TICKET
 import PLAYER_RANK
 import Condition_create_bonus
 import ALL_deposit_promotion
+import Create_all_promotion
 import Frontend_receive_reward
 import Frontend_receive_ticket
 import App_download_API
@@ -32,6 +33,7 @@ import subprocess
 import sys
 import Extra_Reward
 import test_Extra_bonus
+from Verify_Info import verify_info
 
 
 logging.basicConfig(
@@ -363,6 +365,30 @@ def api_manual_create_single():
     "summary": result.stdout.split("short test summary info")[-1]
     }
     
+@python_flask.route('/api/Verify_Mobile_No', methods=['POST'])
+@python_flask.route('/api/Verify_Personal_ID', methods=['POST'])
+@python_flask.route('/api/Input_Personal_Name', methods=['POST'])
+def api_verify_info():
+    data=request.json
+    username=data["username"]
+    verify_type = data.get("type") 
+    if verify_type == 1:
+        result = verify_info(username, verify_type)
+        label = "手機號"
+    elif verify_type == 2:
+        result = verify_info(username, verify_type)
+        label = "身分證"
+    elif verify_type == 3:
+        result = verify_info(username, verify_type)
+        label = "玩家名字"
+    else:
+        return {"success": False, "message": "Unknown type"}, 400
+
+    return {
+        "success": True,
+        "message": f"Verify {label} {'Successfully' if result else 'Failed'}"
+    }
+    
 @python_flask.route('/api/test_Extra_bonus',methods=['POST']) #回歸測試 翻倍獎勵
 def api_test_Extra_bonus():
     
@@ -587,7 +613,7 @@ def  auto_create_member_account():
         )
     
         
-        
+   
 @python_flask.route('/api/Customer_id',methods=['POST']) #查看玩家ID API
 def api_check_player_detail():
     try:
@@ -619,6 +645,95 @@ def api_check_player_detail():
             "success": False,
             "message": str(e)
         }), 500
+
+PROMO_TYPE_MAP = {
+    "Deposit": 1,
+    "Raffle": 2,
+    "Lucky_bet": 3,
+    "NEW_Register": 4,
+    "Register": 5,
+    "App_Download": 6,
+    "regiser_mission": 7,
+    "rescue": 8,
+    "promo_code": 9,
+    "mission": 10,
+    "manual_bonus": 11,
+    "manual_sign": 12,
+    "UPGRADE_BONUS": 13,
+    "Sign_in_task_choice": 14,
+    "VIP_BONUS": 15,
+    "login_task": 16,
+    "sign_week": 17,
+    "sign_new": 18,
+    "sign_month": 19,
+    "ALL": 20,
+}
+
+@python_flask.route("/api/Create_all_promotion", methods=["POST"])
+def api_auto_create_promotion():
+    
+    data = request.get_json(silent=True) or {}
+    platforms = data.get("platforms") or ["gi8viet"]
+    merchant_code = platforms[0] if platforms else "gi8viet"
+    promotion_types = data.get("promotion_types", [])
+
+    if not promotion_types:
+        return jsonify({"success": False, "message": "promotion_types 不能為空"})
+    result=[]
+    for promo in promotion_types:
+        promoType=PROMO_TYPE_MAP.get(promo)
+        if promoType is None:
+            result.append(f"{promo}: 未知類型")
+            continue
+        try:
+            Create_all_promotion.create_promotion(promoType, merchant_code)
+            result.append(f"{promo}: 成功")
+        except Exception as e:
+            logging.error(f"create_promotion {promo} 失敗: {e}")
+            result.append(f"{promo}: 失敗 {e}")
+    
+    return jsonify({
+        "success": True,
+        "message": result,
+        "merchantCode": merchant_code,
+    })  
+        
+
+
+@python_flask.route("/api/ALL_deposit_promotion", methods=["POST"])
+def api_all_deposit_promotion():
+    """對應前端「達成存款活動」：ALL_deposit_promotion.main(usernames, password)。"""
+    data = request.get_json(silent=True) or {}
+    usernames = data.get("usernames")
+    password = (data.get("password") or "123qwe").strip() or "123qwe"
+    username = (data.get("username") or "").strip()
+    if not usernames or len(usernames) < 2:
+        usernames = [username, username] if username else ["", ""]
+    if len(usernames) < 2 or not (usernames[0] and usernames[1]):
+        return jsonify(
+            {"success": False, "message": "需要玩家帳號（主帳號）；第二帳無欄位時會重複主帳號"}
+        ), 400
+
+    def _run():
+        try:
+            ALL_deposit_promotion.main(usernames, password)
+        except Exception as e:
+            logging.error("ALL_deposit_promotion: %s", e)
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify(
+        {
+            "success": True,
+            "message": "ALL_deposit_promotion started (async)",
+        }
+    )
+
+
+@python_flask.route("/api/MANUAL_SINGLE", methods=["POST"])
+def api_manual_single():
+    MANUAL_SINGLE.main()
+    return jsonify({"success": True, "message": "Triiger API Successfully"})
+
 
 @python_flask.route('/upload_excel', methods=['POST']) 
 def upload_excel():

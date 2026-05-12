@@ -5,10 +5,23 @@ function toggleInput() {
     toggleAmount();
     toggleTicket();
     togglePromotion();
+    togglePromotionTypeList();
     togglePlatform();
     toggleRoundID();
     toggleDepositAmount();
     toggleExtraPromo();
+}
+
+/** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
+function togglePromotionTypeList() {
+    const wrap = document.getElementById("promotion-type-select-wrap");
+    const promoSelect = document.getElementById("promotion-checkbox_select");
+    const need = isChecked("Create_all_promotion");
+    if (!promoSelect) return;
+    if (wrap) {
+        wrap.classList.toggle("hidden", !need);
+    }
+    promoSelect.classList.toggle("hidden", !need);
 }
 function toggleDepositAmount(){
     const depositAmountDiv = document.getElementById("deposit-amount-input-div");
@@ -109,11 +122,19 @@ function validateFormBeforeSubmit() {
 
     if (!pwd.value.trim()) {
         pwd.value = "123qwe";
-    };
+    }
+
+    if (isChecked("Create_all_promotion")) {
+        const promoSel = document.getElementById("promotion-checkbox_select");
+        if (promoSel && Array.from(promoSel.selectedOptions).length === 0) {
+            alert("請至少選擇一種活動類型（活動類型複選）");
+            return false;
+        }
+    }
 
     return true;
 }
-['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select']
+['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select', 'promotion-checkbox_select']
     .forEach(id => {
         const el=document.getElementById(id);
         if (!el){
@@ -125,17 +146,17 @@ function validateFormBeforeSubmit() {
                 return;
             }
             const alloption = this.querySelector('option[value="ALL"]');
-            const otheroption = Array.from(this.options).filter(option => option.value !== 'ALL');
+            const otheroption = Array.from(this.options).filter(o => o.value !== 'ALL');
 
             if (alloption && alloption.selected) {
-                otheroption.forEach(option => option.selected = true);
+                otheroption.forEach(o => o.selected = true);
                 alloption.selected = false;
             }
             toggleInput();
         });
     });
 
-['frontend-checkbox_select', 'frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select']
+['frontend-checkbox_select', 'frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select', 'promotion-checkbox_select']
     .forEach(id => {
         const el=document.getElementById(id);
         if (!el){
@@ -143,11 +164,12 @@ function validateFormBeforeSubmit() {
         }
         el.addEventListener('mousedown', function(e) {
             const option = e.target;
-            if (option.tagName === 'OPTION') {
-                e.preventDefault();
-                option.selected = !option.selected;
-                this.dispatchEvent(new Event('change'));
-            }
+            if (option.tagName === 'OPTION') return;
+
+            e.preventDefault();
+            option.selected = !option.selected;
+            this.dispatchEvent(new Event('change'));
+            
         });
     });
 
@@ -276,50 +298,80 @@ function runSelectScript(){
     checkSelectScript.forEach(scriptName=>{
         let extraData={}
     
-    switch(scriptName){
+    switch (scriptName) {
         case "SIGLE_PROMO_7_TICKET":
-        extraData={
-            promotion_id:document.getElementById("promotion_id").value
-        };
-        break;
+            extraData = {
+                promotion_id: document.getElementById("promotion_id").value,
+            };
+            break;
 
         case "MANUAL_CREATE_SINGLE_CONFIRM":
-        extraData={
-            promotion_id:document.getElementById("promotion_id").value,
-            ticket_id:document.getElementById("ticket_id").value,
-            amount:document.getElementById("amount").value
-        };
-        break;
+            extraData = {
+                promotion_id: document.getElementById("promotion_id").value,
+                ticket_id: document.getElementById("ticket_id").value,
+                amount: document.getElementById("amount").value,
+            };
+            break;
 
         case "auto_create_ticket":
-        extraData={
-            ticket_type:ticket_types,
-            ticket_input:document.getElementById("ticket_input").value
-        };
-        break;
+            extraData = {
+                ticket_type: ticket_types,
+                ticket_input: document.getElementById("ticket_input").value,
+            };
+            break;
+
+        /** 票券／活動：後台一鍵建立多類活動（Create_all_promotion.create_promotion(merchantCode)） */
+        case "Create_all_promotion": {
+            const promoSel = document.getElementById("promotion-checkbox_select");
+            const promotion_types = promoSel
+                ? Array.from(promoSel.selectedOptions).map((opt) => opt.value)
+                : [];
+            extraData = {
+                merchantCode: platforms[0] || "gi8viet",
+                promotion_types,
+            };
+            break;
+        }
+
+        /** 達成存款活動：後端需兩個前台帳號（無第二欄時傳兩次主帳號） */
+        case "ALL_deposit_promotion": {
+            const pwd =
+                (document.getElementById("password") &&
+                    document.getElementById("password").value.trim()) ||
+                "123qwe";
+            const u2El = document.getElementById("username_secondary");
+            const u2 =
+                u2El && u2El.value.trim() ? u2El.value.trim() : username.trim();
+            extraData = {
+                usernames: [username.trim(), u2],
+                password: pwd,
+            };
+            break;
+        }
 
         case "LOTTERY_BET":
-        extraData={
-            amount:document.getElementById("amount").value
-        }
-        break;
+            extraData = {
+                amount: document.getElementById("amount").value,
+            };
+            break;
 
         case "create_member_player":
-        extraData={
-            amount:document.getElementById("amount").value
-        }
-        break;
+            extraData = {
+                amount: document.getElementById("amount").value,
+            };
+            break;
 
         case "FRONTEND_DEPOSIT":
-        extraData={
-            amount:document.getElementById("amount").value
-        }
-        break;
+            extraData = {
+                amount: document.getElementById("amount").value,
+            };
+            break;
+
         case "Compensation_api":
-            extraData={
-                round_id:document.getElementById("round_id").value
-            }
-        break;
+            extraData = {
+                round_id: document.getElementById("round_id").value,
+            };
+            break;
 
         case "Extra_Reward_api": {
             const rawTickets = document.getElementById("ticket_id").value.trim();
@@ -336,8 +388,34 @@ function runSelectScript(){
             break;
         }
 
+        case "Verify_Mobile_No":
+            extraData = { type: 1 };
+            break;
+
+        case "Verify_Personal_ID":
+            extraData = { type: 2 };
+            break;
+
+        case "Input_Personal_Name":
+            extraData = { type: 3 };
+            break;
+
+        /** 僅帶 username + platforms，後端無額外 JSON 欄位 */
+        case "auto_create_promotion": {
+            const promoSel = document.getElementById("promotion-checkbox_select");
+            const promotion_types = promoSel
+                ? Array.from(promoSel.selectedOptions).map(opt => opt.value)
+                : [];
+            extraData = {
+                promotion_types,  // 直接傳字串陣列，不再用 type 數字
+            };
+            break;
+        }
+
+        
         default:
-        extraData={};
+            extraData = {};
+            console.warn("[runSelectScript] 未定義腳本，使用空 extraData:", scriptName);
     }
     
     

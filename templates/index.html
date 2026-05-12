@@ -95,6 +95,32 @@
                         </select>
                     </div>
 
+                    <div class="input-group field-promotion-select">
+                        <label class="field-label" for="frontend-checkbox_select">活動類型）</label>
+                        <select multiple id="promotion-checkbox_select" size="5" name="promotion_type" class="multi-select hidden" onchange="toggleInput()">
+                        <option value="ALL" selected>全部</option>
+                        <option value="Deposit">充值送</option>
+                        <option value="Raffle">幸運抽獎</option>
+                        <option value="Lucky_bet">幸運注單</option>
+                        <option value="NEW_Register">新手任務</option>
+                        <option value="Register">註冊送</option>
+                        <option value="App_Download">App_Download</option>
+                        <option value="regiser_mission">註冊任務</option>
+                        <option value="rescue">救援金</option>
+                        <option value="promo_code">優惠碼</option>
+                        <option value="mission">任務排行榜</option>
+                        <option value="manual_bonus">手動活動紅利</option>
+                        <option value="manual_sign">手工報名活動</option>
+                        <option value="UPGRADE_BONUS">升級獎勵</option>
+                        <option value="Sign_in_task_choice">註冊送</option>
+                        <option value="VIP_BONUS">vip俸祿</option>
+                        <option value="login_task">登入任務</option>
+                        <option value="sign_week">週簽到</option>
+                        <option value="sign_month">月簽到</option>
+                        <option value="sign_new">新用戶簽到</option>
+                        </select>
+                    </div>
+
                     <div class="button-group">
                         <button type="button" class="btn-primary" onclick="runSelectScript()">開始測試</button>
                     </div>
@@ -106,15 +132,15 @@
             <h2 id="scripts-heading" class="section-title">測試功能選擇</h2>
 
             <div class="tab" role="tablist">
-                <button type="button" class="tab-button active" onclick="switchTab(event,'Frontend')" role="tab" aria-selected="true">前台 Frontend</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'Frontend')" role="tab" aria-selected="false">前台 Frontend</button>
                 <button type="button" class="tab-button" onclick="switchTab(event,'Backend')" role="tab" aria-selected="false">後台 Backend</button>
                 <button type="button" class="tab-button" onclick="switchTab(event,'Player Management')" role="tab" aria-selected="false">玩家管理</button>
                 <button type="button" class="tab-button" onclick="switchTab(event,'Promotion / Ticket')" role="tab" aria-selected="false">票券／活動</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="false">測試工具</button>
+                <button type="button" class="tab-button active" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="true">測試工具</button>
                 <button type="button" class="tab-button" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">回歸測試</button>
             </div>
 
-            <div id="Frontend" class="tabcontent active" role="tabpanel">
+            <div id="Frontend" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <label>
                         <input type="checkbox" name="script" value="PROMOCODE_BATCH" id="frontend-promo-batch" onchange="toggleInput()">
@@ -192,6 +218,18 @@
                         <input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">
                         查詢玩家資訊
                     </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Verify_Mobile_No" id="Verify_Mobile_No" onchange="toggleInput()">
+                        驗證手機號
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Verify_Personal_ID" id="Verify_Personal_ID" onchange="toggleInput()">
+                        驗證身分證
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Input_Personal_Name" id="Input_Personal_Name" onchange="toggleInput()">
+                        輸入玩家名字
+                    </label>
                 </div>
             </div>
 
@@ -201,10 +239,14 @@
                         <input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">
                         創建票券
                     </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Create_all_promotion" id="Create_all_promotion" onchange="toggleInput()">
+                        創建活動
+                    </label>
                 </div>
             </div>
 
-            <div id="TestingTooLTab" class="tabcontent" role="tabpanel">
+            <div id="TestingTooLTab" class="tabcontent active" role="tabpanel">
                 <div class="script-grid">
                     <label>
                         <input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">

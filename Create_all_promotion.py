@@ -1,8 +1,8 @@
-import requests,logging,time,yaml,os
+import requests
+import logging
 from datetime import datetime,timedelta,timezone
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-from deposit_api import batch_approve
 
 logging.basicConfig(
     level=logging.INFO,
@@ -1250,7 +1250,7 @@ class Backend:
             print(response_json)
             logging.error("創建比賽排行榜失敗")
     def gen_code(self,merchantCode,refer=24784):
-        URL="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-promotion-promoCode-genCode"
+        URL="http://10.80.1.19:8083/promo-be/resources/promotion/promo_code/gen_code"
         params={
             "merchantCode":merchantCode
         }
@@ -1264,7 +1264,7 @@ class Backend:
         else:
             return None
     def PromoCode(self,ticket,merchantCode,promoCode,refer=24784):
-        URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-promotion-promoCode-create"
+        URL="http://10.80.1.19:8083/promo-be/resources/promotion/promo_code"
         start_Time, endTime, start_str, end_str = self.unitTime()
         header=self.header(merchantCode,refer)
         payload={
@@ -1509,7 +1509,7 @@ class Backend:
             logging.info("創建公告失敗")
             return False
     #def Manual_Sign_up(self,ticket,merchantCode,label_ID,title,content,refer=24785):
-    def Manual_Sign_up(self,ticket,merchantCode,refer=24785):
+    def Manual_Sign_up(self,ticket,merchantCode,label_ID,title,content,refer=24785):
         URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-signUpPromotion-create-create"
         start_Time, endTime, start_str, end_str = self.unitTime()
         header=self.header(merchantCode,refer)
@@ -1940,241 +1940,282 @@ class Backend:
             print(response_json)
             logging.error("創建VIP俸祿失敗")
     def Invite_Bonus(self,ticket,merchantCode,refer=240001):
-        URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-promotion-referral-settings-update"
+        URL="http://10.80.1.20:7001/promo-be/resources/promotion/referral_settings/update"
         header=self.header(merchantCode,refer)
         payload={
-                "merchantCode": merchantCode,
-                "promotionId": 4388141,
-                "status": "A",
-                "name": "1",
-                "referrerRemark": "1",
-                "referredRemark": "1",
-                "referralPromotionOperationLabels": None,
-                "referralPromotionRankLabels": None,
-                "mobileVerified": "N",
-                "isUniqueIp": "N",
-                "ipCheckQualifiedDay": 30,
-                "ipMaxQualifiedCount": 1,
-                "depositRequired": "N",
+            "merchantCode": merchantCode,
+            "promotionId": 123,
+            "status": "I",
+            "name": "活動名稱",
+            "referrerRemark": "基本設置 邀请人交易备注",
+            "referredRemark": "受邀人交易备注",
+            "referrerConditionFlag": "Y",
+            "referralPromotionOperationLabels": None,
+            "referralPromotionRankLabels": None,
+            "mobileVerified": "N",
+            "isUniqueIp": "Y",
+            "ipCheckQualifiedDay": 30,
+            "ipMaxQualifiedCount": 1,
+            "depositRequired": "N",
+            "requiredDepositAmount": 100,
+            "depositCountRequired": "N",
+            "depositCount": 10,
+            "bettingRequired": "N",
+            "requiredBettingAmount": 200,
+            "idRequired": "N",
+            "bankCardRequired": "N",
+            "sameNameCheck": "N",
+            "associationScoreRequired": "N",
+            "associationScore": 260,
+            "kycRequired": "N",
+            "linkType": "direct",
+            "linkedAgentId": 789,
+            "linkedAgentName": "代理名称",
+            "domainList": [],
+            "maxAllowDay": 30,
+            "reviewInvitationRewardEnabled": "AUTO",
+            "reviewAchievementRewardEnabled": "MANUAL",
+            "invitationRewardEnabled": "N",
+            "invitationRewardLabelType": 5,
+            "referralPromotionConfigGroupList": [
+                {
+                "groupName": "default",
+                "rankLabels": [],
+                "agentNames": [],
+                "content": [
+                    {
+                    "id": 0,
+                    "promotionId": 0,
+                    "rangeFrom": 0,
+                    "rangeTo": 0,
+                    "bonusAmount": 0,
+                    "pointAmount": 0,
+                    "turnoverMultiplier": 0,
+                    "referredBonusAmount": 0,
+                    "referredPointAmount": 0,
+                    "referredTurnoverMultiplier": 0,
+                    "ticketId": 0,
+                    "ticketType": "string",
+                    "ticketName": "string",
+                    "referredTicketId": 0,
+                    "referredTicketType": "string",
+                    "referredTicketName": "string",
+                    "ticketTurnoverMultiplier": 0,
+                    "referredTicketTurnoverMultiplier": 0
+                    }
+                ],
+                "depositRequired": "Y",
                 "requiredDepositAmount": 0,
-                "depositCountRequired": "N",
-                "depositCount": 1,
-                "bettingRequired": "N",
+                "depositCountRequired": "Y",
+                "depositCount": 0,
+                "bettingRequired": "Y",
                 "requiredBettingAmount": 0,
-                "idRequired": "N",
-                "bankCardRequired": "N",
-                "sameNameCheck": "N",
-                "associationScoreRequired": "N",
-                "associationScore": None,
-                "kycRequired": "N",
-                "linkType": "R",
-                "linkedAgentId": None,
-                "linkedAgentName": None,
-                "domainList": [],
-                "maxAllowDay": 0,
-                "reviewInvitationRewardEnabled": "AUTO",
-                "reviewAchievementRewardEnabled": "MANUAL",
-                "invitationRewardEnabled": "N",
-                "invitationRewardLabelType": 5,
-                "referralPromotionConfigGroupList": [
-                    {
-                        "groupName": "default",
-                        "rankLabels": [],
-                        "agentNames": [],
-                        "content": [
-                            {
-                                "id": 297005,
-                                "promotionId": 4388141,
-                                "rangeFrom": 1,
-                                "rangeTo": 11,
-                                "bonusAmount": 0,
-                                "pointAmount": 0,
-                                "turnoverMultiplier": 1,
-                                "referredBonusAmount": 0,
-                                "referredPointAmount": 0,
-                                "referredTurnoverMultiplier": 1,
-                                "ticketId": ticket,
-                                "ticketType": "CASH_VOUCHER",
-                                "ticketName": None,
-                                "referredTicketId": ticket,
-                                "referredTicketType": "CASH_VOUCHER",
-                                "referredTicketName": None,
-                                "ticketTurnoverMultiplier": None,
-                                "referredTicketTurnoverMultiplier": None
-                            }
-                        ],
-                        "depositRequired": "N",
-                        "requiredDepositAmount": None,
-                        "depositCountRequired": "N",
-                        "depositCount": None,
-                        "bettingRequired": "N",
-                        "requiredBettingAmount": None,
-                        "requiredBettingGameType": "ALL",
-                        "turnoverGameType": "ALL",
-                        "sort": 0
-                    }
-                ],
-                "achievementRewardEnabled": "Y",
-                "achievementRewardResetTimeUnit": "None",
-                "achievementRewardEnableTime": 1770355445000,
-                "referralAchievementRewardConfigList": [
-                    {
-                        "id": 84002,
-                        "turnoverMultiplier": 0,
-                        "depositUsers": 1,
-                        "bonusAmount": 10,
-                        "pointAmount": 10,
-                        "ticketId": ticket,
-                        "ticketType": "CASH_VOUCHER",
-                        "ticketName": None,
-                        "ticketTurnoverMultiplier": ""
-                    }
-                ],
-                "depositRebateEnabled": "N",
-                "referralDepositRebate": {
-                    "limitSetting": {
-                        "contDepositLimitEnabled": "N",
-                        "limitType": "REFERRER_INCOME",
-                        "maxDepositBonusPerReferrer": None,
-                        "dailyMaxDepositBonusPerReferrer": None,
-                        "maxDepositBonusPerPlayer": None,
-                        "dailyMaxDepositBonusPerPlayer": None
-                    },
-                    "referralDepositRebateConfigs": []
-                },
-                "bettingRebateEnabled": "N",
-                "referralBettingRebate": {
-                    "limitSetting": {
-                        "bettingRebateLimitEnabled": "N",
-                        "limitType": "REFERRER_INCOME",
-                        "gameLimits": [
-                            {
-                                "gameType": "RNG",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            },
-                            {
-                                "gameType": "PVP",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            },
-                            {
-                                "gameType": "FISH",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            },
-                            {
-                                "gameType": "LIVE",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            },
-                            {
-                                "gameType": "SPORTS",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            },
-                            {
-                                "gameType": "LOTT",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            },
-                            {
-                                "gameType": "ELOTT",
-                                "maxReferrerDayReward": None,
-                                "maxReferrerReward": None,
-                                "maxInviteeDayRebate": None,
-                                "maxInviteeRebate": None,
-                                "updatedBy": None,
-                                "updateTime": None
-                            }
-                        ]
-                    },
-                    "referralBettingRebateConfigs": []
-                },
-                "linkedAnnouncementList": [],
-                "allowMessage": "N",
-                "allowPushNotif": "N",
-                "promotionMessage": {
-                    "id": None,
-                    "promotionId": 4388141,
-                    "defaultLanguageInbox": "CN",
-                    "defaultLanguagePushNotif": "CN",
-                    "contentInboxOneTime": [],
-                    "contentPushNotifOneTime": [],
-                    "contentInboxReferred": [],
-                    "contentPushNotifReferred": [],
-                    "contentInboxAchievementReward": [],
-                    "contentPushNotifAchievementReward": [],
-                    "contentInboxCont": [],
-                    "contentPushNotifCont": [],
-                    "contentInboxBettingRebate": [],
-                    "contentPushNotifBettingRebate": []
-                },
-                "referralRankSetting": {
-                    "id": 77002,
-                    "totalQualifiedCountRequired": "N",
-                    "totalDepositRequired": "N",
-                    "totalBetRequired": "N",
-                    "monthQualifiedCountRequired": "Y",
-                    "monthDepositRequired": "Y",
-                    "monthBetRequired": "Y",
-                    "lastMonthQualifiedCountRequired": "Y",
-                    "lastMonthDepositRequired": "Y",
-                    "lastMonthBetRequired": "Y",
-                    "upgradeConditionType": "AND",
-                    "downgradeConditionType": "AND",
-                    "upgradeMode": "AUTO",
-                    "downgradeMode": "AUTO",
-                    "downgradeType": "SINGLE"
-                },
-                "referralRankConfigList": [
-                    {
-                        "id": 416004,
-                        "rankSequence": 1,
-                        "rankName": "Default",
-                        "requiredTotalQualifiedCount": 0,
-                        "requiredTotalDeposit": 0,
-                        "requiredTotalBet": 0,
-                        "requiredMonthQualifiedCount": 0,
-                        "requiredMonthDeposit": 0,
-                        "requiredMonthBet": 0,
-                        "requiredLastMonthQualifiedCount": 0,
-                        "requiredLastMonthDeposit": 0,
-                        "requiredLastMonthBet": 0
-                    }
-                ],
-                "updateAt": 1769505384608,
-                "imagePath": None,
-                "imagePathMobile": None,
-                "bannerImagePath": None,
-                "bannerImagePathMobile": None,
-                "referrerConditionFlag": "N",
                 "requiredBettingGameType": "ALL",
-                "referrerConditionFlagCustom": "all"
+                "turnoverGameType": "ALL",
+                "sort": 0
+                }
+            ],
+            "achievementRewardEnabled": "N",
+            "achievementRewardResetTimeUnit": "Monthly",
+            "achievementRewardEnableTime": "2024-01-01T00:00:00Z",
+            "referralAchievementRewardConfigList": [
+                {
+                "id": 0,
+                "turnoverMultiplier": 0,
+                "depositUsers": 0,
+                "bonusAmount": 0,
+                "pointAmount": 0,
+                "ticketId": 0,
+                "ticketType": "string",
+                "ticketName": "string",
+                "ticketTurnoverMultiplier": 0
+                }
+            ],
+            "depositRebateEnabled": "N",
+            "referralDepositRebate": {
+                "limitSetting": {
+                "contDepositLimitEnabled": "Y",
+                "limitType": "REFERRER_INCOME",
+                "maxDepositBonusPerReferrer": 1.1,
+                "dailyMaxDepositBonusPerReferrer": 1.2,
+                "maxDepositBonusPerPlayer": 1.3,
+                "dailyMaxDepositBonusPerPlayer": 1.4
+                },
+                "referralDepositRebateConfigs": [
+                {
+                    "rankSequence": 1,
+                    "referralDepositRebateDetails": [
+                    {
+                        "id": 0,
+                        "requiredLastDayDepositAmount": 1,
+                        "depositRebatePercentage": 0.23,
+                        "turnoverMultiplier": 0
+                    }
+                    ]
+                }
+                ]
+            },
+            "bettingRebateEnabled": "N",
+            "referralBettingRebate": {
+                "limitSetting": {
+                "bettingRebateLimitEnabled": "N",
+                "limitType": "REFERRER_INCOME",
+                "gameLimits": [
+                    {
+                    "gameType": "RNG",
+                    "maxReferrerDayReward": 999.9999,
+                    "maxReferrerReward": 999.9999,
+                    "maxInviteeDayRebate": 999.9999,
+                    "maxInviteeRebate": 999.9999,
+                    "updatedBy": "string",
+                    "updateTime": 0
+                    }
+                ]
+                },
+                "referralBettingRebateConfigs": [
+                {
+                    "rankSequence": 1,
+                    "referralBettingRebateDetails": [
+                    {
+                        "id": 0,
+                        "rebateLevel": 1,
+                        "lottRate": 0.27,
+                        "sportsRate": 0.27,
+                        "fishRate": 0.27,
+                        "liveRate": 0.27,
+                        "rngRate": 0.27,
+                        "pvpRate": 0.27,
+                        "elottRate": 0.27,
+                        "turnoverMultiplier": 0
+                    }
+                    ]
+                }
+                ]
+            },
+            "linkedAnnouncementList": [
+                {
+                "id": 0,
+                "title": "string"
+                }
+            ],
+            "allowMessage": "N",
+            "allowPushNotif": "N",
+            "promotionMessage": {
+                "id": 0,
+                "promotionId": 0,
+                "defaultLanguageInbox": "string",
+                "defaultLanguagePushNotif": "string",
+                "inboxAutoDeleteEnabled": "Y",
+                "inboxRetentionDays": 0,
+                "contentInboxOneTime": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentPushNotifOneTime": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentInboxReferred": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentPushNotifReferred": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentInboxAchievementReward": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentPushNotifAchievementReward": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentInboxCont": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentPushNotifCont": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentInboxBettingRebate": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ],
+                "contentPushNotifBettingRebate": [
+                {
+                    "title": "string",
+                    "content": "string",
+                    "language": "string"
+                }
+                ]
+            },
+            "referralRankSetting": {
+                "id": 0,
+                "totalQualifiedCountRequired": "Y",
+                "totalDepositRequired": "Y",
+                "totalBetRequired": "Y",
+                "monthQualifiedCountRequired": "Y",
+                "monthDepositRequired": "Y",
+                "monthBetRequired": "Y",
+                "lastMonthQualifiedCountRequired": "Y",
+                "lastMonthDepositRequired": "Y",
+                "lastMonthBetRequired": "Y",
+                "upgradeConditionType": "AND",
+                "downgradeConditionType": "OR",
+                "upgradeMode": "MANUAL",
+                "downgradeMode": "MANUAL",
+                "downgradeType": "SINGLE"
+            },
+            "referralRankConfigList": [
+                {
+                "id": 0,
+                "rankSequence": 1,
+                "rankName": "返佣等級名稱",
+                "requiredTotalQualifiedCount": 1,
+                "requiredTotalDeposit": 123.45,
+                "requiredTotalBet": 123.45,
+                "requiredMonthQualifiedCount": 1,
+                "requiredMonthDeposit": 123.45,
+                "requiredMonthBet": 123.45,
+                "requiredLastMonthQualifiedCount": 1,
+                "requiredLastMonthDeposit": 123.45,
+                "requiredLastMonthBet": 123.45
+                }
+            ],
+            "imagePath": "string",
+            "imagePathMobile": "string",
+            "bannerImagePath": "string",
+            "bannerImagePathMobile": "string",
+            "requiredBettingGameType": "ALL"
             }
         response=requests.post(URL,json=payload,headers=header,verify=False)
         response_json=response.json()
@@ -3268,8 +3309,8 @@ class Backend:
         else:
             print(response_json)
             logging.error("創建自定義簽到失敗")
-if __name__ == "__main__":
-    merchantCode='gi8viet' #789tatlbf5 #7kkkf2 #789mxnf2 #grandfinf2 #gtppf3 #gvs5rvd #holly01
+def create_promotion(prom_type:int,merchantCode):
+    #789tatlbf5 #7kkkf2 #789mxnf2 #grandfinf2 #gtppf3 #gvs5rvd #holly01
     credential_be = {
             "operatorName": "carrine03",
             "password": "Test@1234",
@@ -3282,61 +3323,135 @@ if __name__ == "__main__":
             deposit_list=['DEPOSIT','FIRST_DEPOSIT','SECOND_DEPOSIT','THIRD_DEPOSIT','FOURTH_DEPOSIT','FIFTH_DEPOSIT','DEPOSIT_BET_BONUS','DEPOSIT_COUNT']
             ticket_list=[1383014] #1315019 #1315022 #1313017 #1320014 #1320015
             
-            
-            for promo_type in deposit_list:
-                for ticket in ticket_list:
-                    backend.create_fisrt_deposit_promotion(promo_type,ticket,merchantCode)
+            match prom_type:
+                case 1:
+                    for promo_type in deposit_list:
+                        for ticket in ticket_list:
+                            backend.create_fisrt_deposit_promotion(promo_type,ticket,merchantCode)
                     
-            
-            backend.create_Raffle(ticket_list[0],merchantCode,refer=24780)
-            backend.create_lucky_bet(ticket_list[0],merchantCode,refer=24780)
-            
-            backend.create_new_register_Promotion(ticket_list[0],merchantCode,refer=24780)
-            backend.create_Register(ticket_list[0],merchantCode,refer=24780)
-            backend.create_app_download(ticket_list[0],merchantCode,refer=24780)
-            backend.register_mission(ticket_list[0],merchantCode,refer=24780)
-            backend.rescue_promotion(ticket_list[0],merchantCode,refer=24783)
-            code=backend.gen_code(merchantCode,refer=24784)
-            backend.PromoCode(ticket_list[0],merchantCode,code,refer=24784)
-            backend.mission(ticket_list[0],merchantCode,refer=24783)
-            backend.Manual_bonus(ticket_list[0],merchantCode,refer=24785)
-            
-            label=backend.search_exist_announcment(merchantCode,refer=27000)
-            
-            if not label:
-                isSuccess=backend.create_announcement(merchantCode,refer=27000)
-                if not isSuccess:
-                    logging.info("建立公告失敗")
-                    raise RuntimeError("create_announcement failed")
-                label=backend.search_exist_announcment(merchantCode,refer=27000)
-            title,content=backend.search_Title_content(merchantCode,label,refer=27000)
-            
-            backend.Manual_Sign_up(ticket_list[0],merchantCode,label,title,content,refer=24785)
-            
-            backend.Manual_Sign_up(ticket_list[0],merchantCode,refer=24785)
-            
-            backend.UPGRADE_BONUS(ticket_list[0],merchantCode,refer=20346)
-            
-            group_ID=backend.get_group_ID(merchantCode,refer=250001)
-            if not group_ID:
-                backend.Establish_rank(merchantCode,refer=250001)
-                group_ID=backend.get_group_ID(merchantCode,refer=250001)
-                labelId=backend.get_current_label(merchantCode,group_ID,refer=250001)
-            labelId=backend.get_current_label(merchantCode,group_ID,refer=250001)
-            backend.create_Raffle(ticket_list[0],merchantCode,refer=24780)
-            
-            backend.VIP_BONUS(ticket_list[0],merchantCode,labelId,refer=20324)
-            
-            
-            #backend.Invite_Bonus(ticket_list[0],merchantCode,refer=240001)
-            
-            backend.create_Raffle(ticket_list[0],merchantCode,refer=24780)
-            
-            backend.login_task(ticket_list[0],merchantCode,refer=24781)
-            backend.Sign_in_task_week(ticket_list[0],merchantCode,refer=24781)
-            backend.Sign_in_task_new(ticket_list[0],merchantCode,refer=24781)
-            backend.Sign_in_task_month(ticket_list[0],merchantCode,refer=24781)
-            backend.Sign_in_task_choice(ticket_list[0],merchantCode,refer=24781)
+                case 2:
+                    backend.create_Raffle(ticket_list[0],merchantCode,refer=24780)
+                case 3:
+                    backend.create_lucky_bet(ticket_list[0],merchantCode,refer=24780)
+                case 4:
+                    backend.create_new_register_Promotion(ticket_list[0],merchantCode,refer=24780)
+                case 5:
+                    backend.create_Register(ticket_list[0],merchantCode,refer=24780)
+                case 6:
+                    backend.create_app_download(ticket_list[0],merchantCode,refer=24780)
+                case 7:
+                    backend.register_mission(ticket_list[0],merchantCode,refer=24780)
+                case 8:
+                    backend.rescue_promotion(ticket_list[0],merchantCode,refer=24783)
+                case 9:
+                    code=backend.gen_code(merchantCode,refer=24784)
+                    backend.PromoCode(ticket_list[0],merchantCode,code,refer=24784)
+                case 10:
+                    backend.mission(ticket_list[0],merchantCode,refer=24783)
+                case 11:
+                    backend.Manual_bonus(ticket_list[0],merchantCode,refer=24785)
+                case 12:
+                    label=backend.search_exist_announcment(merchantCode,refer=27000)
+                    
+                    if not label:
+                        isSuccess=backend.create_announcement(merchantCode,refer=27000)
+                        if not isSuccess:
+                            logging.info("建立公告失敗")
+                            raise RuntimeError("create_announcement failed")
+                        label=backend.search_exist_announcment(merchantCode,refer=27000)
+                    title,content=backend.search_Title_content(merchantCode,label,refer=27000)
+                    
+                    backend.Manual_Sign_up(ticket_list[0], merchantCode, label, title, content, refer=24785)
+                    
+                case 13:
+                    
+                    backend.UPGRADE_BONUS(ticket_list[0],merchantCode,refer=20346)
+                    
+                    group_ID=backend.get_group_ID(merchantCode,refer=250001)
+                    if not group_ID:
+                        backend.Establish_rank(merchantCode,refer=250001)
+                        group_ID=backend.get_group_ID(merchantCode,refer=250001)
+                        labelId=backend.get_current_label(merchantCode,group_ID,refer=250001)
+                    labelId=backend.get_current_label(merchantCode,group_ID,refer=250001)
+                case 14:
+                    backend.Sign_in_task_choice(ticket_list[0],merchantCode,refer=24781)
+                case 15:
+                    backend.VIP_BONUS(ticket_list[0],merchantCode,labelId,refer=20324)
+                    
+                    #backend.Invite_Bonus(ticket_list[0],merchantCode,refer=240001
+                case 16:
+                    backend.login_task(ticket_list[0],merchantCode,refer=24781)
+                case 17:
+                    backend.Sign_in_task_week(ticket_list[0],merchantCode,refer=24781)
+                case 18:    
+                    backend.Sign_in_task_new(ticket_list[0],merchantCode,refer=24781)
+                case 19:    
+                    backend.Sign_in_task_month(ticket_list[0],merchantCode,refer=24781)
+                case 20:
+                    for promo_type in deposit_list:
+                        for ticket in ticket_list:
+                            backend.create_fisrt_deposit_promotion(promo_type,ticket,merchantCode)
+                    
+               
+                    backend.create_Raffle(ticket_list[0],merchantCode,refer=24780)
+                
+                    backend.create_lucky_bet(ticket_list[0],merchantCode,refer=24780)
+                
+                    backend.create_new_register_Promotion(ticket_list[0],merchantCode,refer=24780)
+                
+                    backend.create_Register(ticket_list[0],merchantCode,refer=24780)
+                
+                    backend.create_app_download(ticket_list[0],merchantCode,refer=24780)
+                
+                    backend.register_mission(ticket_list[0],merchantCode,refer=24780)
+                
+                    backend.rescue_promotion(ticket_list[0],merchantCode,refer=24783)
+                
+                    code=backend.gen_code(merchantCode,refer=24784)
+                    backend.PromoCode(ticket_list[0],merchantCode,code,refer=24784)
+                
+                    backend.mission(ticket_list[0],merchantCode,refer=24783)
+                
+                    backend.Manual_bonus(ticket_list[0],merchantCode,refer=24785)
+                
+                    label=backend.search_exist_announcment(merchantCode,refer=27000)
+                    
+                    if not label:
+                        isSuccess=backend.create_announcement(merchantCode,refer=27000)
+                        if not isSuccess:
+                            logging.info("建立公告失敗")
+                            raise RuntimeError("create_announcement failed")
+                        label=backend.search_exist_announcment(merchantCode,refer=27000)
+                    title,content=backend.search_Title_content(merchantCode,label,refer=27000)
+                    
+                    backend.Manual_Sign_up(ticket_list[0], merchantCode, label, title, content, refer=24785)
+                    
+              
+                    
+                    backend.UPGRADE_BONUS(ticket_list[0],merchantCode,refer=20346)
+                    
+                    group_ID=backend.get_group_ID(merchantCode,refer=250001)
+                    if not group_ID:
+                        backend.Establish_rank(merchantCode,refer=250001)
+                        group_ID=backend.get_group_ID(merchantCode,refer=250001)
+                        labelId=backend.get_current_label(merchantCode,group_ID,refer=250001)
+                    labelId=backend.get_current_label(merchantCode,group_ID,refer=250001)
+                
+                    backend.create_Raffle(ticket_list[0],merchantCode,refer=24780)
+               
+                    backend.VIP_BONUS(ticket_list[0],merchantCode,labelId,refer=20324)
+                    
+                    #backend.Invite_Bonus(ticket_list[0],merchantCode,refer=240001
+                
+                    backend.login_task(ticket_list[0],merchantCode,refer=24781)
+                
+                    backend.Sign_in_task_week(ticket_list[0],merchantCode,refer=24781)
+                   
+                    backend.Sign_in_task_new(ticket_list[0],merchantCode,refer=24781)
+                  
+                    backend.Sign_in_task_month(ticket_list[0],merchantCode,refer=24781)
+                
+                    backend.Sign_in_task_choice(ticket_list[0],merchantCode,refer=24781)
             
         else:
             logging.error("沒有拿到後台token:")        

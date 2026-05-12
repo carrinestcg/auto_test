@@ -349,6 +349,10 @@ button {
     align-items: start;
 }
 
+.script-grid > .select-group_platform {
+    display: contents;
+}
+
 .script-grid label {
     display: flex;
     align-items: flex-start;

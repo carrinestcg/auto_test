@@ -349,6 +349,13 @@ button {
     align-items: start;
 }
 
+/* 玩家管理：內層 div 若留在 grid 內會單獨佔一格（內含多個 label 直向堆疊），
+   其餘 sibling label 會排到第 2、3 欄頂端，造成「左欄很高、右側大片留白」。
+   display: contents 讓子層 label 直接參與 .script-grid 排版。 */
+.script-grid > .select-group_platform {
+    display: contents;
+}
+
 .script-grid label {
     display: flex;
     align-items: flex-start;
