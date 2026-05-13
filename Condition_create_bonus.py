@@ -495,6 +495,22 @@ def create_bonus(token,MerchantCode:str,task_id,type, ticket_id):
         return False
 
 
+def _normalize_ticket_id(ticket_id):
+    """後端 API 需要數字 ticketId；空字串／None 視為無效。"""
+    if ticket_id is None:
+        return None
+    if isinstance(ticket_id, int):
+        return ticket_id if ticket_id > 0 else None
+    s = str(ticket_id).strip()
+    if not s:
+        return None
+    try:
+        return int(s)
+    except ValueError:
+        logging.warning("ticket_id 無法轉為整數: %r", ticket_id)
+        return None
+
+
 def main(MerchantCode, ticket_id):
     try:
         token = get_token()
@@ -503,24 +519,22 @@ def main(MerchantCode, ticket_id):
         print("啟動時取得 token 發生錯誤:", e)
     if isinstance(MerchantCode, list):
         MerchantCode = MerchantCode[0]
-        
+
+    tid = _normalize_ticket_id(ticket_id)
+    if tid is None:
+        logging.error("條件派發略過: ticket_id 無效或為空 (輸入=%r)", ticket_id)
+        return False
+
     condType_list=[0,3,2,4,8,5,1,9,7]
+    any_ok = False
     for type in condType_list:
-        task_id=preview_task(token,MerchantCode,type, ticket_id)
+        task_id=preview_task(token,MerchantCode,type, tid)
         time.sleep(4)
         if task_id:
-            isSuccess=create_bonus(token,MerchantCode,task_id,int(type), ticket_id)
+            isSuccess=create_bonus(token,MerchantCode,task_id,int(type), tid)
             if isSuccess:
                 logging.info(f"條件類型 {type} ")
+                any_ok = True
             else:
                 logging.warning("未找到條件類型")
-
-        
-
-
-
-    
-        
-        
-
-   
+    return any_ok

@@ -16,7 +16,7 @@ function toggleInput() {
 function togglePromotionTypeList() {
     const wrap = document.getElementById("promotion-type-select-wrap");
     const promoSelect = document.getElementById("promotion-checkbox_select");
-    const need = isChecked("auto_create_promotion");
+    const need = isChecked("Create_all_promotion");
     if (!promoSelect) return;
     if (wrap) {
         wrap.classList.toggle("hidden", !need);
@@ -126,7 +126,7 @@ function validateFormBeforeSubmit() {
         pwd.value = "123qwe";
     }
 
-    if (isChecked("auto_create_promotion")) {
+    if (isChecked("Create_all_promotion")) {
         const promoSel = document.getElementById("promotion-checkbox_select");
         if (promoSel && Array.from(promoSel.selectedOptions).length === 0) {
             alert("請至少選擇一種活動類型（活動類型複選）");
@@ -335,8 +335,8 @@ function runSelectScript(){
             };
             break;
 
-        /** 票券／活動：後台一鍵建立多類活動（Auto_create_promotion.main(merchantCode)） */
-        case "auto_create_promotion": {
+        /** 票券／活動：後台一鍵建立多類活動（Create_all_promotion.create_promotion(merchantCode)） */
+        case "Create_all_promotion": {
             const promoSel = document.getElementById("promotion-checkbox_select");
             const promotion_types = promoSel
                 ? Array.from(promoSel.selectedOptions).map((opt) => opt.value)
@@ -419,25 +419,16 @@ function runSelectScript(){
             extraData = { type: 2 };
             break;
 
-        /** 僅帶 username + platforms，後端無額外 JSON 欄位 */
-        case "PROMOCODE_BATCH":
-        case "BONUS_BATCH":
-        case "TICKET_BATCH":
-        case "MANUAL_SIGN":
-        case "MANUAL_SINGLE":
-        case "MANUAL_BATCH":
-        case "PLAYER_RANK":
-        case "auto_create_player":
-        case "Customer_id":
-        case "SameTimeLogin":
-        case "DEPOSIT_API":
-        case "APP_Download":
-        case "PostCard_api":
-        case "Change_password":
-        case "Single_Manual_create":
-        case "test_Extra_bonus":
-            extraData = {};
+        case "auto_create_promotion": {
+            const promoSel = document.getElementById("promotion-checkbox_select");
+            const promotion_types = promoSel
+                ? Array.from(promoSel.selectedOptions).map(opt => opt.value)
+                : [];
+            extraData = {
+                promotion_types,  // 直接傳字串陣列，不再用 type 數字
+            };
             break;
+        }
 
         default:
             extraData = {};

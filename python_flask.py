@@ -214,24 +214,29 @@ def api_PLAYER_RANK():
                 "message": "Receive PromoCode Failed"
                 }
             ),400
-@python_flask.route('/api/Codition_create_bonus',methods=['POST']) #條件派發API
+@python_flask.route('/api/Codition_create_bonus',methods=['POST']) #條件派發 API
 def api_Codition_create_bonus():
-    data=request.get_json(silent=True)
-    ticket_input=data.get("ticket_input","")
-    platforms=data["platforms"] 
-    isSuccess=Condition_create_bonus.main(platforms, ticket_input)
+    data = request.get_json(silent=True) or {}
+    platforms = data.get("platforms") or ["gi8viet"]
+    merchant = platforms[0] if isinstance(platforms, list) and platforms else "gi8viet"
+    raw_tid = data.get("ticket_id") or data.get("ticketId")
+    if raw_tid is None or (isinstance(raw_tid, str) and not raw_tid.strip()):
+        return jsonify(
+            {"success": False, "message": "ticket_id is required (票券 ID)"}
+        ), 400
+    isSuccess = Condition_create_bonus.main(merchant, raw_tid)
     if isSuccess:
         return jsonify(
             {
                 "success": True,
-                "message": "Success Received bonus"
+                "message": "Success Received PromoCode"
                 }
             ),200
     else:
         return jsonify(
             {
                 "success": False,
-                "message": "Receive bonus Failed"
+                "message": "Receive PromoCode Failed"
                 }
             ),400
 
@@ -370,8 +375,7 @@ def api_manual_create_single():
     
 @python_flask.route('/api/Verify_Mobile_No', methods=['POST'])
 @python_flask.route('/api/Verify_Personal_ID', methods=['POST'])
-@python_flask.route('/api/Input_Personal_Name', methods=['POST'])
-def api_verify_info():
+def api_verify_mobile_no():
     data=request.json
     username=data["username"]
     verify_type = data.get("type") 
@@ -381,9 +385,6 @@ def api_verify_info():
     elif verify_type == 2:
         result = verify_info(username, verify_type)
         label = "身分證"
-    elif verify_type == 3:
-        result = verify_info(username, verify_type)
-        label = "玩家名字"
     else:
         return {"success": False, "message": "Unknown type"}, 400
 
@@ -616,7 +617,7 @@ def  auto_create_member_account():
         )
     
         
-   
+        
 @python_flask.route('/api/Customer_id',methods=['POST']) #查看玩家ID API
 def api_check_player_detail():
     try:
@@ -670,12 +671,9 @@ PROMO_TYPE_MAP = {
     "sign_new": 18,
     "sign_month": 19,
     "ALL": 20,
-    "extra_reward": 21
 }
-
 @python_flask.route("/api/Create_all_promotion", methods=["POST"])
 def api_auto_create_promotion():
-    
     data = request.get_json(silent=True) or {}
     platforms = data.get("platforms") or ["gi8viet"]
     merchant_code = platforms[0] if platforms else "gi8viet"
@@ -683,25 +681,25 @@ def api_auto_create_promotion():
 
     if not promotion_types:
         return jsonify({"success": False, "message": "promotion_types 不能為空"})
-    result=[]
-    for promo in promotion_types:
-        promoType=PROMO_TYPE_MAP.get(promo)
-        if promoType is None:
-            result.append(f"{promo}: 未知類型")
+
+    results = []
+    for promo_str in promotion_types:
+        prom_type = PROMO_TYPE_MAP.get(promo_str)
+        if prom_type is None:
+            results.append(f"{promo_str}: 未知類型")
             continue
         try:
-            Create_all_promotion.create_promotion(promoType, merchant_code)
-            result.append(f"{promo}: 成功")
+            Create_all_promotion.create_promotion(prom_type, merchant_code)
+            results.append(f"{promo_str}: 成功")
         except Exception as e:
-            logging.error(f"create_promotion {promo} 失敗: {e}")
-            result.append(f"{promo}: 失敗 {e}")
-    
+            logging.error(f"create_promotion {promo_str} 失敗: {e}")
+            results.append(f"{promo_str}: 失敗 {e}")
+
     return jsonify({
         "success": True,
-        "message": result,
+        "message": results,
         "merchantCode": merchant_code,
-    })  
-        
+    })
 
 
 @python_flask.route("/api/ALL_deposit_promotion", methods=["POST"])
