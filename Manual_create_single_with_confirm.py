@@ -58,20 +58,19 @@ def get_token(merchant):
     return token_data.get("token")
 
 def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,amount:int,prmotion_id:int,merchant:str):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/prom-promotion-manual-reward-claims-post?pid=20251" 
+    API_URL = "http://10.80.1.19:8083/promo-be/resources/promotion/manual_reward/claims" 
     payload = {
-    "merchantCode": merchant,
-    "customerName": player,
-    "bonusAmount": bonusAmount,
-    "bonusPointAmount": bonusPointAmount,
     "promotionId": prmotion_id,
-    "toReqAmount": 5,
+    "customerName": player,
+    "internalRemark": "internal remark",
+    "playerRemark": "player remark",
+    "bonusAmount": bonusAmount,
+    "pointAmount": bonusPointAmount,
+    "turnoverAmount": 2000,
     "ticketId": ticketId,
-    "ticketQuantity": amount,
-    #"scheduleTime": "1771100157000",
-    "isSendApp": "Y",
-    "appTitle": "title",
-    "appMessage": "恭喜您成功领取 {promotionName} 活动获得 金额 {bonus} 票卷 {ticket}"
+    "ticketQuantity": 5,
+    "isSendApp": "N",
+    
 }
 
     headers = header(token,merchant)
@@ -104,26 +103,27 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
         logging.error(f"其他錯誤: {e}")
         return False
 def Search_Customer_bonus(token,player:str,merchant:str):
-    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/mcs-manualPromotion-search" 
+    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/prom-promotion-manual-reward-claims" 
     start_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
     end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-    payload = {
+    params = {
     "merchantCode": merchant,
     "status": "P",
     "customerName":player,
-    "searchDateMode": "issuedDateSearch",
+    "relayDisableEncode": True,
+    "isForProcessingAll": False,
+    "periodType": "periodType",
     "startTime": start_time,
     "endTime": end_time,
     "pageSize": 10,
-    "pageNo": 1
-}
+    "pageNo": 1,
+    "pid" :20250
+    }
 
     headers = header(token,merchant)
-    cookies = {
-        "language": "zh_CN"
-    }
+    
     try:
-        response = requests.get(API_URL, params=payload, headers=headers, cookies=cookies, verify=False)
+        response = requests.get(API_URL, params=params, headers=headers, verify=False)
         response.raise_for_status()
         
         response_data = response.json()
@@ -141,27 +141,27 @@ def Search_Customer_bonus(token,player:str,merchant:str):
                     logging.info(f"拿到 CustomerID: {CustomerID} 和 claimid: {claimid} {promoType}")
                     return CustomerID, claimid,promoType
         else:
-                logging.error("回應中找不到 customerId 或 claimid")
-                return None, None 
+            logging.error(response_data)
+            logging.error("回應中找不到 customerId 或 claimid")
+            return None, None, None
         
             
     except requests.RequestException as e:
         logging.error(f"HTTP錯誤 {e}")
-        return None, None
+        return None, None, None
     except ValueError as e:
         logging.error(f"JSON解析錯誤: {e}")
-        return None, None
+        return None, None, None
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
-        return None, None
+        return None, None, None
   
 def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ,promoType:str):
-    API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-approveClaimStatus?claimStatus=I&customerId={Customerid}&claimId={claimid}" 
+    API_URL = f"http://10.80.1.19:8083/promo-be/resources/promotion/manual_reward/claims/{claimid}/approve" 
     payload = {
-    "claimStatus": "I",
-    "customerId":str(Customerid),
-    "claimId": str(claimid),
-    "promoType":promoType
+        "promotionId": 4407096,
+        "customerId": Customerid,
+        "internalRemark": "string"
     
 }
 
@@ -201,9 +201,7 @@ def main(username,promotionid,ticket_id,platform,amount):
         print("啟動時取得 token 發生錯誤:", e)
     bonusAmount=1000
     bonusPointAmount=20
-    #bonusAmount_list= [1,2,3]
-    #bonusPointAmount_list=[2,3,4]
-    #填入玩家帳號
+    
     create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,amount=amount,prmotion_id=promotionid,merchant=platform)
         
     Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)

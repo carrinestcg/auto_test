@@ -379,6 +379,7 @@ class Frontend:
                         continue
                     if str(ticket_ID).strip() not in wanted:
                         continue
+                    logging.info(f"匹配到票券: ticketId={ticket_ID}, type={item.get('type')}, status={item.get('status')}, 完整={item}")
                     Trans_id=item.get('transactionId')
                     if Trans_id:
                         transID_list.append(Trans_id)
@@ -434,6 +435,7 @@ class Frontend:
             response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies)
             response.raise_for_status()
             response_json=response.json()
+            logging.info(f"claimTicket 完整回應: {response_json}") 
             
             if response_json.get('success'):
                 self.response_value_list=response_json.get('value',{})
