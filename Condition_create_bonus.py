@@ -148,14 +148,14 @@ def get_cond_type_function_ratio_without_ticket(type):
         }]
     }
     return configs.get(type, configs[0])
-def get_cond_type_function_cash_ticket(type):
+def get_cond_type_function_cash_ticket(type, ticket_id):
     configs={
         0:[ #紅利贈送方式：無
             {
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
             }
         ],
@@ -164,7 +164,7 @@ def get_cond_type_function_cash_ticket(type):
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         2:[{ #紅利贈送方式：存款金額
@@ -172,7 +172,7 @@ def get_cond_type_function_cash_ticket(type):
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         3:[{ #紅利贈送方式：存款次數 
@@ -187,7 +187,7 @@ def get_cond_type_function_cash_ticket(type):
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         5:[{ #紅利贈送方式：存款金額+投充比
@@ -196,7 +196,7 @@ def get_cond_type_function_cash_ticket(type):
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         7:[{ #紅利贈送方式：玩家盈虧
@@ -204,7 +204,7 @@ def get_cond_type_function_cash_ticket(type):
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         8:[{ #紅利贈送方式：統計區間首存
@@ -212,26 +212,26 @@ def get_cond_type_function_cash_ticket(type):
             "gamePnlFrom": None,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         9:[{ #紅利贈送方式：遊戲輸贏
             "gamePnlFrom": -100,
             "bonusAmt": 1.5,
             "turnoverLimitAmt": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }]
     }
     return configs.get(type, configs[0])
-def get_cond_type_function_ratio_with_cash_ticket(type):
+def get_cond_type_function_ratio_with_cash_ticket(type,ticket_id):
     configs={
         0:[ #紅利贈送方式：無
             {
             "gamePnlFrom": None,
             "amtRatio": 15,
             "bonusTurnoverRatio": 1.5,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
             }
         ],
@@ -240,7 +240,7 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 1.6,
             "bonusTurnoverRatio": 1.9,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         2:[{ #紅利贈送方式：存款金額 
@@ -248,7 +248,7 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 17,
             "bonusTurnoverRatio": 4.7,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         3:[{ #紅利贈送方式：存款次數 
@@ -256,7 +256,7 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 38,
             "bonusTurnoverRatio": 3.7,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         4:[{  #紅利贈送方式：存款次數+存款金額
@@ -265,7 +265,7 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 17,
             "bonusTurnoverRatio": 7.7,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         5:[{ #紅利贈送方式：存款金額+投充比
@@ -274,7 +274,7 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 25,
             "bonusTurnoverRatio": 22.9,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         7:[{ #紅利贈送方式：玩家盈虧
@@ -282,7 +282,7 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 6.7,
             "bonusTurnoverRatio": 9.9,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         8:[{ #紅利贈送方式：統計區間首存
@@ -290,14 +290,14 @@ def get_cond_type_function_ratio_with_cash_ticket(type):
             "gamePnlFrom": None,
             "amtRatio": 16,
             "bonusTurnoverRatio": 7.9,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }],
         9:[{ #紅利贈送方式：遊戲輸贏
             "gamePnlFrom": -1,
             "amtRatio": 34,
             "bonusTurnoverRatio": 21.9,
-            "ticketId": 1129014,
+            "ticketId": ticket_id,
             "ticketQuantity": 1
         }]
     }
@@ -325,7 +325,7 @@ def build_common_payload(MerchantCode):
     "excludeCustomer": [],
     "excludeFileName": None,
     "excludeOperationLabel": [],
-    "promotionId": 4023090,
+    "promotionId": 4023101,
     "appTO": None,
     "customerRemark": "55",
     "internalRemark": "5"
@@ -353,7 +353,7 @@ def build_common_payload_deposit_ratio(MerchantCode):
     "excludeCustomer": [],
     "excludeFileName": None,
     "excludeOperationLabel": [],
-    "promotionId": 4023090,
+    "promotionId": 4023101,
     "appTO": None,
     "customerRemark": "55",
     "internalRemark": "5"
@@ -381,7 +381,7 @@ def build_common_payload_profit_ratio(MerchantCode):
     "excludeCustomer": [],
     "excludeFileName": None,
     "excludeOperationLabel": [],
-    "promotionId": 4023090,
+    "promotionId": 4023101,
     "appTO": None,
     "customerRemark": "55",
     "internalRemark": "5"
@@ -418,13 +418,13 @@ def get_token():
     token_data=requests_data.json()
     return token_data.get("token")
 
-def preview_task(token,MerchantCode:str,type:int):
+def preview_task(token,MerchantCode:str,type:int, ticket_id):
 
-    API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/promo-manual-cond-preview-task" 
+    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-manual-cond-preview-task" 
     
     payload = build_common_payload_profit_ratio(MerchantCode)
     payload["condType"]=type
-    payload["configs"]=get_cond_type_function_ratio_with_cash_ticket(type)
+    payload["configs"]=get_cond_type_function_ratio_with_cash_ticket(type, ticket_id)
     if type in [1,5,7,9]:
         payload["gameType"]=["rng"]
     headers = header(token,MerchantCode)
@@ -436,7 +436,7 @@ def preview_task(token,MerchantCode:str,type:int):
             
         response_data = response.json()
             
-        if response_data.get("success") == True:
+        if response_data.get("success"):
             value=response_data.get("value")
             task_id=value["taskId"]
             logging.info(task_id)
@@ -455,12 +455,12 @@ def preview_task(token,MerchantCode:str,type:int):
     except Exception as e:
             logging.error(f"其他錯誤: {e}")
     return False
-def create_bonus(token,MerchantCode:str,task_id,type):
+def create_bonus(token,MerchantCode:str,task_id,type, ticket_id):
 
-    API_URL = f"http://sit-admin2.tcg.com/tac/api/relay/post/promo-manual-cond-approve-claim-task" 
+    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/promo-manual-cond-approve-claim-task" 
     
     payload =build_common_payload_profit_ratio(MerchantCode)
-    payload["configs"]=get_cond_type_function_ratio_with_cash_ticket(type)
+    payload["configs"]=get_cond_type_function_ratio_with_cash_ticket(type, ticket_id)
     payload["condType"]=type
     payload["taskId"]=task_id
     if type in [1,5,7,9]:
@@ -475,7 +475,7 @@ def create_bonus(token,MerchantCode:str,task_id,type):
         
         response_data = response.json()
         
-        if response_data.get("success") == True:
+        if response_data.get("success"):
             logging.info("條件派發成功")
             return True
         else:
@@ -495,23 +495,25 @@ def create_bonus(token,MerchantCode:str,task_id,type):
         return False
 
 
-def main():
+def main(MerchantCode, ticket_id):
     try:
         token = get_token()
         print("取得的 token:", token)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
-    MerchantCode="gi8viet"
+    if isinstance(MerchantCode, list):
+        MerchantCode = MerchantCode[0]
+        
     condType_list=[0,3,2,4,8,5,1,9,7]
     for type in condType_list:
-        task_id=preview_task(token,MerchantCode,type)
+        task_id=preview_task(token,MerchantCode,type, ticket_id)
         time.sleep(4)
         if task_id:
-            isSuccess=create_bonus(token,MerchantCode,task_id,int(type))
+            isSuccess=create_bonus(token,MerchantCode,task_id,int(type), ticket_id)
             if isSuccess:
                 logging.info(f"條件類型 {type} ")
             else:
-                logging.warning(f"未找到條件類型")
+                logging.warning("未找到條件類型")
 
         
 

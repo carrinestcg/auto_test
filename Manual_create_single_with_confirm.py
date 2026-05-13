@@ -104,7 +104,7 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
         return False
 def Search_Customer_bonus(token,player:str,merchant:str):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/prom-promotion-manual-reward-claims" 
-    start_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
+    start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
     end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
     params = {
     "merchantCode": merchant,
@@ -112,7 +112,7 @@ def Search_Customer_bonus(token,player:str,merchant:str):
     "customerName":player,
     "relayDisableEncode": True,
     "isForProcessingAll": False,
-    "periodType": "periodType",
+    "periodType": "ISSUE_PERIOD",
     "startTime": start_time,
     "endTime": end_time,
     "pageSize": 10,
@@ -121,20 +121,25 @@ def Search_Customer_bonus(token,player:str,merchant:str):
     }
 
     headers = header(token,merchant)
-    
+    cookie={
+        "Cookie": "language=zh_CN"
+    }
     try:
-        response = requests.get(API_URL, params=params, headers=headers, verify=False)
+        response = requests.get(API_URL, params=params, headers=headers, cookies=cookie, verify=False)
         response.raise_for_status()
         
         response_data = response.json()
         
         if response_data.get("success"):
-            customer_list=response_data.get("value",[])
+            logging.info(f"完整回應: {json.dumps(response_data, ensure_ascii=False)}")
             
+            customer_list=response_data.get("value",[])
+            value = response_data.get("value", {})
+            customer_list = value.get("list", [])
             if customer_list:
                 customer_info=customer_list[0]
                 CustomerID=customer_info.get("customerId")
-                claimid=customer_info.get("id")
+                claimid=customer_info.get("claimId")
                 promoType=customer_info.get("promotionType")
     
                 if CustomerID and claimid:
@@ -199,6 +204,7 @@ def main(username,promotionid,ticket_id,platform,amount):
         print("取得的 token:", token)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
+    
     bonusAmount=1000
     bonusPointAmount=20
     

@@ -214,21 +214,24 @@ def api_PLAYER_RANK():
                 "message": "Receive PromoCode Failed"
                 }
             ),400
-@python_flask.route('/api/Codition_create_bonus',methods=['POST']) #APP下載獎勵API
+@python_flask.route('/api/Codition_create_bonus',methods=['POST']) #條件派發API
 def api_Codition_create_bonus():
-    isSuccess=Condition_create_bonus.main()
+    data=request.get_json(silent=True)
+    ticket_input=data.get("ticket_input","")
+    platforms=data["platforms"] 
+    isSuccess=Condition_create_bonus.main(platforms, ticket_input)
     if isSuccess:
         return jsonify(
             {
                 "success": True,
-                "message": "Success Received PromoCode"
+                "message": "Success Received bonus"
                 }
             ),200
     else:
         return jsonify(
             {
                 "success": False,
-                "message": "Receive PromoCode Failed"
+                "message": "Receive bonus Failed"
                 }
             ),400
 

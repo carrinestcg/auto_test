@@ -16,7 +16,7 @@ function toggleInput() {
 function togglePromotionTypeList() {
     const wrap = document.getElementById("promotion-type-select-wrap");
     const promoSelect = document.getElementById("promotion-checkbox_select");
-    const need = isChecked("Create_all_promotion");
+    const need = isChecked("auto_create_promotion");
     if (!promoSelect) return;
     if (wrap) {
         wrap.classList.toggle("hidden", !need);
@@ -48,7 +48,9 @@ function toggleTicket() {
     const ticket_id_input = document.getElementById("ticket_id-input-div");
     const manual_cb = document.getElementById("frontend-checkbox_manual");
     const requireTicket_input =
-        (manual_cb && manual_cb.checked) || isChecked("Extra_Reward_api");
+        (manual_cb && manual_cb.checked) ||
+        isChecked("Extra_Reward_api") ||
+        isChecked("Codition_create_bonus");
     const checkbox = document.getElementById("frontend-checkbox_ticket");
     const hasSelectTicket = ticket_select && Array.from(ticket_select.selectedOptions).length > 0;
 
@@ -124,10 +126,18 @@ function validateFormBeforeSubmit() {
         pwd.value = "123qwe";
     }
 
-    if (isChecked("Create_all_promotion")) {
+    if (isChecked("auto_create_promotion")) {
         const promoSel = document.getElementById("promotion-checkbox_select");
         if (promoSel && Array.from(promoSel.selectedOptions).length === 0) {
             alert("請至少選擇一種活動類型（活動類型複選）");
+            return false;
+        }
+    }
+
+    if (isChecked("Codition_create_bonus")) {
+        const tid = document.getElementById("ticket_id");
+        if (!tid || !tid.value.trim()) {
+            alert("條件派發請填寫票券 ID（ticket_id）");
             return false;
         }
     }
@@ -146,10 +156,16 @@ function validateFormBeforeSubmit() {
                 return;
             }
             const alloption = this.querySelector('option[value="ALL"]');
-            const otheroption = Array.from(this.options).filter(o => o.value !== 'ALL');
+            const otheroption = Array.from(this.options).filter(option => option.value !== 'ALL');
+            const anyOtherSelected = otheroption.some((o) => o.selected);
+
+            // 「全部」與「只選部分類型」不可同時為 true；否則會誤觸發「全選其餘」分支（例如 HTML 曾預設 ALL selected）
+            if (alloption && alloption.selected && anyOtherSelected) {
+                alloption.selected = false;
+            }
 
             if (alloption && alloption.selected) {
-                otheroption.forEach(o => o.selected = true);
+                otheroption.forEach(option => option.selected = true);
                 alloption.selected = false;
             }
             toggleInput();
@@ -164,12 +180,11 @@ function validateFormBeforeSubmit() {
         }
         el.addEventListener('mousedown', function(e) {
             const option = e.target;
-            if (option.tagName === 'OPTION') return;
-
-            e.preventDefault();
-            option.selected = !option.selected;
-            this.dispatchEvent(new Event('change'));
-            
+            if (option.tagName === 'OPTION') {
+                e.preventDefault();
+                option.selected = !option.selected;
+                this.dispatchEvent(new Event('change'));
+            }
         });
     });
 
@@ -320,8 +335,8 @@ function runSelectScript(){
             };
             break;
 
-        /** 票券／活動：後台一鍵建立多類活動（Create_all_promotion.create_promotion(merchantCode)） */
-        case "Create_all_promotion": {
+        /** 票券／活動：後台一鍵建立多類活動（Auto_create_promotion.main(merchantCode)） */
+        case "auto_create_promotion": {
             const promoSel = document.getElementById("promotion-checkbox_select");
             const promotion_types = promoSel
                 ? Array.from(promoSel.selectedOptions).map((opt) => opt.value)
@@ -388,6 +403,14 @@ function runSelectScript(){
             break;
         }
 
+        case "Codition_create_bonus": {
+            const el = document.getElementById("ticket_id");
+            extraData = {
+                ticket_id: el ? el.value.trim() : "",
+            };
+            break;
+        }
+
         case "Verify_Mobile_No":
             extraData = { type: 1 };
             break;
@@ -396,23 +419,26 @@ function runSelectScript(){
             extraData = { type: 2 };
             break;
 
-        case "Input_Personal_Name":
-            extraData = { type: 3 };
-            break;
-
         /** 僅帶 username + platforms，後端無額外 JSON 欄位 */
-        case "auto_create_promotion": {
-            const promoSel = document.getElementById("promotion-checkbox_select");
-            const promotion_types = promoSel
-                ? Array.from(promoSel.selectedOptions).map(opt => opt.value)
-                : [];
-            extraData = {
-                promotion_types,  // 直接傳字串陣列，不再用 type 數字
-            };
+        case "PROMOCODE_BATCH":
+        case "BONUS_BATCH":
+        case "TICKET_BATCH":
+        case "MANUAL_SIGN":
+        case "MANUAL_SINGLE":
+        case "MANUAL_BATCH":
+        case "PLAYER_RANK":
+        case "auto_create_player":
+        case "Customer_id":
+        case "SameTimeLogin":
+        case "DEPOSIT_API":
+        case "APP_Download":
+        case "PostCard_api":
+        case "Change_password":
+        case "Single_Manual_create":
+        case "test_Extra_bonus":
+            extraData = {};
             break;
-        }
 
-        
         default:
             extraData = {};
             console.warn("[runSelectScript] 未定義腳本，使用空 extraData:", scriptName);
