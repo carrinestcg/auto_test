@@ -68,7 +68,7 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
     "pointAmount": bonusPointAmount,
     "turnoverAmount": 2000,
     "ticketId": ticketId,
-    "ticketQuantity": 5,
+    "ticketQuantity": amount,
     "isSendApp": "N",
     
 }
