@@ -295,6 +295,16 @@ def api_Achievement_bonus():
                 "claimedTickets": claimedTickets
                 }
             )
+    elif claimedMoney and claimedPoint:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Triiger API Successfully",
+                "claimedMoney": claimedMoney,
+                "claimedPoint": claimedPoint,
+                "claimedTickets": None
+                }
+            )
     else:
         return jsonify(
             {
