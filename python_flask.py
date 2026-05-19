@@ -33,6 +33,7 @@ import subprocess
 import sys
 import Extra_Reward
 import test_Extra_bonus
+import Acheivement_bonus
 from Verify_Info import verify_info
 
 
@@ -159,7 +160,7 @@ def trigger_change_password_API(username,platform_type):
 def lottery_bet(username,amount):
         Lott_bet_without_main.implement(username,amount)
         
-@python_flask.route('/api/PROMOCODE_BATCH',methods=['POST']) #APP下載獎勵API
+@python_flask.route('/api/PROMOCODE_BATCH',methods=['POST']) #優惠碼API
 def api_PROMOCODE_BATCH():
     data=request.json
     username=data["username"]
@@ -178,7 +179,7 @@ def api_PROMOCODE_BATCH():
                 "message": "Receive PromoCode Failed"
                 }
             ),400
-@python_flask.route('/api/SameTimeLogin',methods=['POST']) #APP下載獎勵API
+@python_flask.route('/api/SameTimeLogin',methods=['POST']) #並行API
 def api_SameTimeLogin():
     isSuccess=SameTimeLogin_manager.main()
     if isSuccess:
@@ -195,7 +196,7 @@ def api_SameTimeLogin():
                 "message": "SameTimeLogin Failed"
                 }
             ),400
-@python_flask.route('/api/PLAYER_RANK',methods=['POST']) #APP下載獎勵API
+@python_flask.route('/api/PLAYER_RANK',methods=['POST']) #升級獎勵API
 def api_PLAYER_RANK():
     data=request.json
     username=data["username"]
@@ -268,6 +269,39 @@ def api_app_download():
                 "message": "Triiger API Successfully but restrict"
                 }
             )
+        
+@python_flask.route('/api/Achievement_bonus',methods=['POST']) #成就獎勵API
+def api_Achievement_bonus():
+    data=request.get_json(silent=True)
+    promotion_id=data["promotion_id"]
+    username=data["username"]
+    customer_id=Customer_id.main(username)
+    if not data:
+        return jsonify(
+        {
+            "success": False,
+            "message": "Triiger API Failed"
+            }
+        ),400
+        
+    claimedMoney, claimedPoint, claimedTickets =Acheivement_bonus.main(promotion_id, customer_id)
+    if claimedMoney and claimedPoint and claimedTickets:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Triiger API Successfully",
+                "claimedMoney": claimedMoney,
+                "claimedPoint": claimedPoint,
+                "claimedTickets": claimedTickets
+                }
+            )
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Triiger API Failed"
+                }
+            )
 @python_flask.route('/api/Compensation_api',methods=['POST']) #幸運注單補派獎API
 def api_Compensation():
     data=request.get_json(silent=True)
@@ -289,7 +323,7 @@ def api_Compensation():
                 }
             ),500
 
-@python_flask.route('/api/PostCard_api',methods=['POST']) #幸運注單補派獎API
+@python_flask.route('/api/PostCard_api',methods=['POST']) #郵寄碼API
 def api_PostCard_Code():
     data=request.get_json(silent=True)
     username=data["username"]
@@ -311,7 +345,7 @@ def api_PostCard_Code():
                 }
             ),500
         
-@python_flask.route('/api/Extra_Reward_api',methods=['POST']) #幸運注單補派獎API
+@python_flask.route('/api/Extra_Reward_api',methods=['POST']) #翻倍獎勵API
 def api_Extra_Reward():
     data = request.get_json(silent=True)
     if not data:
@@ -436,7 +470,7 @@ def api_frontend_receive_reward():
             }
         )
 
-@python_flask.route('/api/LOTTERY_BET',methods=['POST']) #前台領取獎勵API
+@python_flask.route('/api/LOTTERY_BET',methods=['POST']) #前台彩票投注API
 def api_lottery_bet():
     data=request.json
     username=data["username"]
@@ -450,7 +484,7 @@ def api_lottery_bet():
             }
         )
     
-@python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台領取獎勵API
+@python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台充值API
 def api_Deposit():
     data=request.json
     username=data["username"]
@@ -464,7 +498,7 @@ def api_Deposit():
             }
         )
 
-@python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #前台領取獎勵API
+@python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #手工報名活動API
 def api_Manual_Sign():
     data=request.json
     '''
