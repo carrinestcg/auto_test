@@ -248,7 +248,7 @@ def api_app_download():
         return jsonify(
         {
             "success": False,
-            "message": "Triiger API Failed"
+            "message": "Trigger API Failed"
             }
         ),400
         
@@ -259,47 +259,49 @@ def api_app_download():
         return jsonify(
             {
                 "success": True,
-                "message": "Triiger API Successfully"
+                "message": "Trigger API Successfully"
                 }
             )
     else:
         return jsonify(
             {
                 "success": False,
-                "message": "Triiger API Successfully but restrict"
+                "message": "Trigger API Successfully but restrict"
                 }
             )
         
 @python_flask.route('/api/Achievement_bonus',methods=['POST']) #成就獎勵API
 def api_Achievement_bonus():
+    
     data=request.get_json(silent=True)
-    promotion_id=data["promotion_id"]
-    username=data["username"]
-    customer_id=Customer_id.main(username)
     if not data:
         return jsonify(
         {
             "success": False,
-            "message": "Triiger API Failed"
+            "message": "Trigger API Failed"
             }
         ),400
         
+    promotion_id=data["promotion_id"]
+    username=data["username"]
+    customer_id=Customer_id.main(username)
+        
     claimedMoney, claimedPoint, claimedTickets =Acheivement_bonus.main(promotion_id, customer_id)
-    if claimedMoney and claimedPoint and claimedTickets:
+    if claimedMoney is not None and claimedPoint is not None:
         return jsonify(
             {
                 "success": True,
-                "message": "Triiger API Successfully",
+                "message": "Trigger API Successfully",
                 "claimedMoney": claimedMoney,
                 "claimedPoint": claimedPoint,
                 "claimedTickets": claimedTickets
                 }
             )
-    elif claimedMoney and claimedPoint:
+    elif claimedMoney is not None and claimedPoint is not None:
         return jsonify(
             {
                 "success": True,
-                "message": "Triiger API Successfully",
+                "message": "Trigger API Successfully",
                 "claimedMoney": claimedMoney,
                 "claimedPoint": claimedPoint,
                 "claimedTickets": None
@@ -309,7 +311,7 @@ def api_Achievement_bonus():
         return jsonify(
             {
                 "success": False,
-                "message": "Triiger API Failed"
+                "message": "Trigger API Failed"
                 }
             )
 @python_flask.route('/api/Compensation_api',methods=['POST']) #幸運注單補派獎API
@@ -462,7 +464,7 @@ def api_frontend_receive_ticket():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
     
@@ -476,7 +478,7 @@ def api_frontend_receive_reward():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
 
@@ -490,7 +492,7 @@ def api_lottery_bet():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
     
@@ -504,7 +506,7 @@ def api_Deposit():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
 
@@ -519,14 +521,14 @@ def api_Manual_Sign():
         return jsonify(
             {
                 "success": True,
-                "message": "Triiger API Successfully"
+                "message": "Trigger API Successfully"
                 }
             )
     else:
         return jsonify(
             {
                 "success": False,
-                "message": "Triiger API Failed"
+                "message": "Trigger API Failed"
                 }
             )
 @python_flask.route('/api/get_customer_data',methods=['POST']) #查詢玩家資訊API
@@ -539,7 +541,7 @@ def api_get_customer_data():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
 @python_flask.route('/api/auto_create_ticket',methods=['POST']) #創建票券API
@@ -553,7 +555,7 @@ def api_auto_create_ticket_func():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
 @python_flask.route('/api/SIGLE_PROMO_7_TICKET',methods=['POST']) #創建7種票券API
@@ -567,7 +569,7 @@ def api_auto_create_7_ticket():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
 @python_flask.route('/api/MANUAL_CREATE_SINGLE_CONFIRM',methods=['POST']) #手動紅利派發API
@@ -584,7 +586,7 @@ def api_manual_create_bonus():
         return jsonify(
             {
                 "success": True,
-                "message": "Triiger API Successfully"
+                "message": "Trigger API Successfully"
                 }
             )
     else:
@@ -604,7 +606,7 @@ def api_manual_batch():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
    
@@ -617,7 +619,7 @@ def api_batch_approve_func():
     return jsonify(
         {
             "success": True,
-            "message": "Triiger API Successfully"
+            "message": "Trigger API Successfully"
             }
         )
 @python_flask.route('/api/auto_create_player',methods=['POST']) #創建代理玩家API
@@ -678,7 +680,7 @@ def api_check_player_detail():
             return jsonify(
                 {
                     "success": True,
-                    "message": "Triiger API Successfully",
+                    "message": "Trigger API Successfully",
                     "data": {
                         "customer_id":customer_id
                         }
@@ -784,7 +786,7 @@ def api_all_deposit_promotion():
 @python_flask.route("/api/MANUAL_SINGLE", methods=["POST"])
 def api_manual_single():
     MANUAL_SINGLE.main()
-    return jsonify({"success": True, "message": "Triiger API Successfully"})
+    return jsonify({"success": True, "message": "Trigger API Successfully"})
 
 
 @python_flask.route('/upload_excel', methods=['POST']) 
