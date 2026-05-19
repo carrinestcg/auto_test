@@ -1,3 +1,4 @@
+#ann測試備註
 import requests,logging,datetime
 from datetime import datetime,timedelta
 import time,random,yaml,os
