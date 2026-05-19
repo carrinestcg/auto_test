@@ -501,18 +501,24 @@ def api_Deposit():
 @python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #手工報名活動API
 def api_Manual_Sign():
     data=request.json
-    '''
-    username=data["username"]
-    amount=data["amount"]
-    '''
-    MANUAL_SIGN.main()
     
-    return jsonify(
-        {
-            "success": True,
-            "message": "Triiger API Successfully"
-            }
-        )
+    username=data["username"]
+    promotion_id=data["promotion_id"]
+    result=MANUAL_SIGN.main(username,promotion_id)
+    if result:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Triiger API Successfully"
+                }
+            )
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Triiger API Failed"
+                }
+            )
 @python_flask.route('/api/get_customer_data',methods=['POST']) #查詢玩家資訊API
 def api_get_customer_data():
     data=request.json

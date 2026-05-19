@@ -257,6 +257,7 @@ class Backend:
         
         except Exception as e:
             logging.error(f"API呼叫失敗{e}")
+            return False
     
 def main(username, promo_id):
 
@@ -283,11 +284,17 @@ def main(username, promo_id):
             for record in record_list:
                 if record:
                     value_dict=backend.get_payload__detail(record)
-                    backend.Approve_to_send_bounus(str(username),promo_id,record, value_dict)        
+                    result=backend.Approve_to_send_bounus(str(username),promo_id,record, value_dict)  
+                    if result:
+                        return True
+                    else:
+                        return False      
         else:
                 logging.error("登入失敗 無法取得Token")
+                return False
     except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
+            return False
 
 
     
