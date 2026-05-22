@@ -1,4 +1,5 @@
 import requests,logging,time
+from collections import Counter
 from datetime import datetime,timedelta
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -156,7 +157,8 @@ def main(username,amount):
     print(f"username: {username}, amount: {amount}")
     success_count=0
     fail_count=0
-    for account in username:
+    counts=Counter(username)
+    for account, repeat in counts.items():
     #填入玩家帳號
         credential = {
             "username": account,
@@ -166,11 +168,14 @@ def main(username,amount):
             frontend = Frontend(credential)
             if frontend.token:
                 channel_info = frontend.get_mcssite_manualtransfer_channel()
-                count = frontend.deposit_QAD(credential['username'],amount, channel_info)
-                if count > 0:
-                    success_count += count
-                else:
-                    fail_count += 1
+                for i in range(repeat):
+                    logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
+                    count = frontend.deposit_QAD(credential['username'],amount, channel_info)
+                    if count > 0:
+                        success_count += count
+                    else:
+                        fail_count += 1
+                    time.sleep(1)
             else:
                 logging.error("登入失敗 無法取得Token")
                 return False

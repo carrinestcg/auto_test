@@ -377,7 +377,11 @@ function runSelectScript(){
             break;
 
         case "FRONTEND_DEPOSIT":
+            const username_list = username
+                ? username.split(/[\s,]+/).filter(Boolean)
+                : [];
             extraData = {
+                username_list,
                 amount: document.getElementById("amount").value,
             };
             break;
