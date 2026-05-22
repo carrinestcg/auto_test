@@ -45,6 +45,7 @@ function toggleAmount(){
 function toggleTicket() {
     const ticket_select = document.getElementById("frontend-checkbox_select");
     const ticket_input = document.getElementById("ticket-input-div");
+    const ticket_wrap = document.getElementById("ticket-select-wrap"); 
     const ticket_id_input = document.getElementById("ticket_id-input-div");
     const manual_cb = document.getElementById("frontend-checkbox_manual");
     const requireTicket_input =
@@ -55,7 +56,10 @@ function toggleTicket() {
     const hasSelectTicket = ticket_select && Array.from(ticket_select.selectedOptions).length > 0;
 
     if (!ticket_select || !checkbox) return;
+
+    if (ticket_wrap) ticket_wrap.classList.toggle("hidden", !checkbox.checked);
     ticket_select.classList.toggle("hidden", !checkbox.checked);
+
     ticket_input.classList.toggle("hidden", !(checkbox.checked && hasSelectTicket));
     if (ticket_id_input) ticket_id_input.classList.toggle("hidden", !requireTicket_input);
 }
@@ -74,14 +78,16 @@ function toggleRoundID(){
 }
 /** 任一測試腳本被勾選時顯示平台（API 皆會帶 platforms；未選時後端預設 gi8viet）。 */
 function togglePlatform() {
-    const manual_platform_select = document.getElementById("frontend-checkbox_manual_platform");
-    if (!manual_platform_select) return;
+    const manual_platform_select = document.getElementById("platform-select-wrap");
+    const select = document.getElementById("frontend-checkbox_manual_platform");
+    if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT"];  
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","Achievement_bonus","create_member_player"];  
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
+    select.classList.toggle("hidden", !needPlatform);
 }
 const amountInput = document.getElementById("amount");
 if (amountInput){

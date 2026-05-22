@@ -70,9 +70,9 @@
                         <small id="deposit_hint" class="field-hint">此欄位必填</small>
                     </div>
 
-                    <div class="multi-select-wrapper input-group">
+                    <div class="multi-select-wrapper input-group" id="platform-select-wrap">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
-                        <select multiple id="frontend-checkbox_manual_platform" size="5" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
+                        <select multiple id="frontend-checkbox_manual_platform" size="3" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
                             <option value="gi8viet" selected>gi8viet</option>
                             <option value="huamei">Huamei</option>
                             <option value="tcgdemov3">tcgdemov3</option>
@@ -82,9 +82,9 @@
                         </select>
                     </div>
 
-                    <div class="input-group field-ticket-select">
+                    <div class="input-group field-ticket-select" id="ticket-select-wrap">
                         <label class="field-label" for="frontend-checkbox_select">票券類型（可複選）</label>
-                        <select multiple id="frontend-checkbox_select" size="5" name="ticket_type" class="multi-select hidden" onchange="toggleInput()">
+                        <select multiple id="frontend-checkbox_select" size="3" name="ticket_type" class="multi-select hidden" onchange="toggleInput()">
                         <option value="CASH" selected>現金兌換券</option>
                         <option value="RAFFLE">幸運紅包</option>
                         <option value="GOLDEN_EGG">砸金蛋</option>
