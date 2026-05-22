@@ -25,7 +25,7 @@ class Frontend:
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url='http://www.sit2.sit-gi8viet.com/wps/session/login/unsecure'
+            login_url='http://www.sit-gi8viet.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
@@ -76,31 +76,58 @@ class Frontend:
                 'x-requested-with': 'XMLHttpRequest',  
                 'x-timestamp': unitTime     
             }
-    def deposit_QAD(self,username,amount):
+        
+    def get_mcssite_manualtransfer_channel(self):
+        url = 'http://www.sit-gi8viet.com/wps/relay/MCSFE_getDepositPaymentChannels?webSupported=Y&mobileSupported=N&groupMTByChannelName=Y'
+        headers = self.header()
+        response = self.session.get(url, headers=headers)
+        print(response.json())
+        response_json=response.json()
+        channel_info=[]
+        if response_json.get("success"):
+            value = response_json.get("value", {})
+            wechat = value.get("MWQR", {}) 
+            channels = wechat.get("channels", [])
+            for channel in channels:
+                channel_info.append({
+                    "vendorName": channel['vendorName'],
+                    "vendorId": channel['vendorId'], 
+                    'bankCode': channel['banks'][0]['bankCode'],
+                    'bankType': channel['banks'][0]['bankType'],
+                    "mcsBankCode": channel['mcsBankCode']
+                        }
+                    )
+            
+            return channel_info
+        else:
+            logging.error(f"錯誤{response}")
+            return []
+    
+    def deposit_QAD(self,username,amount, channel_info:list):
         success_fail=0
         success_count=0
-        bank_codes=["MWQR","Alipay","EWBANK123","TCG-106324 depositByQRImageUrl"]
-        bank_types=["MWQR","MAQR","QQ","WCFQR","ALIFQR","KAMI"]
-        vender_id=[28886,28906,21306,28268,28268,28268]
-        while len(bank_codes) < len(bank_types):
-            bank_codes.append(bank_codes[-1])
-        for bank_code, bank_type, vender in zip(bank_codes, bank_types, vender_id):
+        print(channel_info)
+        for item in channel_info:
+            vendorId=item.get("vendorId")
+            bankType=item.get("bankType")
+            mcsBankCode=item.get("mcsBankCode")
             if not self.is_token_valid():
                 logging.info("token 過期, 重新登入")
                 self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
-            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
+            login_URL="http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
 
             headers=self.header()
             payload={
                 "targetUsername": username,
                 "amount":amount,
-                "bankCode":bank_code,
-                "bankType":bank_type, 
+                "bankCode":bankType,
+                "bankType":bankType, 
                 "showQrImageOnly":1,
-                "vendorId":vender,
-                "mcsBankCode":bank_type,
+                "nickname":"c",
+                "vendorId":vendorId,
+                "mcsBankCode":mcsBankCode,
                 "deviceId": "cc688917-11c4-34c5-aeb6-bbf37742f679",
                 "token":self.token
             }
@@ -110,78 +137,51 @@ class Frontend:
             
             response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
             response_json=response.json()
+            logging.info(f"充值 response: {response_json}") 
             
-            if response_json.get('success')==True:
-                logging.info(f"成功充值 交易ID")
+            if response_json.get('success'):
+                logging.info("成功充值 交易ID")
                 success_count+=1
                 
             else:
-                logging.error(f"充值失敗")
+                logging.error("充值失敗")
                 success_fail+=1
-            time.sleep(1)
-        logging.info(f"總共充值{success_count}筆")
-        logging.info(f"總共失敗{success_fail}筆")
-            
-    def quick_deposit(self,username,amount):
-        success_fail=0
-        success_count=0
-        bank_types=["null"]
-        bank_codes=["TCG-106324"]
-        for bank_type, bank_code in zip(bank_types,bank_codes):
-            if not self.is_token_valid():
-                logging.info("token 過期, 重新登入")
-                self.get_token_login(self.credential['username'],self.credential['password'])
-            if self.token is None:
-                return
-            login_URL=f"http://www.sit-gi8viet.com/wps/relay/MCSFE_manualTransferByAccountName"
-
-            headers=self.header()
-            payload={
-                "targetUsername": username,
-                "payeeName":"bbbb",
-                "amount":amount,
-                "bankCode":bank_type,
-                "vendorId":28166,
-                "mcsBankCode":bank_code,
-                "token":self.token
-            }
-            cookies={
-                'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
-            }
-            
-            response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
-            response_json=response.json()
-            
-            if response_json.get('success')==True:
-                logging.info(f"成功充值 交易ID")
-                success_count+=1
                 
-            else:
-                logging.error(f"充值失敗")
-                success_fail+=1
-            time.sleep(1)
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-        
+        return success_count  
+            
         
 def main(username,amount):
-        
-        #填入玩家帳號
+    print(f"username: {username}, amount: {amount}")
+    success_count=0
+    fail_count=0
+    for account in username:
+    #填入玩家帳號
         credential = {
-            "username": username,
+            "username": account,
             "password": "123qwe"
         }
         try:    
             frontend = Frontend(credential)
             if frontend.token:
-                frontend.deposit_QAD(credential['username'],amount)
-                frontend.quick_deposit(credential['username'],amount)
-                
+                channel_info = frontend.get_mcssite_manualtransfer_channel()
+                count = frontend.deposit_QAD(credential['username'],amount, channel_info)
+                if count > 0:
+                    success_count += count
+                else:
+                    fail_count += 1
             else:
                 logging.error("登入失敗 無法取得Token")
+                return False
         
         except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
+        time.sleep(3)
+            
+    logging.info(f"所有帳號 成功{success_count}筆 失敗{fail_count}筆")
+    return success_count 
+            
 
 
     

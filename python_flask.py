@@ -499,16 +499,25 @@ def api_lottery_bet():
 @python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台充值API
 def api_Deposit():
     data=request.json
-    username=data["username"]
-    amount=data["amount"]
-    FRONTEND_DEPOSIT.main(username,amount),
-    
-    return jsonify(
-        {
-            "success": True,
-            "message": "Trigger API Successfully"
-            }
-        )
+    username_raw = data.get("username", "")
+    username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
+    amount = data.get("amount") 
+    result = FRONTEND_DEPOSIT.main(username_list,amount)
+    if result > 0:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Trigger API Successfully"
+                }
+            )
+        
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Trigger API Failed"
+                }
+            )
 
 @python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #手工報名活動API
 def api_Manual_Sign():
