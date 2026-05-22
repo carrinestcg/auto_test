@@ -76,8 +76,12 @@ function toggleRoundID(){
 function togglePlatform() {
     const manual_platform_select = document.getElementById("frontend-checkbox_manual_platform");
     if (!manual_platform_select) return;
-    const anyScriptChecked = document.querySelector("input[name=\"script\"]:checked") !== null;
-    manual_platform_select.classList.toggle("hidden", !anyScriptChecked);
+
+    const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
+    const excludePlatform = ["FRONTEND_DEPOSIT"];  
+    
+    const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
+    manual_platform_select.classList.toggle("hidden", !needPlatform);
 }
 const amountInput = document.getElementById("amount");
 if (amountInput){
