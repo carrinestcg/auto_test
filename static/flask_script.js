@@ -384,7 +384,8 @@ function runSelectScript(){
                 username_list,
                 amount: document.getElementById("amount").value,
             };
-            break;
+            runScriptApi(scriptName, { username, ...extraData });
+            return;
 
         case "Compensation_api":
             extraData = {
