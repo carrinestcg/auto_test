@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 
 def Achievement_bonus(promotionId, CustomerIP, CustomerId ):
-    URL="http://10.80.1.19:8084/promo-fe/resources/achievement/claim"
+    URL="http://10.80.1.88:8084/promo-fe/resources/achievement/claim"
     header={
         "accept":"*/*",
         "Accept-Encoding":"gzip, deflate, br",
