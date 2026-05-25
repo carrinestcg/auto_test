@@ -449,8 +449,17 @@ function runSelectScript(){
                 promotion_types,  // 直接傳字串陣列，不再用 type 數字
             };
             break;
-        }
         
+        }
+        case "FRONTEND_DEPOSIT":
+            const register_list = username
+                ? username.split(/[\s,]+/).filter(Boolean)
+                : [];
+            extraData = {
+                register_list,
+            };
+            runScriptApi(scriptName, { username, ...extraData });
+            return;
 
         default:
             extraData = {};

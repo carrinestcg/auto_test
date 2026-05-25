@@ -60,17 +60,17 @@ def auto_create_member_player(platform_type,username,amount):
                     logging.error(f"創建玩家 {username} 發生錯誤: {e}")
                     return 0,None
         return 0, None
-def auto_create_player(platform_type,username):
+def auto_create_player(platform_type,username_list):
         for platform in platform_type:
             if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkdscus1'):
                 try:
-                    result =NEW_REGISTER_API.main(platform,username)
+                    result =NEW_REGISTER_API.main(platform,username_list)
                     if isinstance(result, tuple) and len(result) == 2:
                         return result
                     else:
                         return 0,None
                 except Exception as e:
-                    logging.error(f"創建玩家 {username} 發生錯誤: {e}")
+                    logging.error(f"創建玩家 {username_list} 發生錯誤: {e}")
                     return 0,None
         return 0, None
 
@@ -635,8 +635,9 @@ def api_batch_approve_func():
 def api_auto_create_player():
     data=request.json
     platforms=data["platforms"]  
-    username=data["username"]
-    result_code, customer_id=auto_create_player(platforms,username)
+    username_raw = data.get("username", "")
+    username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
+    result_code, customer_id=auto_create_player(platforms,username_list)
     if result_code==1:
         success = True,
         message = "Create player and Change password Successfully",

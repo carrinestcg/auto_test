@@ -174,25 +174,32 @@ def reset_to_123qwe(customerId:int,merchantCode):
     else:
         return logging.info("修改密碼失敗")
 
-def main(platform,username):
+def main(platform,username_list):
         
     try:
         token = get_token()
         print("取得的 token:", token)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
-        
-    platform=create_agent(token,username,platform)
-    customer_id=DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='{platform}@{username}'")
-    print(customer_id)
-    if customer_id:
-        if reset_to_123qwe(customer_id,platform):
-            return 1, customer_id
+    procedure_type=0   
+    print(username_list)
+    for username in username_list:
+        platform=create_agent(token,username,platform)
+        customer_id=DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='{platform}@{username}'")
+        print(customer_id)
+        if customer_id:
+            if reset_to_123qwe(customer_id,platform):
+                procedure_type=1
+            else:
+                procedure_type=2
         else:
-            return 2, customer_id
+            logging.error("沒有拿到CustomerID")
+    if procedure_type == 1:
+        return 1, customer_id
+    elif procedure_type == 2:
+        return 2, customer_id
     else:
-        logging.error("沒有拿到CustomerID")
-        return False, None
+        return None ,None
 
         
 
