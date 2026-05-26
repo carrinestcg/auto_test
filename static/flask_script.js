@@ -38,7 +38,7 @@ function toggleExtraPromo(){
 }
 function toggleAmount(){
     const amountInputDiv = document.getElementById("amount-input-div");
-    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api");
+    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api")||isChecked("frontend-fix_deposit");
     if (!amountInputDiv) return
     amountInputDiv.classList.toggle("hidden", !requireamount);
 }
@@ -83,7 +83,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","Achievement_bonus","create_member_player"];  
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","Achievement_bonus","create_member_player", "FIXED_DEPOSIT"];  
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -102,6 +102,7 @@ function validateFormBeforeSubmit() {
     const needUsername = document.getElementById("frontend-checkbox_new").checked ||
         document.getElementById("frontend-checkbox_lott").checked ||
         document.getElementById("frontend-checkbox").checked ||
+        document.getElementById("frontend-fix_deposit").checked ||
         document.getElementById("frontend-checkbox_id").checked ||
         document.getElementById("frontend-checkbox_manual").checked ||
         document.getElementById("frontend-checkbox_7_Ticket").checked ||
@@ -393,6 +394,19 @@ function runSelectScript(){
             extraData = {
                 username_list,
                 amount: document.getElementById("amount").value,
+                type: 1
+            };
+            runScriptApi(scriptName, { username, ...extraData });
+            return;
+
+        case "FIXED_DEPOSIT":
+            const deposit_list = username
+                ? username.split(/[\s,]+/).filter(Boolean)
+                : [];
+            extraData = {
+                deposit_list,
+                amount: document.getElementById("amount").value,
+                type: 2
             };
             runScriptApi(scriptName, { username, ...extraData });
             return;
@@ -451,15 +465,6 @@ function runSelectScript(){
             break;
         
         }
-        case "FRONTEND_DEPOSIT":
-            const register_list = username
-                ? username.split(/[\s,]+/).filter(Boolean)
-                : [];
-            extraData = {
-                register_list,
-            };
-            runScriptApi(scriptName, { username, ...extraData });
-            return;
 
         default:
             extraData = {};

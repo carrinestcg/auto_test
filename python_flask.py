@@ -495,29 +495,27 @@ def api_lottery_bet():
             "message": "Trigger API Successfully"
             }
         )
-    
+@python_flask.route('/api/FIXED_DEPOSIT',methods=['POST'])#快捷充值API
 @python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台充值API
 def api_Deposit():
     data=request.json
     username_raw = data.get("username", "")
     username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
     amount = data.get("amount") 
-    result = FRONTEND_DEPOSIT.main(username_list,amount)
-    if result > 0:
-        return jsonify(
-            {
-                "success": True,
-                "message": "Trigger API Successfully"
-                }
-            )
-        
+    verify_type = data.get("type") 
+    if verify_type == 1:
+        result = FRONTEND_DEPOSIT.main(username_list,amount, verify_type)
+        label = "充值送"
+    elif verify_type == 2:
+        result = FRONTEND_DEPOSIT.main(username_list,amount, verify_type)
+        label = "快捷充值送"
     else:
-        return jsonify(
-            {
-                "success": False,
-                "message": "Trigger API Failed"
-                }
-            )
+        return {"success": False, "message": "Unknown type"}, 400
+
+    return {
+        "success": True,
+        "message": f"Trigger {label} {'Successfully' if result else 'Failed'}"
+    }
 
 @python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #手工報名活動API
 def api_Manual_Sign():

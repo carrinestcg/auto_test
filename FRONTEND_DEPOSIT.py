@@ -199,16 +199,16 @@ def main(username,amount, type):
                         else:
                             fail_count += 1
                         time.sleep(1)
-                else:
+                elif type ==1:
                     channel_info = frontend.get_mcssite_manualtransfer_channel()
-                for i in range(repeat):
-                    logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
-                    count = frontend.deposit_QAD(credential['username'],amount, channel_info)
-                    if count > 0:
-                        success_count += count
-                    else:
-                        fail_count += 1
-                    time.sleep(1)
+                    for i in range(repeat):
+                        logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
+                        count = frontend.deposit_QAD(credential['username'],amount, channel_info)
+                        if count > 0:
+                            success_count += count
+                        else:
+                            fail_count += 1
+                        time.sleep(1)
             else:
                 logging.error("登入失敗 無法取得Token")
                 return False
@@ -216,7 +216,7 @@ def main(username,amount, type):
         except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
         time.sleep(3)
-            
+    
     logging.info(f"所有帳號 成功{success_count}筆 失敗{fail_count}筆")
     return success_count 
             
