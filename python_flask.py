@@ -269,7 +269,7 @@ def api_app_download():
                 "message": "Trigger API Successfully but restrict"
                 }
             )
-        
+@python_flask.route('/api/QUEST_bonus',methods=['POST']) #任務獎勵API    
 @python_flask.route('/api/Achievement_bonus',methods=['POST']) #成就獎勵API
 def api_Achievement_bonus():
     
@@ -282,11 +282,12 @@ def api_Achievement_bonus():
             }
         ),400
         
-    promotion_id=data["promotion_id"]
     username=data["username"]
     customer_id=Customer_id.main(username)
-        
-    claimedMoney, claimedPoint, claimedTickets =Acheivement_bonus.main(promotion_id, customer_id)
+    promoType = data.get("type") 
+    promotion_id = data.get("promotion_id")
+    
+    claimedMoney, claimedPoint, claimedTickets =Acheivement_bonus.main(customer_id, promoType, promotion_id )
     if claimedMoney is not None and claimedPoint is not None:
         return jsonify(
             {
@@ -314,6 +315,7 @@ def api_Achievement_bonus():
                 "message": "Trigger API Failed"
                 }
             )
+    
 @python_flask.route('/api/Compensation_api',methods=['POST']) #幸運注單補派獎API
 def api_Compensation():
     data=request.get_json(silent=True)

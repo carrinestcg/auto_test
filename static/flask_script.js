@@ -65,7 +65,7 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked;
+    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus');
     
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 
@@ -83,7 +83,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","Achievement_bonus","create_member_player", "FIXED_DEPOSIT"];  
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","Achievement_bonus","create_member_player", "FIXED_DEPOSIT", "QUEST_bonus"];  
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -446,9 +446,16 @@ function runSelectScript(){
 
         case "Achievement_bonus":
                 extraData = {
-                    promotion_id: document.getElementById("promotion_id").value
+                    promotion_id: document.getElementById("promotion_id").value,
+                    type: 1
                 }
                 break;
+        case "QUEST_bonus":
+            extraData = {
+                promotion_id: document.getElementById("promotion_id").value,
+                type: 2
+            }
+            break;
 
         case "Verify_Personal_ID":
             extraData = { type: 2 };
