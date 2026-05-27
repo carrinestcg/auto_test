@@ -65,7 +65,7 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus');
+    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus').checked;
     
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 
