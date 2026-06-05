@@ -152,14 +152,18 @@ function validateFormBeforeSubmit() {
             return false;
         }
     }
-    if (isChecked("QUEST_bonus")) {
-        const tid = document.getElementById("ticket_id");
-        if (!tid || !tid.value.trim()) {
-            alert("條件派發請填寫票券 ID（ticket_id）");
+
+    if (
+        isChecked("QUEST_bonus") ||
+        isChecked("Achievement_bonus") ||
+        isChecked("Activity_bonus")
+    ) {
+        const promoId = document.getElementById("promotion_id");
+        if (!promoId || !promoId.value.trim()) {
+            alert("請填寫活動 ID（promotion_id）");
             return false;
         }
     }
-
 
     return true;
 }
