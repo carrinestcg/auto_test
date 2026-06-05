@@ -162,7 +162,7 @@ def main(CustomerId, promoType, promotionId):
             CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
             logging.info(f"拿到promotionId: {promotionId}")
             activity_list= get_unclaim_Quest(promotionId,CustomerIP,CustomerId, promoType)
-            if claimID_list is not None:
+            if activity_list is not None:
                 claimedMoney, claimedPoint, claimedTickets=receive_quest_bonus(CustomerIP,CustomerId,activity_list)
                 if claimedMoney and claimedPoint and claimedTickets:
                     return claimedMoney, claimedPoint, claimedTickets
