@@ -56,25 +56,34 @@ def get_unclaim_Quest(promotionId, CustomerIP, CustomerId, promoType):
     response_json = response.json()
 
     if response.status_code == 200:
-        value = response_json.get("value")
-        claims = value.get("claims", {})
+        value = response_json.get("value") or {}
 
         if promoType == 2:
+            claims = value.get("claims") or []
+            if not isinstance(claims, list):
+                logging.warning("claims 非 list，無法解析任務 claimId: %r", type(claims))
+                return []
             claimID_list = []
-            for claimid in claims:
-                claimStatus = claimid.get("claimStatus")
-                if claimStatus == "CLAIMABLE":
-                    claimId = claimid.get("claimId")
-                    claimID_list.append(claimId)
+            for item in claims:
+                if not isinstance(item, dict):
+                    continue
+                if item.get("claimStatus") == "CLAIMABLE":
+                    claim_id = item.get("claimId")
+                    if claim_id is not None:
+                        claimID_list.append(claim_id)
             logging.info(f"找到 {len(claimID_list)} 個 claimId: {claimID_list}")
             return claimID_list
 
-        elif promoType == 3:
-            activities = claims["activityRewardListResp"]["activities"]
+        if promoType == 3:
+            activity_resp = value.get("activityRewardListResp") or {}
+            activities = activity_resp.get("activities") or []
             activity_ids = []
             for activity in activities:
-                activity_id = activity["activityId"]
-                activity_ids.append(activity_id)
+                if not isinstance(activity, dict):
+                    continue
+                activity_id = activity.get("activityId")
+                if activity_id is not None:
+                    activity_ids.append(activity_id)
             logging.info(f"找到 {len(activity_ids)} 個 activityId: {activity_ids}")
             return activity_ids
 
