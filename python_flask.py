@@ -269,6 +269,7 @@ def api_app_download():
                 "message": "Trigger API Successfully but restrict"
                 }
             )
+@python_flask.route('/api/Activity_bonus',methods=['POST']) #活躍度獎勵API   
 @python_flask.route('/api/QUEST_bonus',methods=['POST']) #任務獎勵API    
 @python_flask.route('/api/Achievement_bonus',methods=['POST']) #成就獎勵API
 def api_Achievement_bonus():
@@ -882,6 +883,6 @@ def Compare_Two_Excel():
 
 if __name__ == "__main__":
     try:
-        python_flask.run(host='0.0.0.0',port=9830,debug=True)
+        python_flask.run(host='0.0.0.0',port=9831,debug=True)
     except Exception as e:
         print(f"啟動錯誤{e}")
