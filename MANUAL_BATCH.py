@@ -4,10 +4,8 @@ import time
 import requests
 import logging
 from datetime import datetime
-from openpyxl import Workbook
 from itertools import cycle
 import threading
-import copy
 import concurrent.futures
 
 logging.basicConfig(
@@ -16,11 +14,10 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 token_lock = threading.Lock()
-def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmount, ticket, ticketQuantity):
+def create_bonus(clone_be_end, account, promo, bonusAmount, bonusPointAmount, ticket, ticketQuantity):
     result = {
         "player": account,
         "promo_id": promo,
-        "promoName": name,
         "bonusAmount": bonusAmount,
         "bonusPointAmount": bonusPointAmount,
         "ticket": ticket,
@@ -41,8 +38,6 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
     )
 
     if is_success:
-        result['create_result'] = '創建紅利成功'
-        result['remark'] = '成功'
         search_result = clone_be_end.Search_Customer_bonus()
         if search_result:
             for customerID, claimid,promotionType in search_result:
@@ -61,40 +56,39 @@ def create_bonus(clone_be_end, account, promo, name, bonusAmount, bonusPointAmou
 
                 
     else:
-        result['create_result'] = '創建紅利失敗'
-        result['remark'] = '失敗'
+        logging.error("創建錯誤")
 
     return result
 
 class B_end:
-    def header(self):
-        return {
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Authorization": self.token_data,
-        "Content-Type": "application/json",
-        "Connection": "keep-alive",
-        "Language": "zh_CN",
-        "Merchant": "gi8viet",
-        "Origin": "http://sit-admin2.tcg.com",
-        "Referer": "http://sit-admin2.tcg.com/24785",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-        "environment": "TCG3",
-        "merchantCode": "gi8viet",
-        "platform": "TCG"
-        }
+    @property
+    def _headers(self):
+        if not hasattr(self, '_cached_headers'):
+            self._cached_headers={
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Authorization": self.token_data,
+                "Content-Type": "application/json",
+                "Connection": "keep-alive",
+                "Language": "zh_CN",
+                "Merchant": "gi8viet",
+                "Origin": "http://sit-admin2.tcg.com",
+                "Referer": "http://sit-admin2.tcg.com/24785",
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+                "environment": "TCG3",
+                "merchantCode": "gi8viet",
+                "platform": "TCG"
+                }
+        return self._cached_headers
+    
     def __init__(self,credential:dict):
-        self.session=requests.Session()
-        self.username=''
-        self.password=''
         self.token=self.get_token(credential['operatorName'],credential['password'])
         self.credential=credential
         self.token_data=self.token
-        self.record_data_list=[]
         self.claimid_list=[]
         self.success_count=0
-        self.claimid=''
         self.lock=threading.Lock()
+        
     def get_token(self,operatorName,password):
         login_url="http://sit-admin2.tcg.com/tac/api/login/password"
         payload={
@@ -143,19 +137,18 @@ class B_end:
         "ticketQuantity": ticketQuantity
     }
 
-        headers = self.header()
+        headers = self._headers
         cookies = {
             "language": "zh_CN"
         }
         try:
             response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
-            
-            
             response_data = response.json()
             
             if response_data.get("success") :
                 logging.info(f"手動紅利發放成功, 玩家帳號{player} ")
-                self.success_count+=1
+                with self.lock:          
+                    self.success_count += 1
                 return True
             else:
                 error_msg = response_data.get("message", "未知錯誤")
@@ -186,7 +179,7 @@ class B_end:
         "pageNo": 1,
     }
 
-        headers = self.header()
+        headers = self._headers
         
         try:
             result_list=[]
@@ -211,18 +204,18 @@ class B_end:
                 return result_list
             else:
                 logging.error("回應中找不到 customerId 或 claimid")
-                return None, None ,None
+                return []
             
                 
         except requests.RequestException as e:
             logging.error(f"HTTP錯誤 {e}")
-            return None, None,None
+            return  []
         except ValueError as e:
             logging.error(f"JSON解析錯誤: {e}")
-            return None, None,None
+            return  []
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
-            return None, None,None
+            return  []
     
     def Confirm_Customer_bonus(self):
         API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-batchApproveRejectManualPromotion" 
@@ -231,7 +224,7 @@ class B_end:
             "promotionClaims": self.claimid_list
         }
 
-        headers = self.header()
+        headers = self._headers
         try:
             response = requests.post(API_URL, json=payload, headers=headers, verify=False)
             response.raise_for_status()
@@ -254,45 +247,9 @@ class B_end:
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
             return False
-    def Bonus_record_page(self,testing_account):
-        
-      
-        API_URL2="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
-        start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
-        end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        headers=self.header()
-        headers["Referer"]="http://sit-admin2.tcg.com/311792"
-
-        payload={
-            "fromDate":start_time,
-            "toDate":end_time,
-            "isFuzzySearch":True,
-            "searchDateMode":"requestedTimeSearch",
-            "merchantCode":"gi8viet",
-            "customerName":testing_account
-
-        }
-        cookies = {
-            "language": "zh_CN",
-        }
-        try:
-            response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
-
-            response_data=response.json()
-            if response_data.get("success") :
-                self.record_data_list=response_data.get('value',{})
-                return True
-            else:
-                response_data.get("message", "未知錯誤")
-                return False
-            
-        except Exception as e:
-            logging.error(f"狀態碼: {response.status_code}{e}")
+    
     def process_procedure(self):
-        wb=Workbook()
-        ws=wb.active
-        ws.title="紅利發放結果"
-        ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
+        
         bonusAmount=10
         bonusPointAmount=10
         #count=2
@@ -310,68 +267,29 @@ class B_end:
             future_tasks=[]
             for account in testing_account:
                 for promo in prmotion_id_multiple:
-                    for ticket in ticket_id:
-                        clone_be_end = copy.copy(self) 
-                        future=executor.submit(
-                                create_bonus,  
-                                self,      
-                                account,
-                                promo,
-                                bonusAmount,
-                                bonusPointAmount,
-                                ticket,
-                                ticketQuantity,
-                        )
-                        future_tasks.append(future)
+                    ticket = next(ticket_cycle) 
+                    future=executor.submit(
+                            create_bonus,  
+                            self,      
+                            account,
+                            promo,
+                            bonusAmount,
+                            bonusPointAmount,
+                            ticket,
+                            ticketQuantity,
+                    )
+                    future_tasks.append(future)
             for future in concurrent.futures.as_completed(future_tasks):
                 result=future.result()
                 create_record.append(result)  
-
-        logging.info("====等待系統同步====")
+        logging.info(f"總共處理 {len(create_record)} 筆，成功 {self.success_count} 筆")
         time.sleep(2)
 
         is_confirm_complete=self.Confirm_Customer_bonus()
-        for record in create_record:
-            if record['create_result'] and record['claimid']:
-                if is_confirm_complete:
-                    record['confirm_result']='審核紅利成功'
-                    
-                else:
-                    record['confirm_result']='審核紅利失敗'
-        time.sleep(3)
-        logging.info("====等待紀錄更新====")
-        if self.Bonus_record_page(testing_account):
-            Bonus_record={str(item.get("promotionClaimId")) for item in self.record_data_list}
-            logging.info(f"獲取紅利記錄{Bonus_record}")
-
-            for record in create_record:
-                if record['claimid']:
-                    claimid_str=str(record['claimid'])
-                    if claimid_str in Bonus_record:
-                        record["status"] = "後台有紀錄"
-                    else:
-                        record["status"] = "後台沒紀錄"
+        if is_confirm_complete:
+            return True
         else:
-            logging.error("無法獲取後台紅利記錄")
-
-        for record in create_record:   
-            ws.append([
-                    record['player'],
-                    record['promo_id'],
-                    record['promoName'],
-                    record['bonusAmount'],
-                    record['bonusPointAmount'],
-                    record['ticket'],
-                    record['ticketQuantity'],
-                    record['create_result'],
-                    record['confirm_result'],
-                    record['remark'],
-                    record['claimid'],
-                    record['status']
-                    ]
-                )
-        report_path=os.path.join(current_dir,f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        wb.save(report_path)        
+            return False
         
     
 def main():
@@ -384,7 +302,10 @@ def main():
         
         b_end=B_end(credential)
         if b_end.token:
-            b_end.process_procedure()
+            if b_end.process_procedure():
+                return True
+            else:
+                return False
         else:
             logging.error("登入失敗 無法取得Token")
     except Exception as e:

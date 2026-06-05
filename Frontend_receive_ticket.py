@@ -84,7 +84,7 @@ class Frontend:
             "isAll":"N",
             
         }
-        self.customer_id=self.DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{username}'")
+        self.customer_id=self.DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='{merchantCode}@{username}'")
         headers={
             'Content-Type': 'application/json',
             'Merchant': merchantCode,
@@ -164,7 +164,7 @@ def main(username,merchantCode):
         return False
     #填入玩家帳號
     
-
+    print(merchantCode)
     try:    
         frontend = Frontend()
         frontend.poccess_all_ticket(merchantCode,username)
