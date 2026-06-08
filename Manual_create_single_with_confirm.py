@@ -58,27 +58,31 @@ def get_token(merchant):
     return token_data.get("token")
 
 def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,amount:int,prmotion_id:int,merchant:str):
-    API_URL = "http://10.80.1.19:8083/promo-be/resources/promotion/manual_reward/claims" 
+    API_URL = "http://10.81.1.88:8083/promo-be/resources/promotion/manual_reward/claims" 
     payload = {
+    "merchantCode": "gi8viet",
     "promotionId": prmotion_id,
     "customerName": player,
-    "internalRemark": "internal remark",
-    "playerRemark": "player remark",
+    "playerRemark": "egg_app下载",
     "bonusAmount": bonusAmount,
     "pointAmount": bonusPointAmount,
-    "turnoverAmount": 2000,
+    "turnoverAmount": 30,
     "ticketId": ticketId,
-    "ticketQuantity": amount,
-    "isSendApp": "N",
+    "ticketQuantity": 1,
+    "isSendApp": "Y",
+    "appTitle": "title",
+    "appMessage": "恭喜您成功领取 {promotionName} 活动获得 金额 {bonus} 票卷 {ticket}"
     
 }
-
+    param={
+        "pid":20251
+    }
     headers = header(token,merchant)
     cookies = {
         "language": "zh_CN"
     }
     try:
-        response = requests.post(API_URL, json=payload, headers=headers, cookies=cookies, verify=False)
+        response = requests.post(API_URL, json=payload, headers=headers,params=param, cookies=cookies, verify=False)
         response.raise_for_status()
         
         
@@ -145,6 +149,9 @@ def Search_Customer_bonus(token,player:str,merchant:str):
                 if CustomerID and claimid:
                     logging.info(f"拿到 CustomerID: {CustomerID} 和 claimid: {claimid} {promoType}")
                     return CustomerID, claimid,promoType
+            # FIX: customer_list 為空時補上 return
+            logging.error("customer_list 為空，找不到待審核記錄")
+            return None, None, None
         else:
             logging.error(response_data)
             logging.error("回應中找不到 customerId 或 claimid")
@@ -161,12 +168,13 @@ def Search_Customer_bonus(token,player:str,merchant:str):
         logging.error(f"其他錯誤: {e}")
         return None, None, None
   
-def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str ,promoType:str):
-    API_URL = f"http://10.80.1.19:8083/promo-be/resources/promotion/manual_reward/claims/{claimid}/approve" 
+def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str,promoType:str,promotion_id:int): 
+    API_URL = f"http://10.81.1.88:8083/promo-be/resources/promotion/manual_reward/claims/{claimid}/approve" 
     payload = {
-        "promotionId": 4407096,
+        "promotionId": promotion_id,  
         "customerId": Customerid,
-        "internalRemark": "string"
+        "internalRemark": "string",
+        "vendorLockAction": "string"
     
 }
 
@@ -201,9 +209,9 @@ def main(username,promotionid,ticket_id,platform,amount):
     
     try:
         token = get_token(platform)
-        print("取得的 token:", token)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
+        return  # FIX: 原本沒有 return，取得 token 失敗仍會繼續執行
     
     bonusAmount=1000
     bonusPointAmount=20
@@ -212,10 +220,8 @@ def main(username,promotionid,ticket_id,platform,amount):
         
     Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:
-        Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType)
+        Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid)  # FIX: 傳入 promotionid
     else:
         logging.error("沒有拿到ID")
-
-
-
-  
+     
+     

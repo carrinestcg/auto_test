@@ -9,6 +9,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 def DB_connect(SQL):
+    logging.info(SQL)
     host="10.80.1.11"
     port = 1521              
     service_name = "tcgsit"
@@ -23,9 +24,9 @@ def DB_connect(SQL):
         dsn=dsn
     )
     cursor=conn.cursor()
-    cursor.execute(f"{SQL}")
-    rows=cursor.fetchall()
     try:
+        cursor.execute(f"{SQL}")
+        rows=cursor.fetchall()
         if rows:
             colums=[]
             for desc in cursor.description:
@@ -50,6 +51,7 @@ def DB_connect(SQL):
                     
         else:
             logging.info("查無資料")
+            return None
         return str(rows[0][0])
             
     except oracledb.DatabaseError as e:
@@ -62,6 +64,22 @@ def DB_connect(SQL):
         if conn in locals() and conn:
             conn.close()
         
-def main(username):
-    customer_id=DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{username}'")
-    return customer_id
+def main(username, platform, Type):
+    if isinstance(platform, (list, tuple)):
+        platform = platform[0] if platform else "gi8viet"
+    platform = (platform or "gi8viet").strip()
+    username = (username or "").strip()
+    if "@" in username:
+        customer_name = username
+    else:
+        customer_name = f"{platform}@{username}"
+    if Type == 1:
+        customer_id=DB_connect(
+            f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE UPPER(CUSTOMER_NAME)=UPPER('{customer_name}')"
+        )
+        return customer_id
+    elif Type == 2:
+        customer_name=DB_connect(
+            f"SELECT CUSTOMER_NAME FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_ID='{username}'"
+        )
+        return customer_name

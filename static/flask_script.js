@@ -83,7 +83,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","Achievement_bonus","create_member_player", "FIXED_DEPOSIT", "QUEST_bonus","Activity_bonus"];  
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","create_member_player", "FIXED_DEPOSIT"];  
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -443,6 +443,17 @@ function runSelectScript(){
             };
             break;
         }
+        case "Customer_id":
+            extraData = {
+                    type: 1
+                }
+            break;
+
+        case "Customer_name":
+            extraData = {
+                    type: 2
+                }
+        break;
 
         case "Codition_create_bonus": {
             const el = document.getElementById("ticket_id");
@@ -471,7 +482,7 @@ function runSelectScript(){
         case "Activity_bonus":
             extraData = {
                 promotion_id: document.getElementById("promotion_id").value,
-                type: 1
+                type: 3
             }
             break;
 

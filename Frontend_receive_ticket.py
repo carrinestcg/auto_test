@@ -77,7 +77,7 @@ class Frontend:
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
         '''
-        login_URL="http://10.80.1.20:7001/promo-fe/resources/ticket/list"
+        login_URL="http://10.81.1.20:7001/promo-fe/resources/ticket/list"
         parmas={
             
             "status":"AVAILABLE",
@@ -113,7 +113,7 @@ class Frontend:
         
     def approve_to_receive_ticket(self,trans_id):
         
-        login_URL="http://10.80.1.20:7001/promo-fe/resources/ticket/claim"
+        login_URL="http://10.81.1.20:7001/promo-fe/resources/ticket/claim"
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         headers={
             'Content-Type': 'application/json',
