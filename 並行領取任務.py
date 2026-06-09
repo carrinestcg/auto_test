@@ -13,7 +13,7 @@ logging.basicConfig(
 )
 
 def Achievement_bonus(promotionId, CustomerIP, CustomerId):
-    URL = "http://10.80.1.88:8084/promo-fe/resources/achievement/claim"
+    URL = "http://10.81.1.88:8084/promo-fe/resources/achievement/claim"
     header = {
         "accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
@@ -40,7 +40,7 @@ def Achievement_bonus(promotionId, CustomerIP, CustomerId):
 
 
 def get_unclaim_Quest(promotionId, CustomerIP, CustomerId, promoType):
-    URL = "http://10.80.1.88:8084/promo-fe/resources/quest/unclaim_list"
+    URL = "http://10.81.1.88:8084/promo-fe/resources/quest/unclaim_list"
     header = {
         "accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
@@ -93,7 +93,7 @@ def get_unclaim_Quest(promotionId, CustomerIP, CustomerId, promoType):
 
 
 def receive_quest_bonus_single(CustomerIP, CustomerId, claimid):
-    URL = "http://10.80.1.20:7001/promo-fe/resources/promo_claim"
+    URL = "http://10.81.1.20:7001/promo-fe/resources/promo_claim"
     header = {
         "accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
@@ -122,7 +122,7 @@ def receive_quest_bonus_single(CustomerIP, CustomerId, claimid):
 
 
 def receive_activity_bonus_single(CustomerIP, CustomerId, activity_id):
-    URL = "http://10.80.1.88:8084/promo-fe/resources/quest/claim/activity"
+    URL = "http://10.81.1.88:8084/promo-fe/resources/quest/claim/activity"
     header = {
         "accept": "*/*",
         "Accept-Encoding": "gzip, deflate, br",
@@ -214,8 +214,8 @@ def main(player_list, promoType, promotionId):
 
 # 執行
 player_list = [
-    {"CustomerId": "9590331"},
-    {"CustomerId": "6697484"},
+    {"CustomerId": "8153597"},
+    {"CustomerId": "9554822"},
 ]
 
-main(player_list, promoType=2, promotionId="4574108")
+main(player_list, promoType=2, promotionId="4576098")

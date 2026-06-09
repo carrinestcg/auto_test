@@ -9,7 +9,7 @@ logging.basicConfig(
 )
 
 def Change_Password(customer_id:str):
-    URL="http://10.80.1.22:7001/tcg-uss-ae/password"
+    URL="http://10.81.1.22:7001/tcg-uss-ae/password"
 
     header={
         "Content-Type":"application/json"
@@ -29,7 +29,7 @@ def Change_Password(customer_id:str):
         return False
 
 def DB_connect(SQL):
-    host="10.80.1.11"
+    host="10.81.1.11"
     port = 1521              
     service_name = "tcgsit"
     username = "TCG_MCSDB"
