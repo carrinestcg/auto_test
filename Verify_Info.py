@@ -225,7 +225,7 @@ def input_personal_name(customerId:int, new_Name:str):
         logging.error(f"名字輸入請求失敗{e}")
         return False
     
-def verify_info(PLAYER_ACCOUNT, verify_type):
+def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
     try:
         token = get_token()
         print("取得的 token:", token)
@@ -233,7 +233,7 @@ def verify_info(PLAYER_ACCOUNT, verify_type):
         print("啟動時取得 token 發生錯誤:", e)
     if verify_type == 1:
         number=random.randint(10000000,99999999)
-        customer_id=main(PLAYER_ACCOUNT)
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
         if customer_id:
             if input_mobile_number(customer_id,number):
                 if verify_phone_number(customer_id):
@@ -249,7 +249,7 @@ def verify_info(PLAYER_ACCOUNT, verify_type):
     elif verify_type == 2:
         
         ID_number=random.randint(100000000,999999999)
-        customer_id=main(PLAYER_ACCOUNT)
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
         if customer_id:
             if input_personal_id(customer_id, ID_number):
                 if input_personal_picture(customer_id, ID_number):
@@ -265,7 +265,7 @@ def verify_info(PLAYER_ACCOUNT, verify_type):
     elif verify_type == 3:
         
         name = ''.join(random.choices(string.ascii_uppercase, k=8))
-        customer_id=main(PLAYER_ACCOUNT)
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
         if customer_id:
             result = input_personal_name(customer_id, name)
             if result:
