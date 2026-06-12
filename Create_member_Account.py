@@ -7,6 +7,7 @@ import json
 import time
 from datetime import timedelta
 from DB_connect import DB_connect
+from Customer_id import main
 
 
 logging.basicConfig(
@@ -14,7 +15,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
-URL="http://10.80.1.22:7001/tcg-uss-ae/customer-create/register"
+URL="http://10.81.1.22:7001/tcg-uss-ae/customer-create/register"
 login_url='http://www.sit-gi8viet.com/wps/session/login/unsecure'
 
 
@@ -115,46 +116,6 @@ async def Create_member(session,CustomerName,MerchantCode):
                 logging.error(f"觸發失敗{text}")
     except Exception as e:
         logging.error(f"[{CustomerName}] 請求錯誤: {e}")
-'''
-async def batch_login(session,member_list,batch_size=1,delay=1):
-    for i in range(0,len(member_list),batch_size):
-        batch=member_list[i:i+batch_size]
-        logging.info("批次登入")
-        task=[
-            get_token_login(session,name,"123qwe")
-            for name in batch
-        ]
-        await asyncio.gather(*task)
-        await asyncio.sleep(delay)
-'''
-async def get_customer_id(session,member_list,MerchantCode):
-    CustomerID_list=[]
-    task=[]
-    for name in member_list:
-        URL=f"http://10.80.1.20:7001/promo-fe/resources/version/auto_qa/get_customer_id?merchant={MerchantCode}&customerName={name}"
-
-        task.append(
-            session.get(URL,ssl=False)
-        )
-    response=await asyncio.gather(*task, return_exceptions=True)
-    for customer_id,resp in zip(member_list,response):
-        if isinstance(resp, Exception):
-            logging.error(f" 請求錯誤: {resp}")
-            continue
-        try:
-            text=await resp.text()
-            text=text.strip()
-            print(text)
-            if text.isdigit():
-                customer_id=int(text)
-                CustomerID_list.append(customer_id)
-
-            else:
-                customer_id = text
-                CustomerID_list.append(customer_id)
-        except Exception as e:
-            logging.info(f"[ 非 JSON 回應：{text}{e}")
-    return CustomerID_list
 
 async def create_wallet(session,customer_id_list):
     
@@ -196,7 +157,7 @@ async def create_wallet(session,customer_id_list):
 async def Change_Password(session,customer_id_list):
     task=[]
     for customer_id in customer_id_list:
-        URL="http://10.80.1.22:7001/tcg-uss-ae/password"
+        URL="http://10.81.1.22:7001/tcg-uss-ae/password"
 
         header={
             "Content-Type":"application/json"
