@@ -74,12 +74,14 @@ def input_mobile_number(customerId:int,number:int):
         response_data=response.json()
         if response_data.get("success"):
             logging.info("手機號輸入成功")  
+            return True
         else:
-            logging.error("手機號驗證失敗")
+            logging.error("手機號輸入失敗")
             return False
     
     except Exception as e:
-        logging.error(f"手機號驗證請求失敗{e}")
+        logging.error(f"手機號輸入請求失敗{e}")
+        return False
 def verify_phone_number(customerId:int):
     token=get_token()
     API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-verifyMobile?remark=s&remarks=s&customerId={customerId}"
@@ -95,12 +97,14 @@ def verify_phone_number(customerId:int):
         response_data=response.json()
         if response_data.get("success") :
             logging.info("手機號驗證成功")  
+            return True
         else:
             logging.error("手機號驗證失敗")
             return False
     
     except Exception as e:
         logging.error(f"手機號驗證請求失敗{e}")
+        return False
 
 
 def input_personal_id(customerId:int, number:int):
@@ -196,7 +200,7 @@ def confirm_personal_id(customerId:int):
             logging.error("審核請求失敗")
             return False
             
-def input_personal_name(customerId:int, new_Name:int):
+def input_personal_name(customerId:int, new_Name:str):
     token=get_token()
     logging.info(f"傳入的名字:{new_Name}")
     API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changePayeeName?customerId={customerId}&merchantCode=gi8viet&newPayeeName={new_Name}&remark=e&updateCard=true"
@@ -218,7 +222,7 @@ def input_personal_name(customerId:int, new_Name:int):
                 return False
         
     except Exception as e:
-        logging.error("名字輸入請求失敗")
+        logging.error(f"名字輸入請求失敗{e}")
         return False
     
 def verify_info(PLAYER_ACCOUNT, verify_type):
@@ -231,9 +235,13 @@ def verify_info(PLAYER_ACCOUNT, verify_type):
         number=random.randint(10000000,99999999)
         customer_id=main(PLAYER_ACCOUNT)
         if customer_id:
-            input_mobile_number(customer_id,number)
-            verify_phone_number(customer_id)
-            return True
+            if input_mobile_number(customer_id,number):
+                if verify_phone_number(customer_id):
+                    return True
+                else:
+                    return False
+            else:
+                return False
 
         else:
             logging.error("沒有拿到CustomerID")

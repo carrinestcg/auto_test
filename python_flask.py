@@ -291,7 +291,7 @@ def api_Achievement_bonus():
     logging.info(f"promoType: {promoType}, type: {type(promoType)}")
     logging.info(f"CustomerId: {customer_id}, promotionId: {promotion_id}")
     claimedMoney, claimedPoint, claimedTickets =Acheivement_bonus.main(customer_id, promoType, promotion_id )
-    if claimedMoney is not None and claimedPoint is not None:
+    if claimedMoney is not None or claimedPoint is not None or claimedTickets is not None:
         return jsonify(
             {
                 "success": True,
@@ -299,16 +299,6 @@ def api_Achievement_bonus():
                 "claimedMoney": claimedMoney,
                 "claimedPoint": claimedPoint,
                 "claimedTickets": claimedTickets
-                }
-            )
-    elif claimedMoney is not None:
-        return jsonify(
-            {
-                "success": True,
-                "message": "Trigger API Successfully",
-                "claimedMoney": claimedMoney,
-                "claimedPoint": claimedPoint,
-                "claimedTickets": None
                 }
             )
     else:
@@ -424,18 +414,23 @@ def api_manual_create_single():
     "summary": result.stdout.split("short test summary info")[-1]
     }
     
+@python_flask.route('/api/Input_User_name', methods=['POST'])
 @python_flask.route('/api/Verify_Mobile_No', methods=['POST'])
 @python_flask.route('/api/Verify_Personal_ID', methods=['POST'])
 def api_verify_mobile_no():
     data=request.json
     username=data["username"]
     verify_type = data.get("type") 
+    platforms=data["platforms"] 
     if verify_type == 1:
-        result = verify_info(username, verify_type)
+        result = verify_info(username, platforms, verify_type)
         label = "手機號"
     elif verify_type == 2:
-        result = verify_info(username, verify_type)
+        result = verify_info(username, platforms, verify_type)
         label = "身分證"
+    elif verify_type == 3:
+        result = verify_info(username, platforms, verify_type)
+        label = "名稱"
     else:
         return {"success": False, "message": "Unknown type"}, 400
 

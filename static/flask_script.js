@@ -83,7 +83,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott", "Verify_Mobile_No","Verify_Personal_ID","create_member_player", "FIXED_DEPOSIT"];  
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT"];  
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -488,6 +488,10 @@ function runSelectScript(){
 
         case "Verify_Personal_ID":
             extraData = { type: 2 };
+            break;
+
+        case "Input_User_name":
+            extraData = { type: 3 };
             break;
 
         case "auto_create_promotion": {
