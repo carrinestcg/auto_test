@@ -121,7 +121,7 @@ async def create_wallet(session,customer_id_list):
     
     task=[]
     for customer_id in customer_id_list:
-        URL=f"http://10.80.1.21:7001/ac-service-service/resources/accounts/customer/{customer_id}"
+        URL=f"http://10.81.1.21:7001/ac-service-service/resources/accounts/customer/{customer_id}"
         headers = {
                 'Content-Type': 'application/json',
                 
@@ -202,7 +202,7 @@ async def async_create_main(MerchantCode,username,amount):
    
     member_list=[]
     amount=int(amount)
-    for i in range(1,amount+1):
+    for i in range(0,amount+1):
         acount=f"{username}{i}"
         member_list.append(acount)
     async with aiohttp.ClientSession() as session:
