@@ -202,7 +202,7 @@ async def async_create_main(MerchantCode,username,amount):
    
     member_list=[]
     amount=int(amount)
-    for i in range(0,amount+1):
+    for i in range(0,amount):
         acount=f"{username}{i}"
         member_list.append(acount)
     async with aiohttp.ClientSession() as session:
