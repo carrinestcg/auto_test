@@ -1250,13 +1250,10 @@ class Backend:
             print(response_json)
             logging.error("創建比賽排行榜失敗")
     def gen_code(self,merchantCode,refer=24784):
-        URL="http://10.80.1.19:8083/promo-be/resources/promotion/promo_code/gen_code"
-        params={
-            "merchantCode":merchantCode
-        }
+        URL="http://10.81.1.88:8083/promo-be/resources/promotion/promo_code/gen_code"
         header=self.header(merchantCode,refer)
         
-        response=requests.get(URL,params=params,headers=header,verify=False)
+        response=requests.get(URL,headers=header,verify=False)
         response_json=response.json()
         if response_json.get("success"):
             promoCode=response_json.get("value")
@@ -1264,7 +1261,7 @@ class Backend:
         else:
             return None
     def PromoCode(self,ticket,merchantCode,promoCode,refer=24784):
-        URL="http://10.80.1.19:8083/promo-be/resources/promotion/promo_code"
+        URL="http://10.81.1.88:8083/promo-be/resources/promotion/promo_code"
         start_Time, endTime, start_str, end_str = self.unitTime()
         header=self.header(merchantCode,refer)
         payload={
