@@ -111,21 +111,19 @@ class Frontend:
         response_json=response.json()
         if response_json.get("success"):
             value_list = response_json.get("value", [])
-            for item in value_list: 
-                promotionId=item.get("promotionId")
-                rewards_list=item.get("rewards", [])
-                if rewards_list:
-                    for reward in rewards_list:
-                        depositAmount = reward[0].get("depositAmount")
-                else:
-                    logging.error(f"沒有拿到獎勵內容{rewards_list}")    
-                    return None, None
-                
+            item = value_list[0] 
+            promotionId=item.get("promotionId")
+            rewards_list=item.get("rewards", [])
+            if not rewards_list:
+                logging.error(f"沒有拿到獎勵內容 {rewards_list}")
+                return None, None
+            
+            depositAmount=rewards_list[0].get("depositAmount")      
             return promotionId, depositAmount
         else:
             logging.error("沒有快捷充值送活動")
             return None, None
-    def deposit_QAD(self,username,amount, channel_info:list):
+    def deposit_QAD(self,username, channel_info:list, promotion_id=None, depositAmount=None, amount=None):
         success_fail=0
         success_count=0
         print(channel_info)
@@ -156,7 +154,10 @@ class Frontend:
             cookies={
                 'SHELL_deviceId': '8c5bdbd3-b2cd-b350-4c4e-5967bb9d7966',
             }
-            
+            if promotion_id and depositAmount:
+                payload["promotionId"] = promotion_id
+                payload["amount"] = depositAmount
+
             response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
             response_json=response.json()
             logging.info(f"充值 response: {response_json}") 
@@ -193,7 +194,7 @@ def main(username,amount, type):
                     channel_info = frontend.get_mcssite_manualtransfer_channel()
                     for i in range(repeat):
                         logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
-                        count = frontend.deposit_QAD(credential['username'],amount, channel_info, promotion_id, depositAmount)
+                        count = frontend.deposit_QAD(credential['username'], channel_info, promotion_id, depositAmount)
                         if count > 0:
                             success_count += count
                         else:
@@ -203,7 +204,7 @@ def main(username,amount, type):
                     channel_info = frontend.get_mcssite_manualtransfer_channel()
                     for i in range(repeat):
                         logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
-                        count = frontend.deposit_QAD(credential['username'],amount, channel_info)
+                        count = frontend.deposit_QAD(credential['username'], channel_info, amount=amount)
                         if count > 0:
                             success_count += count
                         else:

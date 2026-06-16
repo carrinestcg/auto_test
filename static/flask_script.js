@@ -38,7 +38,7 @@ function toggleExtraPromo(){
 }
 function toggleAmount(){
     const amountInputDiv = document.getElementById("amount-input-div");
-    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api")||isChecked("frontend-fix_deposit");
+    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api");
     if (!amountInputDiv) return
     amountInputDiv.classList.toggle("hidden", !requireamount);
 }
