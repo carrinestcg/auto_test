@@ -1,7 +1,7 @@
 import requests
 import logging
 import random
-from DB_connect import DB_connect
+from Customer_id import main
 
 logging.basicConfig(
     level=logging.INFO,
@@ -32,12 +32,11 @@ def appDowload(CustomerId:str,CustomerName,Merchant,CustomerIP,uuid):
         logging.error(f"觸發失敗{resposne.text}")
         return False
 
-def main(Merchant,CustomerName):
+def app_download_main(Merchant,CustomerName):
     
     if Merchant=="gi8viet":
         
-        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
-        
+        CustomerId=(main(CustomerName, Merchant, 1))
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
         
@@ -47,9 +46,8 @@ def main(Merchant,CustomerName):
         else:
             return False
     elif Merchant=="huamei":
-
         
-        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
+        CustomerId=(main(CustomerName, Merchant, 1))
         
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
@@ -61,9 +59,7 @@ def main(Merchant,CustomerName):
             return False
     elif Merchant=="tcgdemov3":
         
-        
-        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
-
+        CustomerId=(main(CustomerName, Merchant, 1))
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
     
@@ -75,7 +71,7 @@ def main(Merchant,CustomerName):
     elif Merchant=="lodibet":
         Merchant="lodibet"
         
-        CustomerId=(DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{CustomerName}'"))
+        CustomerId=(main(CustomerName, Merchant, 1))
         
         CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
         uuid=random.randint(100000000, 999999999)
