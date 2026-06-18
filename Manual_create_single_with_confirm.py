@@ -217,11 +217,16 @@ def main(username,promotionid,ticket_id,platform,amount):
     bonusPointAmount=20
     
     create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,amount=amount,prmotion_id=promotionid,merchant=platform)
-        
+    
+    
     Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:
-        Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid)  # FIX: 傳入 promotionid
+        if Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid):
+            return True  
+        else:
+            return False
     else:
         logging.error("沒有拿到ID")
+        return False
      
      

@@ -180,12 +180,18 @@ def implement(username,amount):
                         if issuccess:
                             logging.info(f"成功投注彩票{amount}")
                             time.sleep(1)
+                            print(issuccess)
+                            return issuccess
                         else:
                             logging.error("投注彩票失敗")
+                            return issuccess
                     else:
                         logging.error("沒有拿到numero")
+                        return issuccess
                 else:
                     logging.error("登入失敗 無法取得Token")
+                    return issuccess
             
             except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
+                return issuccess
