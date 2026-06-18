@@ -19,7 +19,7 @@ class Frontend:
         self.customer_id=''
         
     def DB_connect(self,SQL):
-        host="10.80.1.11"
+        host="10.81.1.11"
         port = 1521              
         service_name = "tcgsit"
         username = "TCG_MCSDB"
