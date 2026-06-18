@@ -10,7 +10,7 @@ logging.basicConfig(
 )
 
 def appDowload(CustomerId:str,CustomerName,Merchant,CustomerIP,uuid):
-    URL="http://10.80.1.19:7001/tcg-mcs-fe/appDownloadPromotion/claimAppDownloadPromotion"
+    URL="http://10.81.1.19:7001/tcg-mcs-fe/appDownloadPromotion/claimAppDownloadPromotion"
 
     header={
         "CustomerId":str(CustomerId),
