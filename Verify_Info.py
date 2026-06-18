@@ -237,15 +237,15 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
         if customer_id:
             if input_mobile_number(customer_id,number):
                 if verify_phone_number(customer_id):
-                    return True
+                    return True, number
                 else:
-                    return False
+                    return False, None
             else:
-                return False
+                return False, None
 
         else:
             logging.error("沒有拿到CustomerID")
-            return False
+            return False, None
     elif verify_type == 2:
         
         ID_number=random.randint(100000000,999999999)
@@ -255,13 +255,13 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
                 if input_personal_picture(customer_id, ID_number):
                     result = confirm_personal_id(customer_id)
                     if result:
-                        return True
+                        return True, ID_number
                     else:
-                        return False
+                        return False, None
 
         else:
             logging.error("沒有拿到CustomerID")
-            return False
+            return False, None
     elif verify_type == 3:
         
         name = ''.join(random.choices(string.ascii_uppercase, k=8))
@@ -269,13 +269,13 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
         if customer_id:
             result = input_personal_name(customer_id, name)
             if result:
-                return True
+                return True, name
             else:
-                return False
+                return False, None
 
         else:
             logging.error("沒有拿到CustomerID")
-            return False
+            return False, None
     
 
     
