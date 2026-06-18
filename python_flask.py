@@ -158,25 +158,30 @@ def trigger_change_password_API(username,platform_type):
         return isSuccess
  
 def lottery_bet(username,amount):
-        Lott_bet_without_main.implement(username,amount)
+        result = Lott_bet_without_main.implement(username,amount)
+        return result
         
 @python_flask.route('/api/PROMOCODE_BATCH',methods=['POST']) #優惠碼API
 def api_PROMOCODE_BATCH():
     data=request.json
     username=data["username"]
-    isSuccess=PROMOCODE_BATCH.main(username)
-    if isSuccess:
+    dailyremain_count, remainingCount, success_count=PROMOCODE_BATCH.main(username)
+    if success_count > 0:
         return jsonify(
             {
                 "success": True,
-                "message": "Success Received PromoCode"
+                "message": "Success Received PromoCode",
+                "dailyremain_count": dailyremain_count,
+                "remainingCount": remainingCount
                 }
             ),200
     else:
         return jsonify(
             {
                 "success": False,
-                "message": "Receive PromoCode Failed"
+                "message": "Receive PromoCode Failed",
+                "dailyremain_count": dailyremain_count,
+                "remainingCount": remainingCount
                 }
             ),400
 @python_flask.route('/api/SameTimeLogin',methods=['POST']) #並行API
@@ -487,14 +492,22 @@ def api_lottery_bet():
     data=request.json
     username=data["username"]
     amount=data["amount"]
-    lottery_bet(username,amount)
-    
-    return jsonify(
-        {
-            "success": True,
-            "message": "Trigger API Successfully"
-            }
-        )
+    result = lottery_bet(username,amount)
+    print(result)
+    if result:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Trigger API Successfully"
+                }
+            )
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Trigger API Failed"
+                }
+            )
 @python_flask.route('/api/FIXED_DEPOSIT',methods=['POST'])#快捷充值API
 @python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台充值API
 def api_Deposit():
@@ -588,8 +601,8 @@ def api_manual_create_bonus():
     amount=data["amount"]
     promotion_id=data["promotion_id"]
     ticket_id=data["ticket_id"]
-    manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
-    if promotion_id:
+    result =manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    if result:
         return jsonify(
             {
                 "success": True,
@@ -600,7 +613,7 @@ def api_manual_create_bonus():
         return jsonify(
             {
                 "success": False,
-                "message": "Missing promotion_id"
+                "message": "Failed to create bonus"
                 }
             )
         

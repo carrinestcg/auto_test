@@ -187,8 +187,10 @@ if __name__ == "__main__":
                         issuccess=frontend.bet_func(numero,game_id,amount)
                         if issuccess:
                             logging.info(f"{username}成功投注彩票{amount}")
+                            
                         else:
                             logging.error("投注彩票失敗")
+                            
                     else:
                         logging.error("沒有拿到numero")
                 else:
