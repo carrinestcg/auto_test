@@ -432,12 +432,15 @@ def api_verify_mobile_no():
     platforms=data["platforms"] 
     if verify_type == 1:
         result, mobile_num = verify_info(username, platforms, verify_type)
+        mobile_num=int(mobile_num) if mobile_num else None
         label = "手機號"
     elif verify_type == 2:
         result, ID_number = verify_info(username, platforms, verify_type)
+        ID_number=int(ID_number) if ID_number else None
         label = "身分證"
     elif verify_type == 3:
         result, name = verify_info(username, platforms, verify_type)
+        name = str(name) if name else None
         label = "名稱"
     else:
         return {"success": False, "message": "Unknown type"}, 400
