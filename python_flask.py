@@ -431,20 +431,23 @@ def api_verify_mobile_no():
     verify_type = data.get("type") 
     platforms=data["platforms"] 
     if verify_type == 1:
-        result = verify_info(username, platforms, verify_type)
+        result, mobile_num = verify_info(username, platforms, verify_type)
         label = "手機號"
     elif verify_type == 2:
-        result = verify_info(username, platforms, verify_type)
+        result, ID_number = verify_info(username, platforms, verify_type)
         label = "身分證"
     elif verify_type == 3:
-        result = verify_info(username, platforms, verify_type)
+        result, name = verify_info(username, platforms, verify_type)
         label = "名稱"
     else:
         return {"success": False, "message": "Unknown type"}, 400
 
     return {
         "success": True,
-        "message": f"Verify {label} {'Successfully' if result else 'Failed'}"
+        "message": f"Verify {label} {'Successfully' if result else 'Failed'}",
+        "mobileNumber": mobile_num if verify_type == 1 else None,
+        "IDNumber": ID_number if verify_type == 2 else None,
+        "name": name if verify_type == 3 else None
     }
     
 @python_flask.route('/api/test_Extra_bonus',methods=['POST']) #回歸測試 翻倍獎勵
