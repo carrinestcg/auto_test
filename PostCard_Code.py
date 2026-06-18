@@ -205,9 +205,9 @@ class PostCard:
         claimId=self.Search_request_code(postcardCode,merchantCode)
         result = self.Approve_request_code(claimId,merchantCode)
         if result:
-            return True
+            return True, postcardCode
         else:
-            return False
+            return False, None
         
 def main(username,merchantCode):
     if isinstance(merchantCode, list):
@@ -221,10 +221,11 @@ def main(username,merchantCode):
         merchantCode=str(merchantCode)
         b_end=PostCard(credential)
         if b_end.token:
-            if b_end.implement(username,merchantCode):
-                return True
+            isSuccess, postcardCode = b_end.implement(username,merchantCode)
+            if isSuccess:
+                return isSuccess, postcardCode
             else:
-                return False
+                return isSuccess, None
 
     except Exception as e:
         logging.error(e)

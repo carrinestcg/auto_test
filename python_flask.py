@@ -341,20 +341,22 @@ def api_PostCard_Code():
     data=request.get_json(silent=True)
     username=data["username"]
     platforms=data["platforms"] 
-    isSuccess=PostCard_Code.main(username,platforms)
+    isSuccess, postcardCode = PostCard_Code.main(username,platforms)
     
     if isSuccess:
         return jsonify(
             {
                 "success": True,
-                "message": "PostCard Bonus receive Success"
+                "message": "PostCard Bonus receive Success",
+                "postcardCode": postcardCode
                 }
             ),200
     else:
         return jsonify(
             {
                 "success": False,
-                "message": "PostCard Bonus receive Failed"
+                "message": "PostCard Bonus receive Failed",
+                "postcardCode": None
                 }
             ),500
         
