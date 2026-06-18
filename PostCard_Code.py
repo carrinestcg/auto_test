@@ -121,7 +121,7 @@ class PostCard:
       
     def request_code(self,username):
         customer_id=self.DB_connect(f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='gi8viet@{username}'")
-        URL="http://10.81.1.19:8084/promo-fe/resources/postcard_code/request_code"
+        URL="http://10.81.1.88:8084/promo-fe/resources/postcard_code/request_code"
 
         header={
             "Content-Type":"application/json",

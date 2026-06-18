@@ -156,21 +156,23 @@ class Frontend:
             for future in as_completed(futures):
                 result.append(future.result())
         logging.info(f"成功 {sum(result)} / {len(result)}")
+        return True
 
 def main(username,merchantCode):
     
     if not username:
         logging.info("no UserName")
         return False
-    #填入玩家帳號
     
     print(merchantCode)
     try:    
         frontend = Frontend()
-        frontend.poccess_all_ticket(merchantCode,username)
-        
-
+        if frontend.poccess_all_ticket(merchantCode,username):
+            return True
+        else:
+            return False
         
     except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
             logging.error(traceback.format_exc())
+            return False

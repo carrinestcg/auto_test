@@ -133,7 +133,8 @@ def frontend_receive_ticket(username,platform_type):
         print(platform_type)
         for platform in platform_type:
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
-                Frontend_receive_ticket.main(username,platform)
+                result = Frontend_receive_ticket.main(username,platform)
+                return result
 
 def get_customer_data(username,platform_type, Type):
         print(platform_type)
