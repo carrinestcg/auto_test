@@ -147,7 +147,7 @@ def trigger_APP_download_API(platform_type,username):
         print(platform_type)
         for platform in platform_type:
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
-                result=App_download_API.main(platform,username)
+                result=App_download_API.app_download_main(platform,username)
                 return result
 isSuccess = False
 def trigger_change_password_API(username,platform_type):
