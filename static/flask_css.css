@@ -177,6 +177,16 @@ body {
     display: block;
 }
 
+/* 定時任務：日期欄下方提示，固定寬度內換行，不撐開橫向排版 */
+.schedule-date-hint {
+    color: var(--danger);
+    font-size: 0.75rem;
+    line-height: 1.35;
+    margin: 4px 0 0;
+    max-width: 280px;
+    display: block;
+}
+
 .input-narrow {
     max-width: 200px;
 }
