@@ -227,6 +227,20 @@ input[type="text"].account-line-input {
     min-width: 0;
 }
 
+/* 日期時間 placeholder 較長，獨立加寬 */
+.account-config #date-input-div {
+    flex: 0 0 280px;
+    width: 280px;
+    max-width: 280px;
+    min-width: 0;
+}
+
+.account-config #date_time {
+    width: 280px;
+    max-width: 280px;
+    box-sizing: border-box;
+}
+
 /* 票券類型複選：固定寬度，不撐滿整列 */
 .account-config > .input-group.field-ticket-select {
     flex: 0 0 220px;
@@ -626,4 +640,12 @@ select.multi-select option:checked {
     .tab-button {
         min-width: 100%;
     }
+}
+.account-config > .hidden {
+    display: none !important;
+    flex: 0 !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }

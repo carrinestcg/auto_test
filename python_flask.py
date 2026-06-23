@@ -34,6 +34,7 @@ import sys
 import Extra_Reward
 import test_Extra_bonus
 import Acheivement_bonus
+import schedule_manual
 from Verify_Info import verify_info
 
 
@@ -334,6 +335,33 @@ def api_Compensation():
             {
                 "success": False,
                 "message": "Compensation Failed"
+                }
+            ),500
+        
+@python_flask.route('/api/Schedule_manual_bonus',methods=['POST']) #定時任務API
+def api_schedule_manual_bonus():
+    data=request.get_json(silent=True) or {}
+    setting_id = data.get("promotion_id")
+    date = data.get("date")
+    if not setting_id or not date:
+        return jsonify({
+            "success": False,
+            "message": "缺少 promotion_id 或 date"
+        }), 400
+    isSuccess=schedule_manual.main(setting_id, date)
+
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Schedule Manual Bonus Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Schedule Manual Bonus Failed"
                 }
             ),500
 

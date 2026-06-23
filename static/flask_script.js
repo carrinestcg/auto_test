@@ -10,8 +10,53 @@ function toggleInput() {
     toggleRoundID();
     toggleDepositAmount();
     toggleExtraPromo();
+    toggleDateTime();
+    toggleUsernamePassword();
 }
+/** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
+const SCRIPTS_NEED_USERNAME = [
+    "auto_create_player",       // frontend-checkbox_new
+    "LOTTERY_BET",              // frontend-checkbox_lott
+    "FRONTEND_DEPOSIT",         // frontend-checkbox
+    "FIXED_DEPOSIT",            // frontend-fix_deposit
+    "Customer_id",              // frontend-checkbox_id
+    "MANUAL_CREATE_SINGLE_CONFIRM", // frontend-checkbox_manual
+    "SIGLE_PROMO_7_TICKET",     // frontend-checkbox_7_Ticket
+    "PLAYER_RANK",              // frontend-player-rank
+    "PROMOCODE_BATCH",          // frontend-promo-batch
+    "BONUS_BATCH",              // frontend-bonus-batch
+    "TICKET_BATCH",             // frontend-ticket-batch
+    "create_member_player",     // frontend-checkbox_member
+    "Extra_Reward_api",
+    "LOTTERY_BET",
+    "Codition_create_bonus",
+    "QUEST_bonus",
+    "Achievement_bonus",
+    "Activity_bonus",
+    "MANUAL_SIGN",
+    "ALL_deposit_promotion",
+    "SameTimeLogin",
+    "APP_Download",
+    "PostCard_api",
+    "Change_password",
+    "Customer_name",
+    "Verify_Mobile_No",
+    "Verify_Personal_ID",
+    "Input_User_name",
+    "auto_create_ticket",
+    "Single_Manual_create",
+    "test_Extra_bonus",
+    "MANUAL_SINGLE",
+    "MANUAL_BATCH",
+];
 
+/** 勾選這些腳本（且無其他需要 username 的腳本）時，隱藏 username / password */
+const SCRIPTS_HIDE_USERNAME = [
+    "Create_all_promotion",
+    "Compensation_api",
+    "Schedule_manual_bonus",
+    "DEPOSIT_API",
+];
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
     const wrap = document.getElementById("promotion-type-select-wrap");
@@ -65,7 +110,7 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus').checked||document.getElementById('Activity_bonus').checked;
+    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus').checked||document.getElementById('Activity_bonus').checked||document.getElementById('Schedule_manual_bonus').checked;
     
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 
@@ -76,6 +121,12 @@ function toggleRoundID(){
     if (!Compensation || !RoundID_input) return;
     RoundID_input.classList.toggle("hidden", !Compensation.checked);
 }
+function toggleDateTime(){
+    const Schedule_manual_bonus=document.getElementById("Schedule_manual_bonus");
+    const DateTime_input=document.getElementById("date-input-div");
+    if (!Schedule_manual_bonus || !DateTime_input) return;
+    DateTime_input.classList.toggle("hidden", !Schedule_manual_bonus.checked);
+}
 /** 任一測試腳本被勾選時顯示平台（API 皆會帶 platforms；未選時後端預設 gi8viet）。 */
 function togglePlatform() {
     const manual_platform_select = document.getElementById("platform-select-wrap");
@@ -83,7 +134,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "round_id", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT"];  
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus"];  /*不需要選平台*/
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -96,6 +147,33 @@ if (amountInput){
         document.getElementById("amount_hint").style.display = "none";
     }});
 }
+function toggleUsernamePassword() {
+    const userDiv = document.getElementById("username-input-div");
+    const pwdWrap = document.getElementById("password-input-div");
+    const userColumn = userDiv?.closest(".account-column");
+    if (!userDiv || !pwdWrap) return;
+
+    const checkedScripts = Array.from(
+        document.querySelectorAll('input[name="script"]:checked')
+    ).map(el => el.value);
+
+    const anyNeedUsername = checkedScripts.some(s => SCRIPTS_NEED_USERNAME.includes(s));
+    const shouldHide = !anyNeedUsername && checkedScripts.some(s => SCRIPTS_HIDE_USERNAME.includes(s));
+
+    userDiv.classList.toggle("hidden", shouldHide);
+    pwdWrap.classList.toggle("hidden", shouldHide);
+    // 一併收合外層 account-column，否則 username 隱藏後仍佔 180px 空白
+    if (userColumn) {
+        userColumn.classList.toggle("hidden", shouldHide);
+    }
+
+    // 平台選單的 margin-left 直接用 id 抓，準確控制
+    const platformWrap = document.getElementById("platform-select-wrap");
+    if (platformWrap) {
+        platformWrap.style.marginLeft = shouldHide ? "0" : "";
+    }
+}
+
 function validateFormBeforeSubmit() {
     const pwd = document.getElementById("password");
     const usernameInputDiv = document.getElementById("username");
@@ -156,11 +234,20 @@ function validateFormBeforeSubmit() {
     if (
         isChecked("QUEST_bonus") ||
         isChecked("Achievement_bonus") ||
-        isChecked("Activity_bonus")
+        isChecked("Activity_bonus") ||
+        isChecked("Schedule_manual_bonus")
     ) {
         const promoId = document.getElementById("promotion_id");
         if (!promoId || !promoId.value.trim()) {
             alert("請填寫活動 ID（promotion_id）");
+            return false;
+        }
+    }
+
+    if (isChecked("Schedule_manual_bonus")) {
+        const dateEl = document.getElementById("date_time");
+        if (!dateEl || !dateEl.value.trim()) {
+            alert("請填寫日期時間（格式: 2026-06-22，需為過去時間）");
             return false;
         }
     }
@@ -426,6 +513,13 @@ function runSelectScript(){
         case "Compensation_api":
             extraData = {
                 round_id: document.getElementById("round_id").value,
+            };
+            break;
+
+        case "Schedule_manual_bonus":
+            extraData = {
+                promotion_id: document.getElementById("promotion_id").value.trim(),
+                date: document.getElementById("date_time").value.trim(),
             };
             break;
 

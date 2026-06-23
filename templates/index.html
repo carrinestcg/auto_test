@@ -20,7 +20,7 @@
             <div class="account-wrap">
                 <div class="account-config">
                     <div class="account-column account-field-col">
-                        <div class="input-group">
+                        <div id="username-input-div" class="input-group">
                             <label for="username">玩家帳號</label>
                             <input type="text" id="username" name="username" autocomplete="username" class="account-line-input">
                             <small id="username_hint" class="field-hint">此欄位必填</small>
@@ -31,7 +31,7 @@
                         </div>
                     </div>
 
-                    <div class="input-group account-field-col">
+                    <div id="password-input-div" class="input-group account-field-col">
                         <label for="password">用戶密碼</label>
                         <input type="text" id="password" name="password" class="account-line-input" placeholder="tcgdemov3 預設為 qwe123" autocomplete="current-password">
                         <small id="password_hint" class="field-hint">此欄位必填</small>
@@ -50,6 +50,11 @@
                     <div id="round_id-input-div" class="input-group hidden">
                         <label for="round_id">Round ID</label>
                         <input type="text" id="round_id" name="round_id" class="input-narrow">
+                    </div>
+
+                    <div id="date-input-div" class="input-group hidden">
+                        <label for="date_time">日期時間</label>
+                        <input type="text" id="date_time" name="date_time" class="input-narrow" placeholder="格式:2026-06-22 觸發時間為活動隔日">
                     </div>
 
                     <div id="ticket_id-input-div" class="input-group hidden">
@@ -292,6 +297,10 @@
                     <label>
                         <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
                         變更玩家密碼
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Schedule_manual_bonus" id="Schedule_manual_bonus" onchange="toggleInput()">
+                        定時任務API
                     </label>
                 </div>
             </div>
