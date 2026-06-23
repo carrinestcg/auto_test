@@ -9,7 +9,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 def DB_connect(SQL):
-    host="10.80.1.11"
+    host="10.81.1.11"
     port = 1521              
     service_name = "tcgsit"
     username = "TCG_MCSDB"
@@ -60,5 +60,35 @@ def DB_connect(SQL):
         if cursor in locals() and cursor:
             cursor.close()
         if conn in locals() and conn:
+            conn.close()
+            
+def DB_execute(SQL):
+    host = "10.81.1.11"
+    port = 1521
+    service_name = "tcgsit"
+    username = "TCG_MCSDB"
+    password = "Jv7UrDc7rsqJ87Km"
+    dsn = f"{host}:{port}/{service_name}"
+
+    conn = None
+    cursor = None
+    try:
+        conn = oracledb.connect(user=username, password=password, dsn=dsn)
+        cursor = conn.cursor()
+        cursor.execute(SQL)
+        conn.commit()
+        logging.info("✅ 執行成功")
+        return True
+
+    except oracledb.DatabaseError as e:
+        logging.error(f"❌ 資料庫錯誤: {e}")
+        return False
+    except Exception as e:
+        logging.error(f"❌ 未預期的錯誤: {str(e)}")
+        return False
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
             conn.close()
         
