@@ -83,7 +83,7 @@ def batch_approve_func(deposit_platform_type):
 def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','jkdscus1'):
                 result = Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
                 return result
 
