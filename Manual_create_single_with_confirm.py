@@ -68,7 +68,7 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
     "pointAmount": bonusPointAmount,
     "turnoverAmount": 30,
     "ticketId": ticketId,
-    "ticketQuantity": 1,
+    "ticketQuantity": amount,
     "isSendApp": "Y",
     "appTitle": "title",
     "appMessage": "恭喜您成功领取 {promotionName} 活动获得 金额 {bonus} 票卷 {ticket}"
