@@ -1,12 +1,15 @@
 import requests
 import urllib3
 import sys
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 # ============ 設定區 ============
 JIRA_BASE_URL = "https://jira.tc-gaming.co/jira"
-JIRA_TOKEN    = "NzM3NTQ1ODA5MTg1OpddUSKUAkYMccwn+ASPTmgq4hmg"
+JIRA_TOKEN    = os.getenv("JIRA_TOKEN")
 JIRA_SSL      = False
 
 ASSIGNEE      = "carrine.s"
