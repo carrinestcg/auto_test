@@ -22,6 +22,7 @@ import Lott_bet_without_main
 import Compensation_api
 import PostCard_Code
 import test_manual_bonus
+import create_qa_task
 import pytest
 from Create_member_Account import async_create_main
 from deposit_api import batch_approve
@@ -849,7 +850,33 @@ def api_manual_single():
     MANUAL_SINGLE.main()
     return jsonify({"success": True, "message": "Trigger API Successfully"})
 
+@python_flask.route('/api/create_qa_task', methods=['POST'])
+def api_create_qa_task():
+    data = request.get_json(silent=True) or {}
+    tcg_keys_raw = data.get("tcg_keys", "")
+    
+    if isinstance(tcg_keys_raw, list):
+        tcg_keys = [k.strip().upper() for k in tcg_keys_raw if k.strip()]
+    else:
+        tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).split() if k.strip()]
 
+    if not tcg_keys:
+        return jsonify({"success": False, "message": "請提供 TCG 單號"}), 400
+    try:
+        results = []
+        for tcg_key in tcg_keys:
+            summary, fix_versions, reporter = create_qa_task.get_issue(tcg_key)
+            new_key = create_qa_task.create_qa_task(tcg_key, summary, fix_versions, reporter)
+            results.append({
+                "tcg_key": tcg_key,
+                "new_key": new_key,
+                "summary": f"[QA][PED] 測試 {summary}",
+                "url": f"{create_qa_task.JIRA_BASE_URL}/browse/{new_key}"
+            })
+        return jsonify({"success": True, "message": "建立成功", "data": results}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
 @python_flask.route('/upload_excel', methods=['POST']) 
 def upload_excel():
     file=request.files.get('file')

@@ -56,6 +56,7 @@ const SCRIPTS_HIDE_USERNAME = [
     "Compensation_api",
     "Schedule_manual_bonus",
     "DEPOSIT_API",
+    "create_qa_task",
 ];
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
@@ -73,6 +74,11 @@ function toggleDepositAmount(){
     const requestDepositInput = isChecked("Extra_Reward_api");
     if (!depositAmountDiv) return;
     depositAmountDiv.classList.toggle("hidden", !requestDepositInput);
+}
+function toggleQATaskInput() {
+    const div = document.getElementById("qa-task-input-div");
+    if (!div) return;
+    div.classList.toggle("hidden", !isChecked("create_qa_task"));
 }
 
 function toggleExtraPromo(){
@@ -134,7 +140,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus"];  /*不需要選平台*/
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task"];  /*不需要選平台*/
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -588,6 +594,13 @@ function runSelectScript(){
             extraData = { type: 3 };
             break;
 
+        case "create_qa_task":
+            extraData = {
+                tcg_keys: document.getElementById("tcg_keys_input").value
+            };
+            runScriptApi(scriptName, { ...extraData });
+            return;
+
         case "auto_create_promotion": {
             const promoSel = document.getElementById("promotion-checkbox_select");
             const promotion_types = promoSel
@@ -597,6 +610,7 @@ function runSelectScript(){
                 promotion_types,  // 直接傳字串陣列，不再用 type 數字
             };
             break;
+        
         
         }
 

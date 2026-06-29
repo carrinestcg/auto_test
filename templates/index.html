@@ -75,6 +75,12 @@
                         <input type="text" id="deposit-amount-id" name="deposit_amount">
                         <small id="deposit_hint" class="field-hint">此欄位必填</small>
                     </div>
+                   <div id="qa-task-input-div" class="input-group hidden">
+                        <label for="tcg_keys_input" class="field-label">TCG 單號</label>
+                        <textarea id="tcg_keys_input" rows="3"
+                            placeholder="TCG-148954, TCG-148947"
+                            style="width:260px; padding:6px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px; font-family:inherit; resize:vertical; vertical-align:top; line-height:1.6; display:block; margin-top:4px;"></textarea>
+                    </div>
 
                     <div class="multi-select-wrapper input-group" id="platform-select-wrap">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
@@ -141,7 +147,7 @@
                 <button type="button" class="tab-button" onclick="switchTab(event,'Player Management')" role="tab" aria-selected="false">玩家管理</button>
                 <button type="button" class="tab-button" onclick="switchTab(event,'Promotion / Ticket')" role="tab" aria-selected="false">票券／活動</button>
                 <button type="button" class="tab-button active" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="true">測試工具</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">回歸測試</button>
+                <button type="button" class="tab-button" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">建立QA_Task</button>
             </div>
 
             <div id="Frontend" class="tabcontent" role="tabpanel">
@@ -309,14 +315,10 @@
             <div id="SanityTooLTab" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <label>
-                        <input type="checkbox" name="script" value="Single_Manual_create" id="Single_Manual_create" onchange="toggleInput()">
-                        創建個人module
+                        <input type="checkbox" name="script" value="create_qa_task" id="create_qa_task" onchange="toggleInput(); toggleQATaskInput()">
+                        建立QA_Task
                     </label>
-                    <label>
-                        <input type="checkbox" name="script" value="test_Extra_bonus" id="test_Extra_bonus" onchange="toggleInput()">
-                        翻倍獎勵module
-                    </label>
-                </div>    
+                </div>
             </div>
         </section>
 
