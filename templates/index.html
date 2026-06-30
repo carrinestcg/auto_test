@@ -81,7 +81,12 @@
                             placeholder="TCG-148954, TCG-148947"
                             style="width:260px; padding:6px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px; font-family:inherit; resize:vertical; vertical-align:top; line-height:1.6; display:block; margin-top:4px;"></textarea>
                     </div>
-
+                    <div id="workdays-input-div" class="input-group hidden">
+                        <label for="qa_stats_tp_key" class="field-label">TP 單號</label>
+                        <input type="text" id="qa_stats_tp_key" placeholder="TP-5229" class="account-line-input">
+                        <label for="qa_stats_assignee" class="field-label" style="margin-top:8px;">Jira 帳號（assignee）</label>
+                        <input type="text" id="qa_stats_assignee" placeholder="carrine.s" class="account-line-input">
+                    </div>
                     <div class="multi-select-wrapper input-group" id="platform-select-wrap">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
                         <select multiple id="frontend-checkbox_manual_platform" size="3" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
@@ -318,6 +323,11 @@
                         <input type="checkbox" name="script" value="create_qa_task" id="create_qa_task" onchange="toggleInput(); toggleQATaskInput()">
                         建立QA_Task
                     </label>
+
+                    <label>
+                        <input type="checkbox" name="script" value="calculate_workdays" id="calculate_workdays" onchange="toggleInput(); toggleWorkdaysInput()">
+                        計算workdays
+                    </label>
                 </div>
             </div>
         </section>
@@ -360,6 +370,16 @@
             <pre id="modal-body" class="modal-body"></pre>
             <div class="modal-footer">
                 <button type="button" class="btn-outline" onclick="closeResultModal()">關閉</button>
+            </div>
+        </div>
+    </div>
+    <div id="confirm-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-content">
+        <div class="modal-header success">審核確認</div>
+        <div class="modal-body">是否要審核該筆郵寄碼？</div>
+            <div class="modal-footer">
+                <button type="button" class="btn-outline" id="confirm-no-btn">否</button>
+                <button type="button" class="btn-primary" id="confirm-yes-btn">是</button>
             </div>
         </div>
     </div>

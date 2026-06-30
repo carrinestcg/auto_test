@@ -36,6 +36,7 @@ import Extra_Reward
 import test_Extra_bonus
 import Acheivement_bonus
 import schedule_manual
+import calculate_workdays
 from Verify_Info import verify_info
 
 
@@ -371,7 +372,8 @@ def api_PostCard_Code():
     data=request.get_json(silent=True)
     username=data["username"]
     platforms=data["platforms"] 
-    isSuccess, postcardCode = PostCard_Code.main(username,platforms)
+    requireType=data["requireType"]
+    isSuccess, postcardCode = PostCard_Code.main(username,platforms, requireType)
     
     if isSuccess:
         return jsonify(
@@ -883,6 +885,29 @@ def api_create_qa_task():
                     "error": f"無法建立 QA 任務，請檢查 TCG 單號 {tcg_key} 是否存在或有權限"
                 })
         return jsonify({"success": True, "message": "建立成功", "data": results}), 200
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+    
+@python_flask.route('/api/calculate_workdays', methods=['POST'])
+def api_calculate_workdays():
+    data = request.get_json(silent=True) or {}
+    tp_key_raw = data.get("tp_key", "")
+    assignee = (data.get("assignee") or "").strip()
+    
+    if isinstance(tp_key_raw, list):
+        tp_key = (tp_key_raw[0] if tp_key_raw else "").strip().upper()
+    else:
+        tp_key = str(tp_key_raw).strip().upper()
+
+    assignee = (data.get("assignee") or "").strip()
+
+    if not tp_key or not assignee:
+        return jsonify({"success": False, "message": "請提供 TP 單號與 Jira 帳號"}), 400
+
+    try:
+        tasks = calculate_workdays.fetch_qa_tasks_by_tp(tp_key, assignee)
+        report = calculate_workdays.build_report(tp_key, assignee, tasks)
+        return jsonify({"success": True, "message": "查詢成功", "data": report}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
     

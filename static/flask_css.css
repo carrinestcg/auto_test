@@ -608,6 +608,25 @@ select.multi-select option:checked {
     margin: 0;
     flex: 1;
 }
+/* Confirm dialog (smaller variant of .modal) */
+.confirm-modal .modal-content {
+    max-width: 420px;
+}
+
+.confirm-modal .modal-body {
+    max-height: none;
+    white-space: normal;
+    font-family: var(--font);
+    font-size: 0.9375rem;
+    text-align: center;
+    padding: 24px 18px;
+}
+
+.confirm-modal .modal-footer {
+    justify-content: center;
+    display: flex;
+    gap: 10px;
+}
 
 .modal-footer {
     padding: 12px 18px;
@@ -616,15 +635,17 @@ select.multi-select option:checked {
     background: #fff;
 }
 
+/* 所有 modal 按鈕統一用主色系（藍底白字），與「開始測試」一致 */
 .modal-footer button {
-    background: var(--text);
+    background: var(--accent);
     color: #fff;
-    border: 1px solid var(--text);
+    border: 1px solid var(--accent);
+    min-width: 88px;
 }
 
 .modal-footer button:hover {
-    background: #334155;
-    border-color: #334155;
+    background: var(--accent-hover);
+    border-color: var(--accent-hover);
 }
 
 /* Jinja success block */

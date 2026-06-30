@@ -1,6 +1,31 @@
 /** Checkbox helper — must be module-level; toggleDepositAmount / toggleExtraPromo use it. */
 const isChecked = (id) => document.getElementById(id)?.checked;
 
+/** 客製化確認彈窗（取代原生 confirm()），回傳 Promise<boolean> */
+function askConfirm(message) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("confirm-modal");
+        const body = modal.querySelector(".modal-body");
+        const yesBtn = document.getElementById("confirm-yes-btn");
+        const noBtn = document.getElementById("confirm-no-btn");
+
+        body.textContent = message;
+        modal.classList.remove("hidden");
+
+        const cleanup = (result) => {
+            modal.classList.add("hidden");
+            yesBtn.removeEventListener("click", onYes);
+            noBtn.removeEventListener("click", onNo);
+            resolve(result);
+        };
+        const onYes = () => cleanup(true);
+        const onNo = () => cleanup(false);
+
+        yesBtn.addEventListener("click", onYes);
+        noBtn.addEventListener("click", onNo);
+    });
+}
+
 function toggleInput() {
     toggleAmount();
     toggleTicket();
@@ -57,6 +82,7 @@ const SCRIPTS_HIDE_USERNAME = [
     "Schedule_manual_bonus",
     "DEPOSIT_API",
     "create_qa_task",
+    "calculate_workdays"
 ];
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
@@ -79,6 +105,12 @@ function toggleQATaskInput() {
     const div = document.getElementById("qa-task-input-div");
     if (!div) return;
     div.classList.toggle("hidden", !isChecked("create_qa_task"));
+}
+
+function toggleWorkdaysInput() {
+    const div = document.getElementById("workdays-input-div");
+    if (!div) return;
+    div.classList.toggle("hidden", !isChecked("calculate_workdays"));
 }
 
 function toggleExtraPromo(){
@@ -140,7 +172,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task"];  /*不需要選平台*/
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","calculate_workdays"];  /*不需要選平台*/
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -421,7 +453,7 @@ function runSelectScript(){
         console.log("❌ validate 被擋");
         return;
     }
-    
+
     const username=document.getElementById("username").value;
     const platformSelect=document.getElementById("frontend-checkbox_manual_platform")
     let platforms=Array.from(platformSelect.selectedOptions).map(opt=>opt.value)
@@ -434,204 +466,228 @@ function runSelectScript(){
     if (platforms.length==0){
         platforms=["gi8viet"];
     }
-    checkSelectScript.forEach(scriptName=>{
-        let extraData={}
-    
-    switch (scriptName) {
-        case "SIGLE_PROMO_7_TICKET":
-            extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
-            };
-            break;
 
-        case "MANUAL_CREATE_SINGLE_CONFIRM":
-            extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
-                ticket_id: document.getElementById("ticket_id").value,
-                amount: document.getElementById("amount").value,
-            };
-            break;
+    // 改為 async IIFE，讓 PostCard_api 的確認彈窗可以用 await 等待使用者選擇
+    (async () => {
+        for (const scriptName of checkSelectScript) {
+            let extraData = {};
 
-        case "auto_create_ticket":
-            extraData = {
-                ticket_type: ticket_types,
-                ticket_input: document.getElementById("ticket_input").value,
-            };
-            break;
+            switch (scriptName) {
+                case "SIGLE_PROMO_7_TICKET":
+                    extraData = {
+                        promotion_id: document.getElementById("promotion_id").value,
+                    };
+                    break;
 
-        /** 票券／活動：後台一鍵建立多類活動（Create_all_promotion.create_promotion(merchantCode)） */
-        case "Create_all_promotion": {
-            const promoSel = document.getElementById("promotion-checkbox_select");
-            const promotion_types = promoSel
-                ? Array.from(promoSel.selectedOptions).map((opt) => opt.value)
-                : [];
-            extraData = {
-                merchantCode: platforms[0] || "gi8viet",
-                promotion_types,
-            };
-            break;
-        }
+                case "MANUAL_CREATE_SINGLE_CONFIRM":
+                    extraData = {
+                        promotion_id: document.getElementById("promotion_id").value,
+                        ticket_id: document.getElementById("ticket_id").value,
+                        amount: document.getElementById("amount").value,
+                    };
+                    break;
 
-        /** 達成存款活動：後端需兩個前台帳號（無第二欄時傳兩次主帳號） */
-        case "ALL_deposit_promotion": {
-            const pwd =
-                (document.getElementById("password") &&
-                    document.getElementById("password").value.trim()) ||
-                "123qwe";
-            const u2El = document.getElementById("username_secondary");
-            const u2 =
-                u2El && u2El.value.trim() ? u2El.value.trim() : username.trim();
-            extraData = {
-                usernames: [username.trim(), u2],
-                password: pwd,
-            };
-            break;
-        }
+                case "auto_create_ticket":
+                    extraData = {
+                        ticket_type: ticket_types,
+                        ticket_input: document.getElementById("ticket_input").value,
+                    };
+                    break;
 
-        case "LOTTERY_BET":
-            extraData = {
-                amount: document.getElementById("amount").value,
-            };
-            break;
-
-        case "create_member_player":
-            extraData = {
-                amount: document.getElementById("amount").value,
-            };
-            break;
-
-        case "FRONTEND_DEPOSIT":
-            const username_list = username
-                ? username.split(/[\s,]+/).filter(Boolean)
-                : [];
-            extraData = {
-                username_list,
-                amount: document.getElementById("amount").value,
-                type: 1
-            };
-            runScriptApi(scriptName, { username, ...extraData });
-            return;
-
-        case "FIXED_DEPOSIT":
-            const deposit_list = username
-                ? username.split(/[\s,]+/).filter(Boolean)
-                : [];
-            extraData = {
-                deposit_list,
-                amount: document.getElementById("amount").value,
-                type: 2
-            };
-            runScriptApi(scriptName, { username, ...extraData });
-            return;
-
-        case "Compensation_api":
-            extraData = {
-                round_id: document.getElementById("round_id").value,
-            };
-            break;
-
-        case "Schedule_manual_bonus":
-            extraData = {
-                promotion_id: document.getElementById("promotion_id").value.trim(),
-                date: document.getElementById("date_time").value.trim(),
-            };
-            break;
-
-        case "Extra_Reward_api": {
-            const rawTickets = document.getElementById("ticket_id").value.trim();
-            const ticket_id_list = rawTickets
-                ? rawTickets.split(/[\s,]+/).filter(Boolean)
-                : [];
-            extraData = {
-                ticket_id_list,
-                amount: document.getElementById("amount").value,
-                promotion_id: document.getElementById("promotion_id").value,
-                "deposit-amount-id": document.getElementById("deposit-amount-id").value,
-                extra_promo_id: document.getElementById("extra_promo_id").value,
-            };
-            break;
-        }
-        case "Customer_id":
-            extraData = {
-                    type: 1
+                /** 票券／活動：後台一鍵建立多類活動（Create_all_promotion.create_promotion(merchantCode)） */
+                case "Create_all_promotion": {
+                    const promoSel = document.getElementById("promotion-checkbox_select");
+                    const promotion_types = promoSel
+                        ? Array.from(promoSel.selectedOptions).map((opt) => opt.value)
+                        : [];
+                    extraData = {
+                        merchantCode: platforms[0] || "gi8viet",
+                        promotion_types,
+                    };
+                    break;
                 }
-            break;
 
-        case "Customer_name":
-            extraData = {
-                    type: 2
+                /** 達成存款活動：後端需兩個前台帳號（無第二欄時傳兩次主帳號） */
+                case "ALL_deposit_promotion": {
+                    const pwd =
+                        (document.getElementById("password") &&
+                            document.getElementById("password").value.trim()) ||
+                        "123qwe";
+                    const u2El = document.getElementById("username_secondary");
+                    const u2 =
+                        u2El && u2El.value.trim() ? u2El.value.trim() : username.trim();
+                    extraData = {
+                        usernames: [username.trim(), u2],
+                        password: pwd,
+                    };
+                    break;
                 }
-        break;
 
-        case "Codition_create_bonus": {
-            const el = document.getElementById("ticket_id");
-            extraData = {
-                ticket_id: el ? el.value.trim() : "",
-            };
-            break;
-        }
+                case "LOTTERY_BET":
+                    extraData = {
+                        amount: document.getElementById("amount").value,
+                    };
+                    break;
 
-        case "Verify_Mobile_No":
-            extraData = { type: 1 };
-            break;
+                case "create_member_player":
+                    extraData = {
+                        amount: document.getElementById("amount").value,
+                    };
+                    break;
 
-        case "Achievement_bonus":
-                extraData = {
-                    promotion_id: document.getElementById("promotion_id").value,
-                    type: 1
+                case "FRONTEND_DEPOSIT": {
+                    const username_list = username
+                        ? username.split(/[\s,]+/).filter(Boolean)
+                        : [];
+                    extraData = {
+                        username_list,
+                        amount: document.getElementById("amount").value,
+                        type: 1
+                    };
+                    runScriptApi(scriptName, { username, ...extraData });
+                    continue;
                 }
-                break;
-        case "QUEST_bonus":
-            extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
-                type: 2
+
+                case "FIXED_DEPOSIT": {
+                    const deposit_list = username
+                        ? username.split(/[\s,]+/).filter(Boolean)
+                        : [];
+                    extraData = {
+                        deposit_list,
+                        amount: document.getElementById("amount").value,
+                        type: 2
+                    };
+                    runScriptApi(scriptName, { username, ...extraData });
+                    continue;
+                }
+
+                case "Compensation_api":
+                    extraData = {
+                        round_id: document.getElementById("round_id").value,
+                    };
+                    break;
+
+                case "Schedule_manual_bonus":
+                    extraData = {
+                        promotion_id: document.getElementById("promotion_id").value.trim(),
+                        date: document.getElementById("date_time").value.trim(),
+                    };
+                    break;
+
+                /** 領取郵寄碼：先詢問是否要審核，Y/N 帶給後端 requireType */
+                case "PostCard_api": {
+                    const wantApprove = await askConfirm("是否要審核該筆郵寄碼？");
+                    extraData = {
+                        requireType: wantApprove ? "Y" : "N"
+                    };
+                    break;
+                }
+
+                case "Extra_Reward_api": {
+                    const rawTickets = document.getElementById("ticket_id").value.trim();
+                    const ticket_id_list = rawTickets
+                        ? rawTickets.split(/[\s,]+/).filter(Boolean)
+                        : [];
+                    extraData = {
+                        ticket_id_list,
+                        amount: document.getElementById("amount").value,
+                        promotion_id: document.getElementById("promotion_id").value,
+                        "deposit-amount-id": document.getElementById("deposit-amount-id").value,
+                        extra_promo_id: document.getElementById("extra_promo_id").value,
+                    };
+                    break;
+                }
+                case "Customer_id":
+                    extraData = {
+                        type: 1
+                    }
+                    break;
+
+                case "Customer_name":
+                    extraData = {
+                        type: 2
+                    }
+                    break;
+
+                case "Codition_create_bonus": {
+                    const el = document.getElementById("ticket_id");
+                    extraData = {
+                        ticket_id: el ? el.value.trim() : "",
+                    };
+                    break;
+                }
+
+                case "Verify_Mobile_No":
+                    extraData = { type: 1 };
+                    break;
+
+                case "Achievement_bonus":
+                    extraData = {
+                        promotion_id: document.getElementById("promotion_id").value,
+                        type: 1
+                    }
+                    break;
+                case "QUEST_bonus":
+                    extraData = {
+                        promotion_id: document.getElementById("promotion_id").value,
+                        type: 2
+                    }
+                    break;
+                case "Activity_bonus":
+                    extraData = {
+                        promotion_id: document.getElementById("promotion_id").value,
+                        type: 3
+                    }
+                    break;
+
+                case "Verify_Personal_ID":
+                    extraData = { type: 2 };
+                    break;
+
+                case "Input_User_name":
+                    extraData = { type: 3 };
+                    break;
+
+                case "create_qa_task": {
+                    extraData = {
+                        tcg_keys: document.getElementById("tcg_keys_input").value
+                            .split(/[\s,;]+/)
+                            .filter(Boolean)
+                    };
+                    runScriptApi(scriptName, { ...extraData });
+                    continue;
+                }
+
+                case "calculate_workdays": {
+                    extraData = {
+                        assignee: document.getElementById("qa_stats_assignee").value.trim() || "carrine.s",
+                        tp_key: document.getElementById("qa_stats_tp_key").value
+                            .split(/[\s,;]+/)
+                            .filter(Boolean)
+                    };
+                    runScriptApi(scriptName, { ...extraData });
+                    continue;
+                }
+
+                case "auto_create_promotion": {
+                    const promoSel = document.getElementById("promotion-checkbox_select");
+                    const promotion_types = promoSel
+                        ? Array.from(promoSel.selectedOptions).map(opt => opt.value)
+                        : [];
+                    extraData = {
+                        promotion_types,  // 直接傳字串陣列，不再用 type 數字
+                    };
+                    break;
+                }
+
+                default:
+                    extraData = {};
+                    console.warn("[runSelectScript] 未定義腳本，使用空 extraData:", scriptName);
             }
-            break;
-        case "Activity_bonus":
-            extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
-                type: 3
-            }
-            break;
 
-        case "Verify_Personal_ID":
-            extraData = { type: 2 };
-            break;
-
-        case "Input_User_name":
-            extraData = { type: 3 };
-            break;
-
-        case "create_qa_task":
-            extraData = {
-                tcg_keys: document.getElementById("tcg_keys_input").value
-                    .split(/[\s,;]+/)
-                    .filter(Boolean)
-            };
-            runScriptApi(scriptName, { ...extraData });
-            return;
-
-        case "auto_create_promotion": {
-            const promoSel = document.getElementById("promotion-checkbox_select");
-            const promotion_types = promoSel
-                ? Array.from(promoSel.selectedOptions).map(opt => opt.value)
-                : [];
-            extraData = {
-                promotion_types,  // 直接傳字串陣列，不再用 type 數字
-            };
-            break;
-        
-        
+            runScriptApi(scriptName, { username, platforms, ...extraData });
         }
-
-        default:
-            extraData = {};
-            console.warn("[runSelectScript] 未定義腳本，使用空 extraData:", scriptName);
-    }
-    
-    
-    runScriptApi(scriptName,{username,platforms,...extraData})
-})
+    })();
 }
 
 function runScriptApi(scriptName,payload){
@@ -668,10 +724,53 @@ function showResultPopup(data) {
         header.className = "modal-header fail";
         header.innerText = "Action Failed";
     }
-    body.innerText=JSON.stringify(data,null,2);
-        
+    if (data.success && data.data && data.data.tp_key && data.data.tasks) {
+        body.innerHTML = renderWorkdaysReport(data.data);
+    } else {
+        body.textContent = JSON.stringify(data, null, 2);
+    }
 }
 function closeResultModal(){
     document.getElementById("result-modal").classList.add("hidden")
 }
+function renderWorkdaysReport(report) {
+    let html = `
+        <div style="font-family: inherit; line-height: 1.8;">
+            <h3 style="margin:0 0 8px;">📊 ${report.tp_key} — ${report.assignee}</h3>
+            <p style="margin:4px 0;"><strong>總單數：</strong>${report.total_count} 張</p>
+            <p style="margin:4px 0 16px;"><strong>總耗時：</strong>${report.total_workdays} workdays</p>
+            <p style="margin:8px 0 4px; font-weight:600;">依狀態分布：</p>
+            <ul style="margin:0 0 16px; padding-left:20px;">
+    `;
 
+    for (const [status, d] of Object.entries(report.by_status)) {
+        html += `<li>${status}：${d.count} 張，${d.workdays} workdays</li>`;
+    }
+
+    html += `</ul><p style="font-weight:600; margin-bottom:6px;">明細：</p>`;
+    html += `<table style="width:100%; border-collapse:collapse; font-size:13px;">`;
+    html += `
+        <tr style="border-bottom:1px solid #ddd;">
+            <th style="text-align:left; padding:4px;">單號</th>
+            <th style="text-align:left; padding:4px;">狀態</th>
+            <th style="text-align:right; padding:4px;">天數</th>
+            <th style="text-align:left; padding:4px;">建立日</th>
+            <th style="text-align:left; padding:4px;">摘要</th>
+        </tr>
+    `;
+
+    report.tasks.forEach(t => {
+        html += `
+            <tr style="border-bottom:1px solid #eee;">
+                <td style="padding:4px;">${t.key}</td>
+                <td style="padding:4px;">${t.status}</td>
+                <td style="padding:4px; text-align:right;">${t.workdays}</td>
+                <td style="padding:4px;">${t.created}</td>
+                <td style="padding:4px;">${t.summary}</td>
+            </tr>
+        `;
+    });
+
+    html += `</table></div>`;
+    return html;
+}

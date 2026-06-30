@@ -199,17 +199,25 @@ class PostCard:
         except Exception as e:
             logging.error(f"{e}")
             return False
-    def implement(self,username,merchantCode):
+    def implement(self,username,merchantCode,requireType):
         
         postcardCode=self.request_code(username)
         claimId=self.Search_request_code(postcardCode,merchantCode)
-        result = self.Approve_request_code(claimId,merchantCode)
-        if result:
-            return True, postcardCode
-        else:
+        if claimId is None:
+            logging.error("查詢claimId失敗")
             return False, None
+        if requireType=="Y":
+            result = self.Approve_request_code(claimId,merchantCode)
+            if result:
+                return True, postcardCode
+            else:
+                return False, None
+        elif requireType=="N":
+            logging.info("不需要審核，直接回傳postcardCode")
+            return True, postcardCode
+            
         
-def main(username,merchantCode):
+def main(username,merchantCode,requireType):
     if isinstance(merchantCode, list):
         merchantCode = merchantCode[0]
     print(merchantCode)
@@ -221,12 +229,13 @@ def main(username,merchantCode):
         merchantCode=str(merchantCode)
         b_end=PostCard(credential)
         if b_end.token:
-            isSuccess, postcardCode = b_end.implement(username,merchantCode)
+            isSuccess, postcardCode = b_end.implement(username, merchantCode, requireType)
             if isSuccess:
                 return isSuccess, postcardCode
             else:
                 return isSuccess, None
+                
 
     except Exception as e:
         logging.error(e)
-        
+        return
