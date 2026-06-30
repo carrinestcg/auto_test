@@ -856,7 +856,7 @@ def api_create_qa_task():
     tcg_keys_raw = data.get("tcg_keys", "")
     
     if isinstance(tcg_keys_raw, list):
-        tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).replace(",", " ").split() if k.strip()]
+        tcg_keys = [str(k).strip().upper() for k in tcg_keys_raw if str(k).strip()]
     else:
         tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).replace(",", " ").split() if k.strip()]
 
