@@ -856,9 +856,9 @@ def api_create_qa_task():
     tcg_keys_raw = data.get("tcg_keys", "")
     
     if isinstance(tcg_keys_raw, list):
-        tcg_keys = [k.strip().upper() for k in tcg_keys_raw if k.strip()]
+        tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).replace(",", " ").split() if k.strip()]
     else:
-        tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).split() if k.strip()]
+        tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).replace(",", " ").split() if k.strip()]
 
     if not tcg_keys:
         return jsonify({"success": False, "message": "請提供 TCG 單號"}), 400
@@ -867,12 +867,21 @@ def api_create_qa_task():
         for tcg_key in tcg_keys:
             summary, fix_versions, reporter = create_qa_task.get_issue(tcg_key)
             new_key = create_qa_task.create_qa_task(tcg_key, summary, fix_versions, reporter)
-            results.append({
-                "tcg_key": tcg_key,
-                "new_key": new_key,
-                "summary": f"[QA][PED] 測試 {summary}",
-                "url": f"{create_qa_task.JIRA_BASE_URL}/browse/{new_key}"
-            })
+            if new_key is not None:
+                results.append({
+                    "tcg_key": tcg_key,
+                    "new_key": new_key,
+                    "summary": f"[QA][PED] 測試 {summary}",
+                    "url": f"{create_qa_task.JIRA_BASE_URL}/browse/{new_key}"
+                })
+            else:
+                results.append({
+                    "tcg_key": tcg_key,
+                    "new_key": None,
+                    "summary": f"[QA][PED] 測試 {summary}",
+                    "url": None,
+                    "error": f"無法建立 QA 任務，請檢查 TCG 單號 {tcg_key} 是否存在或有權限"
+                })
         return jsonify({"success": True, "message": "建立成功", "data": results}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500

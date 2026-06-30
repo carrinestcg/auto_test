@@ -197,7 +197,9 @@ function validateFormBeforeSubmit() {
         document.getElementById('frontend-checkbox_member').checked;
         const amountDiv = document.getElementById("amount-input-div");
         const needAmount = amountDiv && !amountDiv.classList.contains("hidden");
-        
+        const qaTaskDiv = document.getElementById("qa-task-input-div");
+        const needQATaskInput = qaTaskDiv && !qaTaskDiv.classList.contains("hidden");
+
     if (needAmount && (!amountInput || amountInput.value.trim() === "")) {
         document.getElementById("amount_hint").style.display = "inline";
         console.log("❌ 被 amount 擋");
@@ -257,7 +259,13 @@ function validateFormBeforeSubmit() {
             return false;
         }
     }
-
+    if (needQATaskInput) {
+        const tcgKeysInput = document.getElementById("tcg_keys_input");
+        if (!tcgKeysInput || !tcgKeysInput.value.trim()) {
+            alert("請填寫 TCG 單號（可多個，用逗號或空格分隔）");
+            return false;
+        }
+    }
     return true;
 }
 ['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select', 'promotion-checkbox_select']
@@ -597,6 +605,8 @@ function runSelectScript(){
         case "create_qa_task":
             extraData = {
                 tcg_keys: document.getElementById("tcg_keys_input").value
+                    .split(/[\s,;]+/)
+                    .filter(Boolean)
             };
             runScriptApi(scriptName, { ...extraData });
             return;
