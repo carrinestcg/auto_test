@@ -17,8 +17,10 @@
     --radius-sm: 8px;
     --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
     --shadow-md: 0 4px 24px rgba(15, 23, 42, 0.08);
-    --font: "SF Pro Text", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", -apple-system,
-        BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font: "Inter", "Noto Sans TC", "PingFang TC", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        system-ui, sans-serif;
+    --font-display: "Inter", "Noto Sans TC", "PingFang TC", sans-serif;
+    --font-mono: "SF Mono", "JetBrains Mono", "Cascadia Code", ui-monospace, monospace;
     --sidebar-width: 220px;
     --sidebar-bg: #ffffff;
     --panel-hover: #f0f4f8;
@@ -101,6 +103,8 @@ body {
     color: var(--text);
     background: var(--bg-page);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "kern" 1, "liga" 1;
 }
 
 /* PM Toolkit: left sidebar + right main */
@@ -1251,6 +1255,8 @@ select.multi-select option:checked {
 
 .result-modal-content {
     max-width: 760px;
+    font-family: var(--font-display);
+    font-feature-settings: "kern" 1, "liga" 1, "tnum" 0;
 }
 
 .result-modal-top {
@@ -1264,16 +1270,17 @@ select.multi-select option:checked {
 }
 
 .result-eyebrow {
-    margin: 0 0 8px;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    margin: 0 0 10px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #047857;
+    color: var(--success);
 }
 
 .result-modal-content.is-fail .result-eyebrow {
-    color: #b91c1c;
+    color: var(--danger);
 }
 
 .result-title-row {
@@ -1282,11 +1289,11 @@ select.multi-select option:checked {
 
 .result-modal-title {
     margin: 0;
-    font-size: 1.625rem;
-    font-weight: 700;
-    line-height: 1.25;
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.35;
     color: var(--heading);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -1355,10 +1362,11 @@ select.multi-select option:checked {
     display: inline-block;
     padding: 0 0 12px;
     margin-right: 24px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--heading);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-muted);
     border-bottom: 2px solid var(--heading);
+    letter-spacing: 0.02em;
 }
 
 .modal-header {
@@ -1420,7 +1428,7 @@ select.multi-select option:checked {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 0;
-    padding: 18px 24px;
+    padding: 20px 24px 22px;
     border-bottom: 1px solid var(--surface-border);
     background: var(--surface);
     flex-shrink: 0;
@@ -1429,8 +1437,8 @@ select.multi-select option:checked {
 .result-stat {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 0 18px;
+    gap: 8px;
+    padding: 0 20px;
     border-right: 1px solid var(--surface-border);
 }
 
@@ -1444,25 +1452,34 @@ select.multi-select option:checked {
 }
 
 .result-stat-label {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
     color: var(--text-secondary);
 }
 
 .result-stat-value {
-    font-size: 1.375rem;
-    font-weight: 700;
-    line-height: 1.2;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.25;
     color: var(--heading);
     letter-spacing: -0.02em;
     font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1, "kern" 1;
 }
 
 .result-stat-value.is-zero {
     color: var(--ink-3);
+    font-weight: 500;
 }
 
 .result-stat-primary .result-stat-value:not(.is-zero) {
     color: var(--result-key);
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    font-family: var(--font-mono);
+    font-feature-settings: "tnum" 1, "zero" 1;
 }
 
 .result-task-list {
@@ -1660,8 +1677,10 @@ a.result-task-key:hover {
     margin: 0;
     padding: 20px 24px;
     font-size: 0.9375rem;
-    color: var(--text);
-    line-height: 1.6;
+    font-weight: 400;
+    color: var(--text-muted);
+    line-height: 1.65;
+    letter-spacing: 0.01em;
 }
 
 .result-empty-state {
