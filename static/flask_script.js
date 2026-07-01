@@ -1284,32 +1284,11 @@ function renderPostCardResult(data) {
             ? String(data.postcardCode)
             : "—";
     const needsReview = data.requireType === "Y";
-    const summary = renderStatsBar([
+    return renderStatsBar([
         { label: "郵寄碼", value: code },
         { label: "是否審核", value: needsReview ? "是" : "否" },
         { label: "結果", value: data.success ? "領取成功" : "領取失敗" },
     ]);
-
-    const copyBtn = code !== "—" ? renderCopyButton(code, "複製郵寄碼") : "";
-    const status = data.success ? "Success" : "Failed";
-
-    return `${summary}
-        <div class="result-task-list">
-            <article class="result-task-item">
-                <div class="result-task-main">
-                    <div class="result-task-content">
-                        <div class="result-task-row-top">
-                            <div class="result-task-ids">
-                                <span class="result-task-key">${escapeHtml(code)}</span>
-                            </div>
-                            ${renderStatusBadge(status)}
-                        </div>
-                        <p class="result-task-summary">${escapeHtml(data.message || "")}</p>
-                    </div>
-                </div>
-                <div class="result-task-actions">${copyBtn}</div>
-            </article>
-        </div>`;
 }
 
 function renderFormattedResult(data, resultType) {
