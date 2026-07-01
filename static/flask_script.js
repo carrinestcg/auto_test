@@ -1,18 +1,38 @@
 /** Checkbox helper — must be module-level; toggleDepositAmount / toggleExtraPromo use it. */
 const isChecked = (id) => document.getElementById(id)?.checked;
 
-function askConfirm(message) {
+function askConfirm(message, options = {}) {
     return new Promise((resolve) => {
         const modal = document.getElementById("confirm-modal");
-        const body = modal.querySelector(".modal-body");
+        const messageEl = document.getElementById("confirm-modal-message");
+        const titleEl = document.getElementById("confirm-modal-title");
         const yesBtn = document.getElementById("confirm-yes-btn");
         const noBtn = document.getElementById("confirm-no-btn");
+        if (!modal || !yesBtn || !noBtn) {
+            resolve(false);
+            return;
+        }
 
-        body.textContent = message;
+        if (titleEl) {
+            titleEl.textContent = options.title || "審核確認";
+        }
+        if (messageEl) {
+            messageEl.textContent = message;
+        }
+
         modal.classList.remove("hidden");
+        modal.classList.remove("is-visible");
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                modal.classList.add("is-visible");
+            });
+        });
 
         const cleanup = (result) => {
-            modal.classList.add("hidden");
+            modal.classList.remove("is-visible");
+            window.setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 180);
             yesBtn.removeEventListener("click", onYes);
             noBtn.removeEventListener("click", onNo);
             resolve(result);
@@ -936,9 +956,12 @@ function showResultPopup(data) {
         tabBar.classList.toggle("hidden", !isSuccess);
     }
 
-    body.innerHTML = isSuccess
-        ? renderFormattedResult(data, resultType)
-        : renderFailureResult(data);
+    body.innerHTML =
+        resultType === "postcard"
+            ? renderPostCardResult(data)
+            : isSuccess
+              ? renderFormattedResult(data, resultType)
+              : renderFailureResult(data);
 
     setupResultModalInteractions(body);
 
@@ -1043,6 +1066,9 @@ function escapeHtml(value) {
 }
 
 function detectResultType(data) {
+    if ("postcardCode" in data) {
+        return "postcard";
+    }
     const report = data.data;
     if (!report) return "generic";
     if (Array.isArray(report) && report.length > 0 && ("tcg_key" in report[0] || "new_key" in report[0])) {
@@ -1252,12 +1278,49 @@ function renderCreateQaTaskResults(items) {
     return `${summary}<div class="result-task-list">${listItems}</div>`;
 }
 
+function renderPostCardResult(data) {
+    const code =
+        data.postcardCode != null && String(data.postcardCode).trim() !== ""
+            ? String(data.postcardCode)
+            : "—";
+    const needsReview = data.requireType === "Y";
+    const summary = renderStatsBar([
+        { label: "郵寄碼", value: code },
+        { label: "是否審核", value: needsReview ? "是" : "否" },
+        { label: "結果", value: data.success ? "領取成功" : "領取失敗" },
+    ]);
+
+    const copyBtn = code !== "—" ? renderCopyButton(code, "複製郵寄碼") : "";
+    const status = data.success ? "Success" : "Failed";
+
+    return `${summary}
+        <div class="result-task-list">
+            <article class="result-task-item">
+                <div class="result-task-main">
+                    <div class="result-task-content">
+                        <div class="result-task-row-top">
+                            <div class="result-task-ids">
+                                <span class="result-task-key">${escapeHtml(code)}</span>
+                            </div>
+                            ${renderStatusBadge(status)}
+                        </div>
+                        <p class="result-task-summary">${escapeHtml(data.message || "")}</p>
+                    </div>
+                </div>
+                <div class="result-task-actions">${copyBtn}</div>
+            </article>
+        </div>`;
+}
+
 function renderFormattedResult(data, resultType) {
     if (resultType === "calculate_workdays") {
         return renderWorkdaysReport(data.data);
     }
     if (resultType === "create_qa_task") {
         return renderCreateQaTaskResults(data.data);
+    }
+    if (resultType === "postcard") {
+        return renderPostCardResult(data);
     }
 
     return `<p class="result-message">${escapeHtml(data.message || "操作已完成")}</p>`;

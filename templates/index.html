@@ -522,13 +522,20 @@
         </div>
     </div>
 
-    <div id="confirm-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true">
-        <div class="modal-content">
-            <div class="modal-header success">審核確認</div>
-            <div class="modal-body">是否要審核該筆郵寄碼？</div>
-            <div class="modal-footer">
-                <button type="button" class="btn-outline" id="confirm-no-btn">否</button>
-                <button type="button" class="btn-primary" id="confirm-yes-btn">是</button>
+    <div id="confirm-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+        <div class="modal-content result-modal-content confirm-modal-content">
+            <div class="result-modal-top">
+                <div class="result-modal-head">
+                    <p class="result-eyebrow">AUTOMATION · CONFIRM</p>
+                    <h2 class="result-modal-title" id="confirm-modal-title">審核確認</h2>
+                </div>
+            </div>
+            <div class="modal-body result-modal-body">
+                <p class="result-message" id="confirm-modal-message">是否要審核該筆郵寄碼？</p>
+            </div>
+            <div class="modal-footer result-modal-footer confirm-modal-footer">
+                <button type="button" class="btn-outline btn-sm" id="confirm-no-btn">否，不審核</button>
+                <button type="button" class="btn-primary btn-sm" id="confirm-yes-btn">是，審核</button>
             </div>
         </div>
     </div>

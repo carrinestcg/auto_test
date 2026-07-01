@@ -382,16 +382,21 @@ def api_PostCard_Code():
         return jsonify(
             {
                 "success": True,
-                "message": "PostCard Bonus receive Success",
-                "postcardCode": postcardCode
+                "message": f"郵寄碼領取成功：{postcardCode}",
+                "postcardCode": postcardCode,
+                "requireType": requireType,
                 }
             ),200
     else:
+        fail_message = "郵寄碼領取失敗"
+        if postcardCode:
+            fail_message = f"{fail_message}：{postcardCode}"
         return jsonify(
             {
                 "success": False,
-                "message": "PostCard Bonus receive Failed",
-                "postcardCode": None
+                "message": fail_message,
+                "postcardCode": postcardCode,
+                "requireType": requireType,
                 }
             ),500
         
