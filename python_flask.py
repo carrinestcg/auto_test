@@ -382,7 +382,7 @@ def api_PostCard_Code():
         return jsonify(
             {
                 "success": True,
-                "message": f"郵寄碼領取成功：{postcardCode}",
+                "message": "郵寄碼領取成功",
                 "postcardCode": postcardCode,
                 "requireType": requireType,
                 }
