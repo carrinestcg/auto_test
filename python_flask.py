@@ -374,8 +374,9 @@ def api_schedule_manual_bonus():
 def api_PostCard_Code():
     data=request.get_json(silent=True)
     username=data["username"]
-    platforms=data["platforms"] 
-    isSuccess, postcardCode = PostCard_Code.main(username,platforms)
+    platforms=data["platforms"]
+    requireType=data.get("requireType", "N")
+    isSuccess, postcardCode = PostCard_Code.main(username, platforms, requireType)
     
     if isSuccess:
         return jsonify(

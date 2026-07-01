@@ -663,7 +663,9 @@ function runSelectScript(){
     if (platforms.length==0){
         platforms=["gi8viet"];
     }
-    checkSelectScript.forEach(scriptName=>{
+
+    (async () => {
+    for (const scriptName of checkSelectScript) {
         let extraData={}
     
     switch (scriptName) {
@@ -739,7 +741,7 @@ function runSelectScript(){
                 type: 1
             };
             runScriptApi(scriptName, { username, ...extraData });
-            return;
+            continue;
 
         case "FIXED_DEPOSIT":
             const deposit_list = username
@@ -751,7 +753,7 @@ function runSelectScript(){
                 type: 2
             };
             runScriptApi(scriptName, { username, ...extraData });
-            return;
+            continue;
 
         case "Compensation_api":
             extraData = {
@@ -766,6 +768,15 @@ function runSelectScript(){
             };
             break;
 
+        /** 領取郵寄碼：先詢問是否要審核，Y/N 帶給後端 requireType */
+        case "PostCard_api": {
+            const wantApprove = await askConfirm("是否要審核該筆郵寄碼？");
+            extraData = {
+                requireType: wantApprove ? "Y" : "N",
+            };
+            break;
+        }
+
         case "create_qa_task":
             extraData = {
                 tcg_keys: document.getElementById("tcg_keys_input").value
@@ -773,7 +784,7 @@ function runSelectScript(){
                     .filter(Boolean),
             };
             runScriptApi(scriptName, { ...extraData });
-            return;
+            continue;
 
         case "calculate_workdays":
             extraData = {
@@ -783,7 +794,7 @@ function runSelectScript(){
                     .filter(Boolean),
             };
             runScriptApi(scriptName, { ...extraData });
-            return;
+            continue;
 
         case "Extra_Reward_api": {
             const rawTickets = document.getElementById("ticket_id").value.trim();
@@ -869,7 +880,8 @@ function runSelectScript(){
     
     
     runScriptApi(scriptName,{username,platforms,...extraData})
-})
+    }
+    })();
 }
 
 function runScriptApi(scriptName,payload){
