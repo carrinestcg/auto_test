@@ -383,6 +383,7 @@ def api_PostCard_Code():
             {
                 "success": True,
                 "message": "郵寄碼領取成功",
+                "postcardCode": postcardCode,
                 "requireType": requireType,
                 }
             ),200
@@ -394,6 +395,7 @@ def api_PostCard_Code():
             {
                 "success": False,
                 "message": fail_message,
+                "postcardCode": postcardCode,
                 "requireType": requireType,
                 }
             ),500
