@@ -7,16 +7,77 @@
     <title>Test Automation Management</title>
     <link rel="icon" href="{{ url_for('static', filename='VSjcAXOaOj.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='flask_css.css') }}">
+    <script>
+        (function () {
+            try {
+                if (localStorage.getItem("auto_test_theme") === "dark") {
+                    document.documentElement.setAttribute("data-theme", "dark");
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
-<body class="app">
-    <header class="app-header">
-        <h1>Test Automation Management</h1>
-        <p>選擇測試腳本、帳號與平台後執行；下方可上傳 Excel 進行重複資料與雙檔比對。</p>
-    </header>
+<body>
+<div class="layout">
+    <aside class="sidebar" aria-label="主導覽">
+        <div class="sidebar-brand">
+            <h1>Test Automation</h1>
+            <div class="version">v{{ version_info.version }} · 測試自動化</div>
+        </div>
+        <nav class="sidebar-nav" role="tablist" aria-label="測試腳本分類">
+            <button type="button" class="nav-item" onclick="switchTab(event,'Frontend')" role="tab" aria-selected="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
+                <span class="nav-label">前台 Frontend</span>
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab(event,'Backend')" role="tab" aria-selected="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg></span>
+                <span class="nav-label">後台 Backend</span>
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab(event,'Player Management')" role="tab" aria-selected="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+                <span class="nav-label">玩家管理</span>
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab(event,'Promotion / Ticket')" role="tab" aria-selected="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></span>
+                <span class="nav-label">票券／活動</span>
+            </button>
+            <button type="button" class="nav-item active" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="true">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+                <span class="nav-label">測試工具</span>
+            </button>
+            <button type="button" class="nav-item" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
+                <span class="nav-label">建立QA_Task</span>
+            </button>
+        </nav>
+        <div class="sidebar-footer">
+            <button type="button" class="nav-item tab-version-btn" onclick="switchTab(event,'VersionTab')" role="tab" aria-selected="false" id="version-tab-btn">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+                <span class="nav-label">版本更新</span>
+                <span class="version-badge hidden" id="version-badge" aria-hidden="true">新</span>
+            </button>
+            <div class="sidebar-theme-row">
+                <span class="sidebar-theme-label">深色模式</span>
+                <label class="theme-switch theme-switch-compact" for="theme-toggle" title="切換深色模式">
+                    <input type="checkbox" id="theme-toggle" role="switch" aria-label="切換深色背景">
+                    <span class="theme-switch-slider" aria-hidden="true"></span>
+                </label>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="page-header">
+            <h2>Test Automation Management</h2>
+            <p>選擇測試腳本、帳號與平台後執行；可上傳 Excel 進行重複資料與雙檔比對。</p>
+        </header>
 
     <div id="myForm">
         <section class="card" aria-labelledby="config-heading">
-            <h2 id="config-heading" class="section-title">帳號與執行</h2>
+            <div class="card-header">
+                <h2 id="config-heading" class="section-title">帳號與執行</h2>
+            </div>
+            <div class="card-body">
             <div class="account-wrap">
                 <div class="account-config">
                     <div class="account-column account-field-col">
@@ -33,7 +94,8 @@
 
                     <div id="password-input-div" class="input-group account-field-col">
                         <label for="password">用戶密碼</label>
-                        <input type="text" id="password" name="password" class="account-line-input" placeholder="tcgdemov3 預設為 qwe123" autocomplete="current-password">
+                        <input type="text" id="password" name="password" class="account-line-input" autocomplete="current-password">
+                        <small class="field-helper">tcgdemov3 預設為 qwe123；留空將自動帶入 123qwe</small>
                         <small id="password_hint" class="field-hint">此欄位必填</small>
                     </div>
 
@@ -54,8 +116,7 @@
 
                     <div id="date-input-div" class="input-group hidden">
                         <label for="date_time">日期時間</label>
-                        <input type="text" id="date_time" name="date_time" class="input-narrow" placeholder="格式:2026-06-22 觸發時間為活動隔日">
-                        <small id="date_schedule_hint" class="schedule-date-hint">僅需填入活動ID 日期腳本會自動減一天</small>
+                        <input type="text" id="date_time" name="date_time" class="input-narrow" placeholder="格式:2026-06-22 需過去時間">
                     </div>
 
                     <div id="ticket_id-input-div" class="input-group hidden">
@@ -75,18 +136,21 @@
                         <input type="text" id="deposit-amount-id" name="deposit_amount">
                         <small id="deposit_hint" class="field-hint">此欄位必填</small>
                     </div>
-                   <div id="qa-task-input-div" class="input-group hidden">
+
+                    <div id="qa-task-input-div" class="input-group hidden">
                         <label for="tcg_keys_input" class="field-label">TCG 單號</label>
                         <textarea id="tcg_keys_input" rows="3"
                             placeholder="TCG-148954, TCG-148947"
-                            style="width:260px; padding:6px 10px; border:1px solid #ccc; border-radius:6px; font-size:14px; font-family:inherit; resize:vertical; vertical-align:top; line-height:1.6; display:block; margin-top:4px;"></textarea>
+                            class="qa-task-textarea"></textarea>
                     </div>
+
                     <div id="workdays-input-div" class="input-group hidden">
                         <label for="qa_stats_tp_key" class="field-label">TP 單號</label>
                         <input type="text" id="qa_stats_tp_key" placeholder="TP-5229" class="account-line-input">
-                        <label for="qa_stats_assignee" class="field-label" style="margin-top:8px;">Jira 帳號（assignee）</label>
+                        <label for="qa_stats_assignee" class="field-label qa-stats-assignee-label">Jira 帳號（assignee）</label>
                         <input type="text" id="qa_stats_assignee" placeholder="carrine.s" class="account-line-input">
                     </div>
+
                     <div class="multi-select-wrapper input-group" id="platform-select-wrap">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
                         <select multiple id="frontend-checkbox_manual_platform" size="3" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
@@ -96,7 +160,6 @@
                             <option value="rollbet">rollbet</option>
                             <option value="lodibet">lodibet</option>
                             <option value="jkscus1">jkscus1</option>
-                            <option value="jkscus1">jkdscus1</option>
                         </select>
                     </div>
 
@@ -137,24 +200,25 @@
                     </div>
 
                     <div class="button-group">
-                        <button type="button" class="btn-primary" onclick="runSelectScript()">開始測試</button>
+                        <button type="button" id="run-test-btn" class="btn-primary" onclick="runSelectScript()" disabled aria-busy="false">
+                            <span class="btn-icon btn-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="8 5 19 12 8 19"/></svg></span>
+                            <span class="btn-spinner" aria-hidden="true"></span>
+                            <span class="btn-text-default">開始測試</span>
+                            <span class="btn-text-loading" aria-hidden="true">執行中…</span>
+                        </button>
+                        <p id="run-test-hint" class="run-test-hint" role="status"></p>
                     </div>
                 </div>
+            </div>
             </div>
         </section>
 
         <section class="card tabs-wrap" aria-labelledby="scripts-heading">
-            <h2 id="scripts-heading" class="section-title">測試功能選擇</h2>
-
-            <div class="tab" role="tablist">
-                <button type="button" class="tab-button" onclick="switchTab(event,'Frontend')" role="tab" aria-selected="false">前台 Frontend</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'Backend')" role="tab" aria-selected="false">後台 Backend</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'Player Management')" role="tab" aria-selected="false">玩家管理</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'Promotion / Ticket')" role="tab" aria-selected="false">票券／活動</button>
-                <button type="button" class="tab-button active" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="true">測試工具</button>
-                <button type="button" class="tab-button" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">建立QA_Task</button>
+            <div class="card-header">
+                <h2 id="scripts-heading" class="section-title">測試功能選擇</h2>
             </div>
-
+            <div class="card-body">
+            <div class="tab-panels">
             <div id="Frontend" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <label>
@@ -323,12 +387,43 @@
                         <input type="checkbox" name="script" value="create_qa_task" id="create_qa_task" onchange="toggleInput(); toggleQATaskInput()">
                         建立QA_Task
                     </label>
-
                     <label>
                         <input type="checkbox" name="script" value="calculate_workdays" id="calculate_workdays" onchange="toggleInput(); toggleWorkdaysInput()">
                         計算workdays
                     </label>
                 </div>
+            </div>
+
+            <div id="VersionTab" class="tabcontent" role="tabpanel">
+                <div class="version-panel">
+                    <div class="version-current">
+                        <p class="version-label">目前版本</p>
+                        <p class="version-number">v{{ version_info.version }}</p>
+                        {% if version_info.released_at %}
+                        <p class="version-date">發佈日期：{{ version_info.released_at }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="version-changelog">
+                        <h3 class="changelog-heading">更新紀錄</h3>
+                        {% for entry in version_info.changelog %}
+                        <article class="changelog-entry">
+                            <header class="changelog-header">
+                                <span class="changelog-version">v{{ entry.version }}</span>
+                                <time class="changelog-date">{{ entry.date }}</time>
+                            </header>
+                            <ul class="changelog-list">
+                                {% for item in entry['items'] %}
+                                <li>{{ item }}</li>
+                                {% endfor %}
+                            </ul>
+                        </article>
+                        {% else %}
+                        <p class="changelog-empty">尚無更新紀錄</p>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            </div>
             </div>
         </section>
 
@@ -339,44 +434,98 @@
     </div>
 
     <section class="card" aria-labelledby="upload-dedupe-heading">
-        <h2 id="upload-dedupe-heading" class="section-title">Excel 重複除錯</h2>
+        <div class="card-header">
+            <h2 id="upload-dedupe-heading" class="section-title">Excel 重複除錯</h2>
+        </div>
+        <div class="card-body">
         <p class="subsection-title">單檔上傳</p>
         <form id="uploadform" enctype="multipart/form-data" method="POST" action="/upload_excel" class="upload-block">
             <div class="upload-row">
-                <input type="file" id="fileInput" name="file" accept=".xlsx,.xls">
-                <button type="submit" class="btn-outline">比對</button>
+                <div class="file-upload-zone" data-input="fileInput">
+                    <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="file-upload-input">
+                    <label for="fileInput" class="file-upload-label">
+                        <span class="file-upload-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </span>
+                        <span class="file-upload-title">拖曳 Excel 至此，或點擊選擇檔案</span>
+                        <span class="file-upload-name">尚未選擇檔案</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">比對</button>
             </div>
             <small id="upload_hint" class="field-hint">請選擇要上傳的檔案</small>
         </form>
+        </div>
     </section>
 
     <section class="card" aria-labelledby="upload-compare-heading">
-        <h2 id="upload-compare-heading" class="section-title">雙檔 Excel 比對</h2>
+        <div class="card-header">
+            <h2 id="upload-compare-heading" class="section-title">雙檔 Excel 比對</h2>
+        </div>
+        <div class="card-body">
         <form id="Compare_Two_Excel" enctype="multipart/form-data" method="POST" action="/Compare_Two_Excel" class="upload-block">
-            <div class="upload-row">
-                <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" aria-label="第一個 Excel 檔">
-                <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" aria-label="第二個 Excel 檔">
-                <button type="submit" class="btn-outline">比對</button>
+            <div class="upload-row upload-row-multi">
+                <div class="file-upload-zone" data-input="fileInput_1">
+                    <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" class="file-upload-input" aria-label="第一個 Excel 檔">
+                    <label for="fileInput_1" class="file-upload-label">
+                        <span class="file-upload-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </span>
+                        <span class="file-upload-title">檔案一：拖曳或點擊選擇</span>
+                        <span class="file-upload-name">尚未選擇檔案</span>
+                    </label>
+                </div>
+                <div class="file-upload-zone" data-input="fileInput_2">
+                    <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" class="file-upload-input" aria-label="第二個 Excel 檔">
+                    <label for="fileInput_2" class="file-upload-label">
+                        <span class="file-upload-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </span>
+                        <span class="file-upload-title">檔案二：拖曳或點擊選擇</span>
+                        <span class="file-upload-name">尚未選擇檔案</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn-primary">比對</button>
             </div>
             <small id="upload_hint_compare" class="field-hint">請選擇兩個要上傳的檔案</small>
         </form>
+        </div>
     </section>
 
     <div id="result" aria-live="polite"></div>
+    </main>
+</div>
 
-    <div id="result-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-header">
-        <div class="modal-content">
-            <div id="modal-header" class="modal-header"></div>
-            <pre id="modal-body" class="modal-body"></pre>
-            <div class="modal-footer">
-                <button type="button" class="btn-outline" onclick="closeResultModal()">關閉</button>
+    <div id="result-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-header-title">
+        <div class="modal-content result-modal-content">
+            <div class="result-modal-top">
+                <div class="result-modal-head">
+                    <p class="result-eyebrow" id="modal-eyebrow">AUTOMATION · QUERY RESULT</p>
+                    <div class="result-title-row">
+                        <h2 class="result-modal-title">
+                            <span class="title-status-wrap hidden" id="modal-status-wrap" aria-hidden="true">
+                                <span class="title-status-dot"></span>
+                                <span class="title-status-ping"></span>
+                            </span>
+                            <span id="modal-header-title"></span>
+                        </h2>
+                    </div>
+                </div>
+                <div class="result-tab-bar" id="modal-tab-bar">
+                    <span class="result-tab active" role="tab" aria-selected="true">摘要</span>
+                </div>
+            </div>
+            <div id="modal-body" class="modal-body result-modal-body"></div>
+            <div class="modal-footer result-modal-footer">
+                <button type="button" class="btn-primary btn-sm" onclick="closeResultModal()">關閉</button>
             </div>
         </div>
     </div>
+
     <div id="confirm-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true">
-    <div class="modal-content">
-        <div class="modal-header success">審核確認</div>
-        <div class="modal-body">是否要審核該筆郵寄碼？</div>
+        <div class="modal-content">
+            <div class="modal-header success">審核確認</div>
+            <div class="modal-body">是否要審核該筆郵寄碼？</div>
             <div class="modal-footer">
                 <button type="button" class="btn-outline" id="confirm-no-btn">否</button>
                 <button type="button" class="btn-primary" id="confirm-yes-btn">是</button>
@@ -384,6 +533,9 @@
         </div>
     </div>
 
+    <script>
+        window.APP_VERSION = {{ version_info | tojson }};
+    </script>
     <script src="{{ url_for('static', filename='flask_script.js') }}"></script>
 
     {% if selected_scripts %}

@@ -1,4 +1,5 @@
-from flask import Flask,render_template,request,jsonify,Response,json
+from flask import Flask, render_template, request, jsonify, Response, json
+from pathlib import Path
 import MANUAL_SINGLE
 import MANUAL_BATCH
 import PROMOCODE_BATCH
@@ -22,7 +23,6 @@ import Lott_bet_without_main
 import Compensation_api
 import PostCard_Code
 import test_manual_bonus
-import create_qa_task
 import pytest
 from Create_member_Account import async_create_main
 from deposit_api import batch_approve
@@ -36,8 +36,10 @@ import Extra_Reward
 import test_Extra_bonus
 import Acheivement_bonus
 import schedule_manual
+import create_qa_task
 import calculate_workdays
 from Verify_Info import verify_info
+from version_util import load_version_info
 
 
 logging.basicConfig(
@@ -47,9 +49,15 @@ logging.basicConfig(
 )
 python_flask=Flask(__name__)
 
+
 @python_flask.route("/")
 def hello():
-    return render_template("index.html")
+    return render_template("index.html", version_info=load_version_info())
+
+
+@python_flask.route("/api/version")
+def api_version():
+    return jsonify(load_version_info())
 def auto_create_member_player(platform_type,username,amount):
         for platform in platform_type:
             if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
@@ -85,7 +93,7 @@ def batch_approve_func(deposit_platform_type):
 def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','jkdscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
                 result = Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
                 return result
 
@@ -342,14 +350,9 @@ def api_Compensation():
         
 @python_flask.route('/api/Schedule_manual_bonus',methods=['POST']) #定時任務API
 def api_schedule_manual_bonus():
-    data=request.get_json(silent=True) or {}
-    setting_id = data.get("promotion_id")
-    date = data.get("date")
-    if not setting_id or not date:
-        return jsonify({
-            "success": False,
-            "message": "缺少 promotion_id 或 date"
-        }), 400
+    data=request.get_json(silent=True)
+    setting_id=data["promotion_id"]
+    date=data["date"]
     isSuccess=schedule_manual.main(setting_id, date)
 
     if isSuccess:
@@ -372,8 +375,7 @@ def api_PostCard_Code():
     data=request.get_json(silent=True)
     username=data["username"]
     platforms=data["platforms"] 
-    requireType=data["requireType"]
-    isSuccess, postcardCode = PostCard_Code.main(username,platforms, requireType)
+    isSuccess, postcardCode = PostCard_Code.main(username,platforms)
     
     if isSuccess:
         return jsonify(
@@ -852,11 +854,12 @@ def api_manual_single():
     MANUAL_SINGLE.main()
     return jsonify({"success": True, "message": "Trigger API Successfully"})
 
+
 @python_flask.route('/api/create_qa_task', methods=['POST'])
 def api_create_qa_task():
     data = request.get_json(silent=True) or {}
     tcg_keys_raw = data.get("tcg_keys", "")
-    
+
     if isinstance(tcg_keys_raw, list):
         tcg_keys = [str(k).strip().upper() for k in tcg_keys_raw if str(k).strip()]
     else:
@@ -887,19 +890,18 @@ def api_create_qa_task():
         return jsonify({"success": True, "message": "建立成功", "data": results}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-    
+
+
 @python_flask.route('/api/calculate_workdays', methods=['POST'])
 def api_calculate_workdays():
     data = request.get_json(silent=True) or {}
     tp_key_raw = data.get("tp_key", "")
     assignee = (data.get("assignee") or "").strip()
-    
+
     if isinstance(tp_key_raw, list):
         tp_key = (tp_key_raw[0] if tp_key_raw else "").strip().upper()
     else:
         tp_key = str(tp_key_raw).strip().upper()
-
-    assignee = (data.get("assignee") or "").strip()
 
     if not tp_key or not assignee:
         return jsonify({"success": False, "message": "請提供 TP 單號與 Jira 帳號"}), 400
@@ -910,7 +912,8 @@ def api_calculate_workdays():
         return jsonify({"success": True, "message": "查詢成功", "data": report}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
-    
+
+
 @python_flask.route('/upload_excel', methods=['POST']) 
 def upload_excel():
     file=request.files.get('file')
