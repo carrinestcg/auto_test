@@ -462,37 +462,62 @@ def api_manual_create_single():
     "summary": result.stdout.split("short test summary info")[-1]
     }
     
-@python_flask.route('/api/Input_User_name', methods=['POST'])
-@python_flask.route('/api/Verify_Mobile_No', methods=['POST'])
-@python_flask.route('/api/Verify_Personal_ID', methods=['POST'])
-def api_verify_mobile_no():
-    data=request.json
-    username=data["username"]
-    verify_type = data.get("type") 
-    platforms=data["platforms"] 
-    if verify_type == 1:
-        result, mobile_num = verify_info(username, platforms, verify_type)
-        mobile_num=int(mobile_num) if mobile_num else None
-        label = "手機號"
-    elif verify_type == 2:
-        result, ID_number = verify_info(username, platforms, verify_type)
-        ID_number=int(ID_number) if ID_number else None
-        label = "身分證"
-    elif verify_type == 3:
-        result, name = verify_info(username, platforms, verify_type)
-        name = str(name) if name else None
-        label = "名稱"
-    else:
-        return {"success": False, "message": "Unknown type"}, 400
+@python_flask.route('/api/Input_User_Info', methods=['POST'])
+def api_input_user_info():
+    data = request.json
+    username = data["username"]
+    platforms = data["platforms"]
+    require_type = data.get("requireType", data.get("type", 1))
 
-    return {
+    try:
+        require_type = int(require_type)
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "Invalid requireType"}), 400
+
+    verify_labels = {
+        1: "手機號",
+        2: "身分證",
+        3: "名稱",
+        4: "WeChat",
+        5: "Line ID",
+        6: "Apple ID",
+        7: "地址",
+        8: "Twitter",
+        9: "Viber",
+    }
+    value_fields = {
+        1: "mobileNumber",
+        2: "IDNumber",
+        3: "name",
+        4: "wechatNumber",
+        5: "lineNumber",
+        6: "appleIDNumber",
+        7: "address",
+        8: "twitterID",
+        9: "viberID",
+    }
+
+    if require_type not in verify_labels:
+        return jsonify({"success": False, "message": "Unknown requireType"}), 400
+
+    result, value = verify_info(username, platforms, require_type)
+    if value is not None and require_type in (1, 2, 4, 5, 6):
+        value = str(value)
+    elif value is not None:
+        value = str(value)
+
+    label = verify_labels[require_type]
+    response = {
         "success": bool(result),
         "message": f"Verify {label} {'Successfully' if result else 'Failed'}",
-        "mobileNumber": mobile_num if verify_type == 1 else None,
-        "IDNumber": ID_number if verify_type == 2 else None,
-        "name": name if verify_type == 3 else None,
-        "verifyType": verify_type,
+        "requireType": require_type,
+        "verifyType": require_type,
     }
+    for field_key in value_fields.values():
+        response[field_key] = None
+    response[value_fields[require_type]] = value
+
+    return jsonify(response)
     
 @python_flask.route('/api/test_Extra_bonus',methods=['POST']) #回歸測試 翻倍獎勵
 def api_test_Extra_bonus():

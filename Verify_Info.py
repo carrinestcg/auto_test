@@ -1,3 +1,5 @@
+from wsgiref import headers
+
 import requests,logging,datetime,random
 from datetime import datetime
 from Customer_id import main
@@ -225,6 +227,156 @@ def input_personal_name(customerId:int, new_Name:str):
         logging.error(f"名字輸入請求失敗{e}")
         return False
     
+def input_wechat_ID(customerId:int, wechat_id:str):
+    token=get_token()
+    logging.info(f"傳入的WeChat ID:{wechat_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeWechat?customerId={customerId}&merchantCode=gi8viet&remark=ff&wechat={wechat_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("WeChat ID輸入成功")  
+                return True
+            else:
+                logging.error("WeChat ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"WeChat ID輸入請求失敗{e}")
+        return False
+    
+def input_address(customerId:int, address:str):
+    token=get_token()
+    logging.info(f"傳入的地址:{address}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeAddress?customerId={customerId}&merchantCode=gi8viet&&remark=ss&address={address}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("地址輸入成功")  
+                return True
+            else:
+                logging.error("地址輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"地址輸入請求失敗{e}")
+        return False
+    
+def input_line_ID(customerId:int, line_id:str):
+    token=get_token()
+    logging.info(f"傳入的Line ID:{line_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeLineId?customerId={customerId}&merchantCode=gi8viet&remark=d&lineId={line_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Line ID輸入成功")  
+                return True
+            else:
+                logging.error("Line ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Line ID輸入請求失敗{e}")
+        return False
+    
+def input_apple_ID(customerId:int, apple_id:str):
+    token=get_token()
+    logging.info(f"傳入的Apple ID:{apple_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeAppleId?customerId={customerId}&merchantCode=gi8viet&remark=d&appleId={apple_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Apple ID輸入成功")  
+                return True
+            else:
+                logging.error("Apple ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Apple ID輸入請求失敗{e}")
+        return False
+    
+def input_twitter_ID(customerId:int, twitter_id:str):
+    token=get_token()
+    logging.info(f"傳入的Twitter ID:{twitter_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeTwitter?customerId={customerId}&merchantCode=gi8viet&remark=s&twitter={twitter_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Twitter ID輸入成功")  
+                return True
+            else:
+                logging.error("Twitter ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Twitter ID輸入請求失敗{e}")
+        return False
+    
+def input_viber_ID(customerId:int, viber_id:str):
+    token=get_token()
+    logging.info(f"傳入的Viber ID:{viber_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeViber?customerId={customerId}&merchantCode=gi8viet&remark=d&viber={viber_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Viber ID輸入成功")  
+                return True
+            else:
+                logging.error("Viber ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Viber ID輸入請求失敗{e}")
+        return False
+    
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
     try:
         token = get_token()
@@ -276,8 +428,96 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
         else:
             logging.error("沒有拿到CustomerID")
             return False, None
-    
+        
+    elif verify_type == 4:
+        
+        wechat_number=random.randint(100000000,999999999)
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
+        if customer_id:
+            result = input_wechat_ID(customer_id, wechat_number)
+            if result:
+                return True, wechat_number
+            else:
+                return False, None
 
+        else:
+            logging.error("沒有拿到CustomerID")
+            return False, None
+        
+    elif verify_type == 5:
+        
+        line_number=random.randint(100000000,999999999)
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
+        if customer_id:
+            result = input_line_ID(customer_id, line_number)
+            if result:
+                return True, line_number
+            else:
+                return False, None
+
+        else:
+            logging.error("沒有拿到CustomerID")
+            return False, None
+
+    elif verify_type == 6:
+        
+        appleID_number=random.randint(100000000,999999999)
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
+        if customer_id:
+            result = input_apple_ID(customer_id, appleID_number)
+            if result:
+                return True, appleID_number
+            else:
+                return False, None
+
+        else:
+            logging.error("沒有拿到CustomerID")
+            return False, None
+        
+    elif verify_type == 7:
+        
+        address=''.join(random.choices(string.ascii_uppercase, k=8))
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
+        if customer_id:
+            result = input_address(customer_id, address)
+            if result:
+                return True, address
+            else:
+                return False, None
+
+        else:
+            logging.error("沒有拿到CustomerID")
+            return False, None
+        
+    elif verify_type == 8:
+        
+        twitter_id=''.join(random.choices(string.ascii_uppercase, k=8))
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
+        if customer_id:
+            result = input_twitter_ID(customer_id, twitter_id)
+            if result:
+                return True, twitter_id
+            else:
+                return False, None
+
+        else:
+            logging.error("沒有拿到CustomerID")
+            return False, None
+        
+    elif verify_type == 9:
+        
+        viber_id=''.join(random.choices(string.ascii_uppercase, k=8))
+        customer_id=main(PLAYER_ACCOUNT, platform, 1)
+        if customer_id:
+            result = input_viber_ID(customer_id, viber_id)
+            if result:
+                return True, viber_id
+            else:
+                return False, None
+
+        else:
+            logging.error("沒有拿到CustomerID")
+            return False, None
     
     
 

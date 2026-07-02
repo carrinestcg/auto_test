@@ -1,6 +1,4 @@
-import requests
-import logging
-import time
+import requests,logging,time
 from datetime import datetime,timedelta
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -29,7 +27,7 @@ class Frontend:
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url=f'http://www.sit-{self.merchantCode}.com/wps/session/login/unsecure'
+            login_url=f'http://www.sit4.sit-{self.merchantCode}.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
@@ -71,8 +69,14 @@ class Frontend:
         promotionType_list=[]
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://sit-{self.merchantCode}.com/wps/relay/PROMOFE_getPromoList&_={unit_time}"
-
+        login_URL="http://sit3.sit-gi8viet.com/wps/relay/MCSFE_getClaimPromotion"
+        params={
+            "promotionType": "MANUAL,RAFFLE,UPGRADE_BONUS,MISSION,NEW_REGISTER,RANK_SALARY,DEPOSIT,"
+                      "FIRST_DEPOSIT,SECOND_DEPOSIT,THIRD_DEPOSIT,FOURTH_DEPOSIT,FIFTH_DEPOSIT,"
+                      "DEPOSIT_COUNT,DEPOSIT_BET_BONUS,SIGNUP,LUCKY_BET",
+            "status": "I",
+            "_": "1782976779972"
+        }
 
         headers={
             'Content-Type': 'application/json',
@@ -93,7 +97,7 @@ class Frontend:
             'SHELL_deviceId': '45fcebb4-8393-f955-97e3-9820a7899b78'
         }
         
-        response=self.session.get(login_URL,headers=headers,cookies=cookies,verify=False)
+        response=self.session.get(login_URL,headers=headers,cookies=cookies,params=params, verify=False)
         response.raise_for_status()
         response_json=response.json()
         
@@ -101,10 +105,10 @@ class Frontend:
             self.response_value_list=response_json.get('value',[])
             if self.response_value_list:
                 for item in self.response_value_list:
-                    claimId=item.get('claimId') 
+                    reward_id=item.get('rewardId') 
                     promotionType=item.get('promotionType')
-                    if claimId and promotionType:
-                        Claim_ID.append(claimId)
+                    if reward_id and promotionType:
+                        Claim_ID.append(reward_id)
                         promotionType_list.append(promotionType)
 
                 logging.info(f"總共可領{len(Claim_ID)}個獎勵")
@@ -112,7 +116,7 @@ class Frontend:
                 logging.info("目前沒有獎勵可領取")
             
         else:
-            logging.error("交易ID查詢失敗")
+            logging.error(f"交易ID查詢失敗")
             
         return Claim_ID,promotionType_list
         
@@ -124,7 +128,7 @@ class Frontend:
             return
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://sit-{self.merchantCode}.com/wps/relay/MCSFE_claimIssuedPromotion"
+        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/MCSFE_claimIssuedPromotion"
 
         headers={
             'Accept': 'application/json, text/javascript, */*; q=0.01',
@@ -159,7 +163,7 @@ class Frontend:
         response.raise_for_status()
         response_json=response.json()
         
-        if response_json.get('success'):
+        if response_json.get('success')==True:
             logging.info(f"成功領取獎勵 交易ID: {self.reward_id}")
             return True
             
@@ -178,7 +182,7 @@ class Frontend:
             self.promotion_type=PromoType
             self.approve_to_receive()
             success_count+=1
-            logging.info("領取成功")
+            logging.info(f"領取成功")
             time.sleep(1)
 
 def main(username,merchantCode):

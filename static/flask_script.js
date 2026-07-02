@@ -45,6 +45,170 @@ function askConfirm(message, options = {}) {
     });
 }
 
+const PLAYER_INFO_GROUPS = [
+    {
+        title: "基本資訊",
+        modifier: "basic",
+        items: [
+            { value: 1, label: "手機號碼", icon: "mobile" },
+            { value: 2, label: "身分證", icon: "id" },
+            { value: 3, label: "玩家名稱", icon: "user" },
+            { value: 7, label: "地址", icon: "address" },
+        ],
+    },
+    {
+        title: "社群／通訊帳號",
+        modifier: "social",
+        items: [
+            { value: 4, label: "WeChat", icon: "wechat" },
+            { value: 5, label: "Line ID", icon: "line" },
+            { value: 6, label: "Apple ID", icon: "apple" },
+            { value: 8, label: "Twitter", icon: "twitter" },
+            { value: 9, label: "Viber", icon: "viber" },
+        ],
+    },
+];
+
+const PLAYER_INFO_TYPES = PLAYER_INFO_GROUPS.flatMap((group) => group.items);
+
+const PLAYER_INFO_VALUE_FIELDS = {
+    1: ["mobileNumber", "手機號碼"],
+    2: ["IDNumber", "身分證號"],
+    3: ["name", "玩家名稱"],
+    4: ["wechatNumber", "WeChat"],
+    5: ["lineNumber", "Line ID"],
+    6: ["appleIDNumber", "Apple ID"],
+    7: ["address", "地址"],
+    8: ["twitterID", "Twitter"],
+    9: ["viberID", "Viber"],
+};
+
+const PLAYER_INFO_CHECK_SVG =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+
+function getPlayerInfoIcon(iconName) {
+    const icons = {
+        mobile:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01"/></svg>',
+        id: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M15 9h2M15 13h2"/></svg>',
+        user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M6 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>',
+        address:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+        wechat:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 0-3.5-6.9A8.6 8.6 0 0 0 12 3C7 3 3 6.6 3 11c0 2.4 1.1 4.5 2.9 6L5 21l4.2-1.2A10.8 10.8 0 0 0 12 19c5 0 9-3.6 9-7.5z"/></svg>',
+        line: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h14"/></svg>',
+        apple:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M16 8c.7-1.2 2-2 3.5-2.1C19 8.2 18 11 16.4 12.4 15 13.6 13.5 13.5 12.8 12.2 12.1 10.9 13 9.2 14.4 8 15.2 7.3 15.7 6.5 16 5.6 16 4.5 15.2 3.2 13.8 2.5 12 2.5S8.8 3.2 8 4.5c-.3 1.1-.1 2.2.4 3.1C7 9.2 6.1 10.9 6.8 12.2 7.5 13.5 9 13.6 10.4 12.4 12 11 13 8.2 12.5 5.9 14 6 15.3 7 16 8 16z"/><path d="M12 14.5v7"/></svg>',
+        twitter:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 4s-.7 2.1-2 3.2c1.6 10-9.4 17.3-18 11.1 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>',
+        viber:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.5 2.6a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.5-1.5a2 2 0 0 1 2.1-.5c.8.2 1.7.4 2.6.5A2 2 0 0 1 22 16.9z"/></svg>',
+    };
+    return icons[iconName] || icons.user;
+}
+
+function renderPlayerInfoChoiceCard(item, isSelected) {
+    return `
+        <button
+            type="button"
+            class="player-info-card${isSelected ? " is-selected" : ""}"
+            data-value="${item.value}"
+            role="option"
+            aria-selected="${isSelected ? "true" : "false"}"
+        >
+            <span class="player-info-card-check" aria-hidden="true">${PLAYER_INFO_CHECK_SVG}</span>
+            <span class="player-info-card-icon">${getPlayerInfoIcon(item.icon)}</span>
+            <span class="player-info-card-label">${escapeHtml(item.label)}</span>
+        </button>`;
+}
+
+function renderPlayerInfoChoiceGroups(selectedValue = null) {
+    return PLAYER_INFO_GROUPS.map(
+        (group) => `
+        <section class="player-info-group player-info-group--${group.modifier}">
+            <h3 class="player-info-group-title">${escapeHtml(group.title)}</h3>
+            <div class="player-info-group-grid">
+                ${group.items
+                    .map((item) => renderPlayerInfoChoiceCard(item, selectedValue === item.value))
+                    .join("")}
+            </div>
+        </section>`
+    ).join("");
+}
+
+function updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValue) {
+    root.querySelectorAll(".player-info-card").forEach((card) => {
+        const value = Number(card.dataset.value);
+        const isSelected = value === selectedValue;
+        card.classList.toggle("is-selected", isSelected);
+        card.setAttribute("aria-selected", isSelected ? "true" : "false");
+    });
+    if (statusEl) {
+        statusEl.textContent = `已選擇 ${selectedValue != null ? 1 : 0} 項`;
+    }
+    if (applyBtn) {
+        applyBtn.disabled = selectedValue == null;
+    }
+}
+
+function askPlayerInfoType(defaultType = null) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("player-info-modal");
+        const root = document.getElementById("player-info-choice-root");
+        const cancelBtn = document.getElementById("player-info-cancel-btn");
+        const applyBtn = document.getElementById("player-info-apply-btn");
+        const statusEl = document.getElementById("player-info-selection-status");
+        if (!modal || !root || !cancelBtn || !applyBtn) {
+            resolve(defaultType);
+            return;
+        }
+
+        let selectedValue = defaultType;
+
+        root.innerHTML = renderPlayerInfoChoiceGroups(selectedValue);
+        updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValue);
+
+        modal.classList.remove("hidden");
+        modal.classList.remove("is-visible");
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                modal.classList.add("is-visible");
+            });
+        });
+
+        const cleanup = (result) => {
+            modal.classList.remove("is-visible");
+            window.setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 180);
+            root.removeEventListener("click", onCardClick);
+            cancelBtn.removeEventListener("click", onCancel);
+            applyBtn.removeEventListener("click", onApply);
+            resolve(result);
+        };
+
+        const onCardClick = (event) => {
+            const card = event.target.closest(".player-info-card");
+            if (!card || !root.contains(card)) return;
+            const value = Number(card.dataset.value);
+            if (!Number.isFinite(value)) return;
+            selectedValue = value;
+            updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValue);
+        };
+
+        const onApply = () => {
+            if (selectedValue == null) return;
+            cleanup(selectedValue);
+        };
+
+        const onCancel = () => cleanup(null);
+
+        root.addEventListener("click", onCardClick);
+        cancelBtn.addEventListener("click", onCancel);
+        applyBtn.addEventListener("click", onApply);
+    });
+}
+
 function toggleInput() {
     toggleAmount();
     toggleTicket();
@@ -85,9 +249,7 @@ const SCRIPTS_NEED_USERNAME = [
     "PostCard_api",
     "Change_password",
     "Customer_name",
-    "Verify_Mobile_No",
-    "Verify_Personal_ID",
-    "Input_User_name",
+    "Input_User_Info",
     "auto_create_ticket",
     "Single_Manual_create",
     "test_Extra_bonus",
@@ -865,9 +1027,14 @@ function runSelectScript(){
             break;
         }
 
-        case "Verify_Mobile_No":
-            extraData = { type: 1 };
+        case "Input_User_Info": {
+            const requireType = await askPlayerInfoType();
+            if (requireType == null) {
+                continue;
+            }
+            extraData = { requireType };
             break;
+        }
 
         case "Achievement_bonus":
                 extraData = {
@@ -886,14 +1053,6 @@ function runSelectScript(){
                 promotion_id: document.getElementById("promotion_id").value,
                 type: 3
             }
-            break;
-
-        case "Verify_Personal_ID":
-            extraData = { type: 2 };
-            break;
-
-        case "Input_User_name":
-            extraData = { type: 3 };
             break;
 
         case "auto_create_promotion": {
@@ -971,7 +1130,7 @@ function showResultPopup(data) {
         tabBar.classList.toggle("hidden", !isSuccess);
     }
 
-    const summaryResultTypes = ["postcard", "verify_mobile", "verify_id", "verify_name"];
+    const summaryResultTypes = ["postcard", "verify_player_info", "verify_mobile", "verify_id", "verify_name"];
     const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
 
     body.innerHTML = showSummaryPanel
@@ -1084,13 +1243,17 @@ function detectResultType(data) {
     if ("postcardCode" in data) {
         return "postcard";
     }
-    if (data.verifyType === 1 || data.mobileNumber != null) {
+    const verifyType = Number(data.requireType ?? data.verifyType);
+    if (verifyType >= 1 && verifyType <= 9) {
+        return "verify_player_info";
+    }
+    if (data.mobileNumber != null) {
         return "verify_mobile";
     }
-    if (data.verifyType === 2 || data.IDNumber != null) {
+    if (data.IDNumber != null) {
         return "verify_id";
     }
-    if (data.verifyType === 3 || (data.name != null && data.name !== "")) {
+    if (data.name != null && data.name !== "") {
         return "verify_name";
     }
     const report = data.data;
@@ -1348,6 +1511,21 @@ function renderVerifyNameResult(data) {
     ]);
 }
 
+function renderVerifyPlayerInfoResult(data) {
+    const verifyType = Number(data.requireType ?? data.verifyType);
+    const mapping = PLAYER_INFO_VALUE_FIELDS[verifyType];
+    const field = mapping ? mapping[0] : null;
+    const label = mapping ? mapping[1] : "填入內容";
+    const value =
+        field && data[field] != null && String(data[field]).trim() !== ""
+            ? String(data[field])
+            : "—";
+    return renderStatsBar([
+        { label, value },
+        { label: "驗證結果", value: data.success ? "成功" : "失敗" },
+    ]);
+}
+
 function renderFormattedResult(data, resultType) {
     if (resultType === "calculate_workdays") {
         return renderWorkdaysReport(data.data);
@@ -1366,6 +1544,9 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "verify_name") {
         return renderVerifyNameResult(data);
+    }
+    if (resultType === "verify_player_info") {
+        return renderVerifyPlayerInfoResult(data);
     }
 
     return `<p class="result-message">${escapeHtml(data.message || "操作已完成")}</p>`;
