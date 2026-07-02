@@ -52,6 +52,10 @@
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
                 <span class="nav-label">建立QA_Task</span>
             </button>
+            <button type="button" class="nav-item" onclick="switchTab(event,'ExcelTab')" role="tab" aria-selected="false">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></svg></span>
+                <span class="nav-label">Excel 比對</span>
+            </button>
         </nav>
         <div class="sidebar-footer">
             <button type="button" class="nav-item tab-version-btn" onclick="switchTab(event,'VersionTab')" role="tab" aria-selected="false" id="version-tab-btn">
@@ -76,7 +80,7 @@
         </header>
 
     <div id="myForm">
-        <section class="card" aria-labelledby="config-heading">
+        <section class="card" id="account-config-card" aria-labelledby="config-heading">
             <div class="card-header">
                 <h2 id="config-heading" class="section-title">帳號與執行</h2>
             </div>
@@ -397,6 +401,62 @@
                 </div>
             </div>
 
+            <div id="ExcelTab" class="tabcontent" role="tabpanel">
+                <div class="excel-tools">
+                    <section class="excel-tool-section" aria-labelledby="upload-dedupe-heading">
+                        <h3 id="upload-dedupe-heading" class="subsection-title">Excel 重複除錯</h3>
+                        <p class="excel-tool-desc">單檔上傳，找出重複資料列。</p>
+                        <form id="uploadform" enctype="multipart/form-data" method="POST" action="/upload_excel" class="upload-block">
+                            <div class="upload-row">
+                                <div class="file-upload-zone" data-input="fileInput">
+                                    <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="file-upload-input">
+                                    <label for="fileInput" class="file-upload-label">
+                                        <span class="file-upload-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                        </span>
+                                        <span class="file-upload-title">拖曳 Excel 至此，或點擊選擇檔案</span>
+                                        <span class="file-upload-name">尚未選擇檔案</span>
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn-primary">比對</button>
+                            </div>
+                            <small id="upload_hint" class="field-hint">請選擇要上傳的檔案</small>
+                        </form>
+                    </section>
+
+                    <section class="excel-tool-section" aria-labelledby="upload-compare-heading">
+                        <h3 id="upload-compare-heading" class="subsection-title">雙檔 Excel 比對</h3>
+                        <p class="excel-tool-desc">上傳兩份 Excel，比對差異內容。</p>
+                        <form id="Compare_Two_Excel" enctype="multipart/form-data" method="POST" action="/Compare_Two_Excel" class="upload-block">
+                            <div class="upload-row upload-row-multi">
+                                <div class="file-upload-zone" data-input="fileInput_1">
+                                    <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" class="file-upload-input" aria-label="第一個 Excel 檔">
+                                    <label for="fileInput_1" class="file-upload-label">
+                                        <span class="file-upload-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                        </span>
+                                        <span class="file-upload-title">檔案一：拖曳或點擊選擇</span>
+                                        <span class="file-upload-name">尚未選擇檔案</span>
+                                    </label>
+                                </div>
+                                <div class="file-upload-zone" data-input="fileInput_2">
+                                    <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" class="file-upload-input" aria-label="第二個 Excel 檔">
+                                    <label for="fileInput_2" class="file-upload-label">
+                                        <span class="file-upload-icon" aria-hidden="true">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                        </span>
+                                        <span class="file-upload-title">檔案二：拖曳或點擊選擇</span>
+                                        <span class="file-upload-name">尚未選擇檔案</span>
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn-primary">比對</button>
+                            </div>
+                            <small id="upload_hint_compare" class="field-hint">請選擇兩個要上傳的檔案</small>
+                        </form>
+                    </section>
+                </div>
+            </div>
+
             <div id="VersionTab" class="tabcontent" role="tabpanel">
                 <div class="version-panel">
                     <div class="version-current">
@@ -435,65 +495,6 @@
             <div>執行中…</div>
         </div>
     </div>
-
-    <section class="card" aria-labelledby="upload-dedupe-heading">
-        <div class="card-header">
-            <h2 id="upload-dedupe-heading" class="section-title">Excel 重複除錯</h2>
-        </div>
-        <div class="card-body">
-        <p class="subsection-title">單檔上傳</p>
-        <form id="uploadform" enctype="multipart/form-data" method="POST" action="/upload_excel" class="upload-block">
-            <div class="upload-row">
-                <div class="file-upload-zone" data-input="fileInput">
-                    <input type="file" id="fileInput" name="file" accept=".xlsx,.xls" class="file-upload-input">
-                    <label for="fileInput" class="file-upload-label">
-                        <span class="file-upload-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                        </span>
-                        <span class="file-upload-title">拖曳 Excel 至此，或點擊選擇檔案</span>
-                        <span class="file-upload-name">尚未選擇檔案</span>
-                    </label>
-                </div>
-                <button type="submit" class="btn-primary">比對</button>
-            </div>
-            <small id="upload_hint" class="field-hint">請選擇要上傳的檔案</small>
-        </form>
-        </div>
-    </section>
-
-    <section class="card" aria-labelledby="upload-compare-heading">
-        <div class="card-header">
-            <h2 id="upload-compare-heading" class="section-title">雙檔 Excel 比對</h2>
-        </div>
-        <div class="card-body">
-        <form id="Compare_Two_Excel" enctype="multipart/form-data" method="POST" action="/Compare_Two_Excel" class="upload-block">
-            <div class="upload-row upload-row-multi">
-                <div class="file-upload-zone" data-input="fileInput_1">
-                    <input type="file" id="fileInput_1" name="file1" accept=".xlsx,.xls" class="file-upload-input" aria-label="第一個 Excel 檔">
-                    <label for="fileInput_1" class="file-upload-label">
-                        <span class="file-upload-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        </span>
-                        <span class="file-upload-title">檔案一：拖曳或點擊選擇</span>
-                        <span class="file-upload-name">尚未選擇檔案</span>
-                    </label>
-                </div>
-                <div class="file-upload-zone" data-input="fileInput_2">
-                    <input type="file" id="fileInput_2" name="file2" accept=".xlsx,.xls" class="file-upload-input" aria-label="第二個 Excel 檔">
-                    <label for="fileInput_2" class="file-upload-label">
-                        <span class="file-upload-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                        </span>
-                        <span class="file-upload-title">檔案二：拖曳或點擊選擇</span>
-                        <span class="file-upload-name">尚未選擇檔案</span>
-                    </label>
-                </div>
-                <button type="submit" class="btn-primary">比對</button>
-            </div>
-            <small id="upload_hint_compare" class="field-hint">請選擇兩個要上傳的檔案</small>
-        </form>
-        </div>
-    </section>
 
     <div id="result" aria-live="polite"></div>
     </main>

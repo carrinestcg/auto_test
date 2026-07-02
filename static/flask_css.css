@@ -406,6 +406,33 @@ body {
     color: var(--text-muted);
 }
 
+.excel-tools {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.excel-tool-section {
+    padding: 20px;
+    border-radius: 10px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+}
+
+.excel-tool-section .subsection-title {
+    margin-bottom: 6px;
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 1rem;
+    color: var(--heading);
+}
+
+.excel-tool-desc {
+    margin: 0 0 16px 0;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
 /* Account form row */
 .account-config {
     --account-field-width: 180px;

@@ -567,6 +567,14 @@ function switchTab(evt, tabId) {
         btn.setAttribute("aria-selected", "true");
     }
 
+    const isExcel = tabId === "ExcelTab";
+    const accountCard = document.getElementById("account-config-card");
+    const scriptsHeading = document.getElementById("scripts-heading");
+    if (accountCard) accountCard.classList.toggle("hidden", isExcel);
+    if (scriptsHeading) {
+        scriptsHeading.textContent = isExcel ? "Excel 比對" : "測試功能選擇";
+    }
+
     if (tabId === "VersionTab") {
         markVersionSeen();
     }
