@@ -971,12 +971,12 @@ function showResultPopup(data) {
         tabBar.classList.toggle("hidden", !isSuccess);
     }
 
-    body.innerHTML =
-        resultType === "postcard"
-            ? renderPostCardResult(data)
-            : isSuccess
-              ? renderFormattedResult(data, resultType)
-              : renderFailureResult(data);
+    const summaryResultTypes = ["postcard", "verify_mobile", "verify_id", "verify_name"];
+    const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
+
+    body.innerHTML = showSummaryPanel
+        ? renderFormattedResult(data, resultType)
+        : renderFailureResult(data);
 
     setupResultModalInteractions(body);
 
@@ -1083,6 +1083,15 @@ function escapeHtml(value) {
 function detectResultType(data) {
     if ("postcardCode" in data) {
         return "postcard";
+    }
+    if (data.verifyType === 1 || data.mobileNumber != null) {
+        return "verify_mobile";
+    }
+    if (data.verifyType === 2 || data.IDNumber != null) {
+        return "verify_id";
+    }
+    if (data.verifyType === 3 || (data.name != null && data.name !== "")) {
+        return "verify_name";
     }
     const report = data.data;
     if (!report) return "generic";
@@ -1306,6 +1315,39 @@ function renderPostCardResult(data) {
     ]);
 }
 
+function renderVerifyMobileResult(data) {
+    const number =
+        data.mobileNumber != null && String(data.mobileNumber).trim() !== ""
+            ? String(data.mobileNumber)
+            : "—";
+    return renderStatsBar([
+        { label: "手機號碼", value: number },
+        { label: "驗證結果", value: data.success ? "成功" : "失敗" },
+    ]);
+}
+
+function renderVerifyIdResult(data) {
+    const number =
+        data.IDNumber != null && String(data.IDNumber).trim() !== ""
+            ? String(data.IDNumber)
+            : "—";
+    return renderStatsBar([
+        { label: "身分證號", value: number },
+        { label: "驗證結果", value: data.success ? "成功" : "失敗" },
+    ]);
+}
+
+function renderVerifyNameResult(data) {
+    const name =
+        data.name != null && String(data.name).trim() !== ""
+            ? String(data.name)
+            : "—";
+    return renderStatsBar([
+        { label: "玩家名稱", value: name },
+        { label: "填入結果", value: data.success ? "成功" : "失敗" },
+    ]);
+}
+
 function renderFormattedResult(data, resultType) {
     if (resultType === "calculate_workdays") {
         return renderWorkdaysReport(data.data);
@@ -1315,6 +1357,15 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "postcard") {
         return renderPostCardResult(data);
+    }
+    if (resultType === "verify_mobile") {
+        return renderVerifyMobileResult(data);
+    }
+    if (resultType === "verify_id") {
+        return renderVerifyIdResult(data);
+    }
+    if (resultType === "verify_name") {
+        return renderVerifyNameResult(data);
     }
 
     return `<p class="result-message">${escapeHtml(data.message || "操作已完成")}</p>`;

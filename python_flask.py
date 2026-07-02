@@ -382,7 +382,7 @@ def api_PostCard_Code():
         return jsonify(
             {
                 "success": True,
-                "message": "郵寄碼領取成功",
+                "message": f"郵寄碼領取成功：{postcardCode}",
                 "postcardCode": postcardCode,
                 "requireType": requireType,
                 }
@@ -486,11 +486,12 @@ def api_verify_mobile_no():
         return {"success": False, "message": "Unknown type"}, 400
 
     return {
-        "success": True,
+        "success": bool(result),
         "message": f"Verify {label} {'Successfully' if result else 'Failed'}",
         "mobileNumber": mobile_num if verify_type == 1 else None,
         "IDNumber": ID_number if verify_type == 2 else None,
-        "name": name if verify_type == 3 else None
+        "name": name if verify_type == 3 else None,
+        "verifyType": verify_type,
     }
     
 @python_flask.route('/api/test_Extra_bonus',methods=['POST']) #回歸測試 翻倍獎勵
