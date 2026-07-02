@@ -29,7 +29,7 @@ class Frontend:
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url=f'http://www.sit4.sit-{self.merchantCode}.com/wps/session/login/unsecure'
+            login_url=f'http://www.sit-{self.merchantCode}.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ class Frontend:
         promotionType_list=[]
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/PROMOFE_getPromoList&_={unit_time}"
+        login_URL=f"http://sit-{self.merchantCode}.com/wps/relay/PROMOFE_getPromoList&_={unit_time}"
 
 
         headers={
@@ -124,7 +124,7 @@ class Frontend:
             return
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/MCSFE_claimIssuedPromotion"
+        login_URL=f"http://sit-{self.merchantCode}.com/wps/relay/MCSFE_claimIssuedPromotion"
 
         headers={
             'Accept': 'application/json, text/javascript, */*; q=0.01',
