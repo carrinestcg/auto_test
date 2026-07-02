@@ -220,7 +220,7 @@
             </div>
         </section>
 
-        <section class="card tabs-wrap" aria-labelledby="scripts-heading">
+        <section class="card tabs-wrap" id="scripts-section" aria-labelledby="scripts-heading">
             <div class="card-header">
                 <h2 id="scripts-heading" class="section-title">測試功能選擇</h2>
             </div>
@@ -457,35 +457,41 @@
                 </div>
             </div>
 
-            <div id="VersionTab" class="tabcontent" role="tabpanel">
-                <div class="version-panel">
-                    <div class="version-current">
-                        <p class="version-label">目前版本</p>
-                        <p class="version-number">v{{ version_info.version }}</p>
-                        {% if version_info.released_at %}
-                        <p class="version-date">發佈日期：{{ version_info.released_at }}</p>
-                        {% endif %}
-                    </div>
-                    <div class="version-changelog">
-                        <h3 class="changelog-heading">更新紀錄</h3>
-                        {% for entry in version_info.changelog %}
-                        <article class="changelog-entry">
-                            <header class="changelog-header">
-                                <span class="changelog-version">v{{ entry.version }}</span>
-                                <time class="changelog-date">{{ entry.date }}</time>
-                            </header>
-                            <ul class="changelog-list">
-                                {% for item in entry['items'] %}
-                                <li>{{ item }}</li>
-                                {% endfor %}
-                            </ul>
-                        </article>
-                        {% else %}
-                        <p class="changelog-empty">尚無更新紀錄</p>
-                        {% endfor %}
-                    </div>
-                </div>
             </div>
+            </div>
+        </section>
+
+        <section class="card version-wrap hidden" id="version-section" aria-labelledby="version-heading">
+            <div class="card-header">
+                <h2 id="version-heading" class="section-title">版本更新</h2>
+            </div>
+            <div class="card-body">
+            <div id="VersionTab" class="version-panel" role="tabpanel">
+                <div class="version-current">
+                    <p class="version-label">目前版本</p>
+                    <p class="version-number">v{{ version_info.version }}</p>
+                    {% if version_info.released_at %}
+                    <p class="version-date">發佈日期：{{ version_info.released_at }}</p>
+                    {% endif %}
+                </div>
+                <div class="version-changelog">
+                    <h3 class="changelog-heading">更新紀錄</h3>
+                    {% for entry in version_info.changelog %}
+                    <article class="changelog-entry">
+                        <header class="changelog-header">
+                            <span class="changelog-version">v{{ entry.version }}</span>
+                            <time class="changelog-date">{{ entry.date }}</time>
+                        </header>
+                        <ul class="changelog-list">
+                            {% for item in entry['items'] %}
+                            <li>{{ item }}</li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                    {% else %}
+                    <p class="changelog-empty">尚無更新紀錄</p>
+                    {% endfor %}
+                </div>
             </div>
             </div>
         </section>

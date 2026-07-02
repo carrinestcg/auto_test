@@ -561,21 +561,28 @@ function switchTab(evt, tabId) {
 
     const panel = document.getElementById(tabId);
     const btn = evt.currentTarget;
-    if (panel) panel.classList.add("active");
+    const isVersion = tabId === "VersionTab";
+    const isExcel = tabId === "ExcelTab";
+
+    if (!isVersion && panel) panel.classList.add("active");
     if (btn) {
         btn.classList.add("active");
         btn.setAttribute("aria-selected", "true");
     }
 
-    const isExcel = tabId === "ExcelTab";
     const accountCard = document.getElementById("account-config-card");
+    const scriptsSection = document.getElementById("scripts-section");
+    const versionSection = document.getElementById("version-section");
     const scriptsHeading = document.getElementById("scripts-heading");
-    if (accountCard) accountCard.classList.toggle("hidden", isExcel);
+
+    if (accountCard) accountCard.classList.toggle("hidden", isExcel || isVersion);
+    if (scriptsSection) scriptsSection.classList.toggle("hidden", isVersion);
+    if (versionSection) versionSection.classList.toggle("hidden", !isVersion);
     if (scriptsHeading) {
         scriptsHeading.textContent = isExcel ? "Excel 比對" : "測試功能選擇";
     }
 
-    if (tabId === "VersionTab") {
+    if (isVersion) {
         markVersionSeen();
     }
 }
