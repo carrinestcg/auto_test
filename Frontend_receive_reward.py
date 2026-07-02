@@ -1,4 +1,6 @@
-import requests,logging,time
+import requests
+import logging
+import time
 from datetime import datetime,timedelta
 import urllib3
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -69,7 +71,7 @@ class Frontend:
         promotionType_list=[]
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/MCSFE_getClaimPromotion?promotionType=MANUAL,RAFFLE,UPGRADE_BONUS,MISSION,NEW_REGISTER,RANK_SALARY,DEPOSIT,FIRST_DEPOSIT,SECOND_DEPOSIT,THIRD_DEPOSIT,FOURTH_DEPOSIT,FIFTH_DEPOSIT,DEPOSIT_COUNT,DEPOSIT_BET_BONUS,SIGNUP,LUCKY_BET&status=I&_={unit_time}"
+        login_URL=f"http://sit4.sit-{self.merchantCode}.com/wps/relay/PROMOFE_getPromoList&_={unit_time}"
 
 
         headers={
@@ -95,14 +97,14 @@ class Frontend:
         response.raise_for_status()
         response_json=response.json()
         
-        if response_json.get('success')==True:
+        if response_json.get('success'):
             self.response_value_list=response_json.get('value',[])
             if self.response_value_list:
                 for item in self.response_value_list:
-                    reward_id=item.get('rewardId') 
+                    claimId=item.get('claimId') 
                     promotionType=item.get('promotionType')
-                    if reward_id and promotionType:
-                        Claim_ID.append(reward_id)
+                    if claimId and promotionType:
+                        Claim_ID.append(claimId)
                         promotionType_list.append(promotionType)
 
                 logging.info(f"總共可領{len(Claim_ID)}個獎勵")
@@ -110,7 +112,7 @@ class Frontend:
                 logging.info("目前沒有獎勵可領取")
             
         else:
-            logging.error(f"交易ID查詢失敗")
+            logging.error("交易ID查詢失敗")
             
         return Claim_ID,promotionType_list
         
@@ -157,7 +159,7 @@ class Frontend:
         response.raise_for_status()
         response_json=response.json()
         
-        if response_json.get('success')==True:
+        if response_json.get('success'):
             logging.info(f"成功領取獎勵 交易ID: {self.reward_id}")
             return True
             
@@ -176,7 +178,7 @@ class Frontend:
             self.promotion_type=PromoType
             self.approve_to_receive()
             success_count+=1
-            logging.info(f"領取成功")
+            logging.info("領取成功")
             time.sleep(1)
 
 def main(username,merchantCode):
