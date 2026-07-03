@@ -486,6 +486,7 @@ def api_input_user_info():
         8: "Twitter",
         9: "Viber",
         10: "Telegram",
+        11: "Virtual Wallet",
     }
     value_fields = {
         1: "mobileNumber",
@@ -498,6 +499,7 @@ def api_input_user_info():
         8: "twitterID",
         9: "viberID",
         10: "telegramID",
+        11: "virtualWalletID",
     }
 
     if require_type not in verify_labels:

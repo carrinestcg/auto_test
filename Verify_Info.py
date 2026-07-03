@@ -431,6 +431,43 @@ def input_viber_ID(customerId:int, viber_id:str):
         logging.error(f"Viber ID輸入請求失敗{e}")
         return False
 
+def binding_virtual_wallet(customerId:int, cardNumber:str):
+    token=get_token()
+    logging.info(f"傳入的虛擬錢包 ID:{cardNumber}")
+    name=gen_string()
+    API_URL3="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-createBankCard-EW"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    payload={
+            "bankCode": "10659",
+            "legalName": name,
+            "phone": "343435454354",
+            "customerId": customerId,
+            "bankName": "EWBANK_CN",
+            "merchantCode": "gi8viet",
+            "cardNumber": cardNumber,
+            "customFields": [],
+            "type": "EW"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, json=payload,headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("虛擬錢包綁定成功")  
+                return True
+            else:
+                logging.error("虛擬錢包綁定失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"虛擬錢包綁定請求失敗{e}")
+        return False
+    
 verify_handler={ 
     3: (gen_string(), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
@@ -440,6 +477,7 @@ verify_handler={
     8: (gen_string(), input_twitter_ID),
     9: (gen_string(), input_viber_ID),
     10: (gen_string(), input_telegram_ID),
+    11: (gen_number(1000000, 2000000), binding_virtual_wallet),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type):

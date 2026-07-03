@@ -54,6 +54,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 2, label: "身分證", icon: "id" },
             { value: 3, label: "玩家名稱", icon: "user" },
             { value: 7, label: "地址", icon: "address" },
+            { value: 11, label: "虛擬錢包", icon: "wallet" },
         ],
     },
     {
@@ -83,6 +84,7 @@ const PLAYER_INFO_VALUE_FIELDS = {
     8: ["twitterID", "Twitter"],
     9: ["viberID", "Viber"],
     10: ["telegramID", "Telegram"],
+    11: ["virtualWalletID", "虛擬錢包"],
 };
 
 const PLAYER_INFO_CHECK_SVG =
@@ -107,6 +109,8 @@ function getPlayerInfoIcon(iconName) {
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.5 2.6a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.5-1.5a2 2 0 0 1 2.1-.5c.8.2 1.7.4 2.6.5A2 2 0 0 1 22 16.9z"/></svg>',
         telegram:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>',
+        wallet:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>'
     };
     return icons[iconName] || icons.user;
 }
