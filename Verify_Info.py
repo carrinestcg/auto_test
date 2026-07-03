@@ -60,6 +60,12 @@ def get_token():
     token_data=requests_data.json()
     return token_data.get("token")
 
+def gen_number(a, b):
+    return lambda: random.randint(a, b)
+
+def gen_string(k=8):
+    return lambda: ''.join(random.choices(string.ascii_uppercase, k=k))
+
 def input_mobile_number(customerId:int,number:int):
     token=get_token()
     logging.info(f"傳入的手機號:{number}")
@@ -108,7 +114,17 @@ def verify_phone_number(customerId:int):
         logging.error(f"手機號驗證請求失敗{e}")
         return False
 
-
+def _verify_mobile_number(customerId:int):
+    mobile_number=random.randint(100000000,999999999)
+        
+    if not input_mobile_number(customerId, mobile_number):
+        return False, None
+    
+    if not verify_phone_number(customerId):
+        return False, None
+    
+    return True, mobile_number
+        
 def input_personal_id(customerId:int, number:int):
         token=get_token()
         logging.info(f"傳入的身分證ID:{number}")
@@ -201,7 +217,20 @@ def confirm_personal_id(customerId:int):
         except Exception as e:
             logging.error("審核請求失敗")
             return False
-            
+
+def _verify_id_card(customerId:int):
+    ID_number = random.randint(100000000, 999999999)
+        
+    if not input_personal_id(customerId, ID_number):
+        return False, None
+    
+    if not input_personal_picture(customerId, ID_number):
+        return False, None
+    
+    if not confirm_personal_id(customerId):
+        return False, None
+    
+    return True, ID_number    
 def input_personal_name(customerId:int, new_Name:str):
     token=get_token()
     logging.info(f"傳入的名字:{new_Name}")
@@ -326,7 +355,32 @@ def input_apple_ID(customerId:int, apple_id:str):
     except Exception as e:
         logging.error(f"Apple ID輸入請求失敗{e}")
         return False
-    
+
+def input_telegram_ID(customerId:int, telegram_id:str):
+    token=get_token()
+    logging.info(f"傳入的Telegram ID:{telegram_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeTelegram?customerId={customerId}&merchantCode=gi8viet&remark=x&telegram={telegram_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Telegram ID輸入成功")  
+                return True
+            else:
+                logging.error("Telegram ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Telegram ID輸入請求失敗{e}")
+        return False
+        
 def input_twitter_ID(customerId:int, twitter_id:str):
     token=get_token()
     logging.info(f"傳入的Twitter ID:{twitter_id}")
@@ -376,149 +430,42 @@ def input_viber_ID(customerId:int, viber_id:str):
     except Exception as e:
         logging.error(f"Viber ID輸入請求失敗{e}")
         return False
-    
+
+verify_handler={ 
+    3: (gen_string(), input_personal_name),
+    4: (gen_string(9), input_wechat_ID),
+    5: (gen_string(9), input_line_ID),
+    6: (gen_string(9), input_apple_ID),
+    7: (gen_string(), input_address),
+    8: (gen_string(), input_twitter_ID),
+    9: (gen_string(), input_viber_ID),
+    10: (gen_string(), input_telegram_ID),
+}
+
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
-    try:
-        token = get_token()
-        print("取得的 token:", token)
-    except Exception as e:
-        print("啟動時取得 token 發生錯誤:", e)
+        
+    customer_id=main(PLAYER_ACCOUNT, platform, 1)
+    
+    if not customer_id:
+        logging.error(f"找不到玩家 {PLAYER_ACCOUNT} 的 customer_id")
+        return False, None
+    
     if verify_type == 1:
-        number=random.randint(10000000,99999999)
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            if input_mobile_number(customer_id,number):
-                if verify_phone_number(customer_id):
-                    return True, number
-                else:
-                    return False, None
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
+        return _verify_mobile_number(customer_id)
+        
     elif verify_type == 2:
+        return _verify_id_card(customer_id)
         
-        ID_number=random.randint(100000000,999999999)
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            if input_personal_id(customer_id, ID_number):
-                if input_personal_picture(customer_id, ID_number):
-                    result = confirm_personal_id(customer_id)
-                    if result:
-                        return True, ID_number
-                    else:
-                        return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-    elif verify_type == 3:
-        
-        name = ''.join(random.choices(string.ascii_uppercase, k=8))
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_personal_name(customer_id, name)
-            if result:
-                return True, name
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-        
-    elif verify_type == 4:
-        
-        wechat_number=random.randint(100000000,999999999)
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_wechat_ID(customer_id, wechat_number)
-            if result:
-                return True, wechat_number
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-        
-    elif verify_type == 5:
-        
-        line_number=random.randint(100000000,999999999)
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_line_ID(customer_id, line_number)
-            if result:
-                return True, line_number
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-
-    elif verify_type == 6:
-        
-        appleID_number=random.randint(100000000,999999999)
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_apple_ID(customer_id, appleID_number)
-            if result:
-                return True, appleID_number
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-        
-    elif verify_type == 7:
-        
-        address=''.join(random.choices(string.ascii_uppercase, k=8))
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_address(customer_id, address)
-            if result:
-                return True, address
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-        
-    elif verify_type == 8:
-        
-        twitter_id=''.join(random.choices(string.ascii_uppercase, k=8))
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_twitter_ID(customer_id, twitter_id)
-            if result:
-                return True, twitter_id
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
-        
-    elif verify_type == 9:
-        
-        viber_id=''.join(random.choices(string.ascii_uppercase, k=8))
-        customer_id=main(PLAYER_ACCOUNT, platform, 1)
-        if customer_id:
-            result = input_viber_ID(customer_id, viber_id)
-            if result:
-                return True, viber_id
-            else:
-                return False, None
-
-        else:
-            logging.error("沒有拿到CustomerID")
-            return False, None
+    gen_value, handler = verify_handler.get(verify_type, (None, None))
+    if handler is None:
+        logging.error(f"未知的驗證類型: {verify_type}")
+        return False, None
     
+    value = gen_value() 
     
-
-   
+    if handler(customer_id, value):
+        
+        logging.info(f"驗證類型 {verify_type} 成功，值: {value}")
+        return True, value
+    
+    return False, None
