@@ -434,7 +434,7 @@ def input_viber_ID(customerId:int, viber_id:str):
 def binding_virtual_wallet(customerId:int, cardNumber:str):
     token=get_token()
     logging.info(f"傳入的虛擬錢包 ID:{cardNumber}")
-    name=gen_string()
+    name=gen_string()()
     API_URL3="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-createBankCard-EW"
     headers=header(token)
     cookies = {
