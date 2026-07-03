@@ -65,6 +65,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 6, label: "Apple ID", icon: "apple" },
             { value: 8, label: "Twitter", icon: "twitter" },
             { value: 9, label: "Viber", icon: "viber" },
+            { value: 10, label: "Telegram", icon: "telegram" },
         ],
     },
 ];
@@ -81,6 +82,7 @@ const PLAYER_INFO_VALUE_FIELDS = {
     7: ["address", "地址"],
     8: ["twitterID", "Twitter"],
     9: ["viberID", "Viber"],
+    10: ["telegramID", "Telegram"],
 };
 
 const PLAYER_INFO_CHECK_SVG =
