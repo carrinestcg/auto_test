@@ -94,8 +94,9 @@ def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
-                result = Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
-                return result
+                result, promoType = Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+                return result, promoType
+        return False, None
 
 def manual_create_7_type_tcket(username,promotion,platform_type):
         print(platform_type)
@@ -676,21 +677,22 @@ def api_manual_create_bonus():
     amount=data["amount"]
     promotion_id=data["promotion_id"]
     ticket_id=data["ticket_id"]
-    result =manual_create_bonus(username,platforms,promotion_id,ticket_id,amount)
+    result, promoType = manual_create_bonus(username, platforms, promotion_id, ticket_id, amount)
     if result:
         return jsonify(
             {
                 "success": True,
-                "message": "Trigger API Successfully"
-                }
-            )
-    else:
-        return jsonify(
-            {
-                "success": False,
-                "message": "Failed to create bonus"
-                }
-            )
+                "message": "Trigger API Successfully",
+                "promoType": promoType,
+            }
+        )
+    return jsonify(
+        {
+            "success": False,
+            "message": "Failed to create bonus",
+            "promoType": promoType,
+        }
+    )
         
         
 @python_flask.route('/api/MANUAL_BATCH',methods=['POST']) #手動紅利派發API

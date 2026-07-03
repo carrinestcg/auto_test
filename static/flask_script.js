@@ -1130,7 +1130,14 @@ function showResultPopup(data) {
         tabBar.classList.toggle("hidden", !isSuccess);
     }
 
-    const summaryResultTypes = ["postcard", "verify_player_info", "verify_mobile", "verify_id", "verify_name"];
+    const summaryResultTypes = [
+        "postcard",
+        "manual_single_confirm",
+        "verify_player_info",
+        "verify_mobile",
+        "verify_id",
+        "verify_name",
+    ];
     const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
 
     body.innerHTML = showSummaryPanel
@@ -1239,9 +1246,22 @@ function escapeHtml(value) {
         .replace(/"/g, "&quot;");
 }
 
+function getPromoTypeFromResult(data) {
+    if (data.promoType != null && String(data.promoType).trim() !== "") {
+        return String(data.promoType);
+    }
+    if (data.data?.promoType != null && String(data.data.promoType).trim() !== "") {
+        return String(data.data.promoType);
+    }
+    return "—";
+}
+
 function detectResultType(data) {
     if ("postcardCode" in data) {
         return "postcard";
+    }
+    if (data.promoType != null || data.data?.promoType != null) {
+        return "manual_single_confirm";
     }
     const verifyType = Number(data.requireType ?? data.verifyType);
     if (verifyType >= 1 && verifyType <= 9) {
@@ -1526,6 +1546,13 @@ function renderVerifyPlayerInfoResult(data) {
     ]);
 }
 
+function renderManualSingleConfirmResult(data) {
+    return renderStatsBar([
+        { label: "Promo Type", value: getPromoTypeFromResult(data) },
+        { label: "結果", value: data.success ? "成功" : "失敗" },
+    ]);
+}
+
 function renderFormattedResult(data, resultType) {
     if (resultType === "calculate_workdays") {
         return renderWorkdaysReport(data.data);
@@ -1535,6 +1562,9 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "postcard") {
         return renderPostCardResult(data);
+    }
+    if (resultType === "manual_single_confirm") {
+        return renderManualSingleConfirmResult(data);
     }
     if (resultType === "verify_mobile") {
         return renderVerifyMobileResult(data);

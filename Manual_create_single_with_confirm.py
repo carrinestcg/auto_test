@@ -211,7 +211,7 @@ def main(username,promotionid,ticket_id,platform,amount):
         token = get_token(platform)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
-        return  # FIX: 原本沒有 return，取得 token 失敗仍會繼續執行
+        return  False, None # FIX: 原本沒有 return，取得 token 失敗仍會繼續執行
     
     bonusAmount=1000
     bonusPointAmount=20
@@ -222,11 +222,11 @@ def main(username,promotionid,ticket_id,platform,amount):
     Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:
         if Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid):
-            return True  
+            return True, promoType 
         else:
-            return False
+            return False, promoType
     else:
         logging.error("沒有拿到ID")
-        return False
+        return False, promoType
      
      
