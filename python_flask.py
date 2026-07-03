@@ -485,6 +485,7 @@ def api_input_user_info():
         7: "地址",
         8: "Twitter",
         9: "Viber",
+        10: "Telegram",
     }
     value_fields = {
         1: "mobileNumber",
@@ -496,6 +497,7 @@ def api_input_user_info():
         7: "address",
         8: "twitterID",
         9: "viberID",
+        10: "telegramID",
     }
 
     if require_type not in verify_labels:
