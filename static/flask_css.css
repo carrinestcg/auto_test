@@ -616,12 +616,190 @@ input[type="text"].account-line-input {
     margin-top: 8px;
 }
 
-#qa-task-input-div,
-#workdays-input-div {
+#qa-task-input-div {
     flex: 0 0 260px;
     width: 260px;
     max-width: 260px;
     min-width: 0;
+}
+
+#workdays-input-div {
+    flex: 1 1 100%;
+    width: 100%;
+    max-width: 480px;
+    min-width: 0;
+}
+
+.qa-stats-date-label {
+    margin-top: 8px;
+}
+
+.workdays-date-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-elevated);
+    box-sizing: border-box;
+}
+
+.workdays-date-panel-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.workdays-date-panel-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.workdays-date-panel-icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.workdays-date-panel-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.workdays-date-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.workdays-date-preset {
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text);
+    background: var(--bg-input);
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.workdays-date-preset:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.workdays-date-preset.is-active {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+}
+
+.workdays-date-inputs-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    width: 100%;
+}
+
+.workdays-date-field {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.workdays-date-separator {
+    flex-shrink: 0;
+    padding-bottom: 10px;
+    font-size: 0.8125rem;
+    color: var(--text-muted);
+}
+
+.workdays-date-sublabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.workdays-date-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    color: var(--text);
+    background: var(--bg-input);
+}
+
+.workdays-date-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.workdays-date-panel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+.workdays-date-action-btn {
+    min-width: 72px;
+    padding: 8px 16px;
+    font-size: 0.875rem;
+}
+
+.workdays-date-apply-btn {
+    box-shadow: none;
+}
+
+.workdays-date-helper {
+    margin-top: 4px;
+}
+
+.workdays-date-applied-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--accent);
+    line-height: 1.4;
+}
+
+.workdays-date-applied-hint.hidden {
+    display: none;
+}
+
+.workdays-date-panel.is-applied {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+[data-theme="dark"] .workdays-date-panel {
+    background: var(--surface);
+}
+
+[data-theme="dark"] .workdays-date-apply-btn:not(:disabled) {
+    background: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    border-color: var(--btn-primary-border);
+}
+
+[data-theme="dark"] .workdays-date-apply-btn:hover:not(:disabled) {
+    background: var(--btn-primary-hover-bg);
 }
 
 /* Buttons */
@@ -1738,6 +1916,10 @@ select.multi-select option:checked {
     flex: 1;
 }
 
+.result-stats-bar.is-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
 .result-stats-bar {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1981,10 +2163,44 @@ a.result-task-key:hover {
 }
 
 .result-task-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     font-size: 0.8125rem;
-    color: var(--text-tertiary);
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
+}
+
+.result-task-date-label {
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.result-task-date-sep {
+    color: var(--border-strong);
+    font-weight: 600;
+}
+
+.result-task-workdays {
+    font-weight: 600;
+    color: var(--heading);
+}
+
+.result-task-workdays.is-zero {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+[data-theme="dark"] .result-task-date-label {
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .result-task-workdays {
+    color: var(--text);
+}
+
+[data-theme="dark"] .result-task-workdays.is-zero {
+    color: var(--text-secondary);
 }
 
 .result-message {

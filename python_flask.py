@@ -486,7 +486,6 @@ def api_input_user_info():
         8: "Twitter",
         9: "Viber",
         10: "Telegram",
-        11: "Virtual Wallet",
     }
     value_fields = {
         1: "mobileNumber",
@@ -499,7 +498,6 @@ def api_input_user_info():
         8: "twitterID",
         9: "viberID",
         10: "telegramID",
-        11: "virtualWalletID",
     }
 
     if require_type not in verify_labels:
@@ -939,15 +937,24 @@ def api_calculate_workdays():
     if isinstance(tp_key_raw, list):
         tp_key = (tp_key_raw[0] if tp_key_raw else "").strip().upper()
     else:
-        tp_key = str(tp_key_raw).strip().upper()
+        tp_key = str(tp_key_raw or "").strip().upper()
 
-    if not tp_key or not assignee:
-        return jsonify({"success": False, "message": "請提供 TP 單號與 Jira 帳號"}), 400
+    if not assignee:
+        return jsonify({"success": False, "message": "請提供 Jira 帳號（assignee）"}), 400
+
+    date_from = calculate_workdays.normalize_date(data.get("date_from"))
+    date_to = calculate_workdays.normalize_date(data.get("date_to"))
+    if date_from and date_to and date_from > date_to:
+        return jsonify({"success": False, "message": "開始日期不能晚於結束日期"}), 400
 
     try:
-        tasks = calculate_workdays.fetch_qa_tasks_by_tp(tp_key, assignee)
-        report = calculate_workdays.build_report(tp_key, assignee, tasks)
-        return jsonify({"success": True, "message": "查詢成功", "data": report}), 200
+        if tp_key:
+            tasks = calculate_workdays.fetch_qa_tasks_by_tp(tp_key, assignee, date_from, date_to)
+        else:
+            tasks = calculate_workdays.fetch_qa_tasks_by_assignee(assignee, date_from, date_to)
+        report = calculate_workdays.build_report(tp_key, assignee, tasks, date_from, date_to)
+        message = "查詢成功" if tasks else ("查無符合的 QA Task" if tp_key else f"帳號 {assignee} 底下沒有 QA Task")
+        return jsonify({"success": True, "message": message, "data": report}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
 

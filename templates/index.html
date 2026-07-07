@@ -152,10 +152,49 @@
                     </div>
 
                     <div id="workdays-input-div" class="input-group hidden">
-                        <label for="qa_stats_tp_key" class="field-label">TP 單號</label>
-                        <input type="text" id="qa_stats_tp_key" placeholder="TP-5229" class="account-line-input">
+                        <label for="qa_stats_tp_key" class="field-label">TP 單號（選填）</label>
+                        <input type="text" id="qa_stats_tp_key" placeholder="TP-5229，留空則查該帳號全部 QA Task" class="account-line-input">
                         <label for="qa_stats_assignee" class="field-label qa-stats-assignee-label">Jira 帳號（assignee）</label>
                         <input type="text" id="qa_stats_assignee" placeholder="carrine.s" class="account-line-input">
+                        <span class="field-label qa-stats-date-label">日期區間（選填）</span>
+                        <div class="workdays-date-panel" id="workdays-date-panel">
+                            <div class="workdays-date-panel-head">
+                                <span class="workdays-date-panel-icon" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                </span>
+                                <span class="workdays-date-panel-title">選擇日期區間</span>
+                            </div>
+                            <div class="workdays-date-presets" role="group" aria-label="快速選擇日期區間">
+                                <button type="button" class="workdays-date-preset" data-preset="today">今天</button>
+                                <button type="button" class="workdays-date-preset" data-preset="7d">近 7 天</button>
+                                <button type="button" class="workdays-date-preset" data-preset="30d">近 30 天</button>
+                                <button type="button" class="workdays-date-preset" data-preset="90d">近 90 天</button>
+                            </div>
+                            <div class="workdays-date-inputs-row">
+                                <div class="workdays-date-field">
+                                    <label for="qa_stats_date_from_draft" class="workdays-date-sublabel">開始</label>
+                                    <input type="date" id="qa_stats_date_from_draft" class="workdays-date-input">
+                                </div>
+                                <span class="workdays-date-separator" aria-hidden="true">至</span>
+                                <div class="workdays-date-field">
+                                    <label for="qa_stats_date_to_draft" class="workdays-date-sublabel">結束</label>
+                                    <input type="date" id="qa_stats_date_to_draft" class="workdays-date-input">
+                                </div>
+                            </div>
+                            <div class="workdays-date-panel-actions">
+                                <button type="button" id="workdays-date-clear-btn" class="btn-outline workdays-date-action-btn">清除</button>
+                                <button type="button" id="workdays-date-apply-btn" class="btn-primary workdays-date-action-btn workdays-date-apply-btn">套用</button>
+                            </div>
+                        </div>
+                        <input type="hidden" id="qa_stats_date_from" value="">
+                        <input type="hidden" id="qa_stats_date_to" value="">
+                        <p class="field-helper workdays-date-helper">不選則不限制日期，套用後可再次點擊修改</p>
+                        <p id="workdays-date-applied-hint" class="workdays-date-applied-hint hidden" aria-live="polite"></p>
                     </div>
 
                     <div class="multi-select-wrapper input-group" id="platform-select-wrap">
@@ -259,11 +298,11 @@
                 <div class="script-grid">
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_SINGLE">
-                        創建個人＋審核(batch)
+                        手動紅利發放單一審核
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_BATCH">
-                        創建個人＋批量審核(batch)
+                        手動紅利發放批量審核
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Codition_create_bonus" id="Codition_create_bonus" onchange="toggleInput()">
@@ -275,7 +314,7 @@
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_CREATE_SINGLE_CONFIRM" id="frontend-checkbox_manual" onchange="toggleInput()">
-                        創建個人＋單一審核
+                        手動紅利發放單一玩家審核
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="PLAYER_RANK" id="frontend-player-rank" onchange="toggleInput()">
@@ -306,7 +345,7 @@
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Input_User_Info" id="Input_User_Info" onchange="toggleInput()">
-                        填入玩家個人訊息
+                        填入玩家訊息
                     </label>
                 </div>
             </div>
@@ -360,7 +399,7 @@
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
-                        批量審核充值
+                        品牌管理員審核充值
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Activity_bonus" id="Activity_bonus" onchange="toggleInput()">

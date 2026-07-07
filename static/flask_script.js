@@ -311,6 +311,153 @@ function toggleWorkdaysInput() {
     div.classList.toggle("hidden", !isChecked("calculate_workdays"));
 }
 
+function formatWorkdaysIsoDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
+function getWorkdaysPresetRange(preset) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = formatWorkdaysIsoDate(today);
+
+    if (preset === "today") {
+        return { from: end, to: end };
+    }
+
+    const start = new Date(today);
+    const dayOffsets = { "7d": 6, "30d": 29, "90d": 89 };
+    const offset = dayOffsets[preset];
+    if (offset == null) {
+        return { from: "", to: "" };
+    }
+    start.setDate(start.getDate() - offset);
+    return { from: formatWorkdaysIsoDate(start), to: end };
+}
+
+function getWorkdaysDraftDates() {
+    return {
+        from: document.getElementById("qa_stats_date_from_draft")?.value || "",
+        to: document.getElementById("qa_stats_date_to_draft")?.value || "",
+    };
+}
+
+function getWorkdaysAppliedDates() {
+    return {
+        from: document.getElementById("qa_stats_date_from")?.value || "",
+        to: document.getElementById("qa_stats_date_to")?.value || "",
+    };
+}
+
+function setWorkdaysDraftDates(from, to) {
+    const fromEl = document.getElementById("qa_stats_date_from_draft");
+    const toEl = document.getElementById("qa_stats_date_to_draft");
+    if (fromEl) fromEl.value = from || "";
+    if (toEl) toEl.value = to || "";
+}
+
+function setWorkdaysAppliedDates(from, to) {
+    const fromEl = document.getElementById("qa_stats_date_from");
+    const toEl = document.getElementById("qa_stats_date_to");
+    if (fromEl) fromEl.value = from || "";
+    if (toEl) toEl.value = to || "";
+}
+
+function clearWorkdaysPresetActive() {
+    document.querySelectorAll(".workdays-date-preset").forEach((btn) => {
+        btn.classList.remove("is-active");
+    });
+}
+
+function syncWorkdaysPresetHighlight() {
+    const draft = getWorkdaysDraftDates();
+    clearWorkdaysPresetActive();
+    if (!draft.from && !draft.to) return;
+
+    document.querySelectorAll(".workdays-date-preset").forEach((btn) => {
+        const preset = btn.dataset.preset;
+        const range = getWorkdaysPresetRange(preset);
+        if (range.from === draft.from && range.to === draft.to) {
+            btn.classList.add("is-active");
+        }
+    });
+}
+
+function updateWorkdaysAppliedHint() {
+    const hint = document.getElementById("workdays-date-applied-hint");
+    if (!hint) return;
+
+    const applied = getWorkdaysAppliedDates();
+    if (!applied.from && !applied.to) {
+        hint.textContent = "";
+        hint.classList.add("hidden");
+        return;
+    }
+
+    hint.textContent = `已套用：${formatWorkdaysDateRange(applied.from, applied.to)}`;
+    hint.classList.remove("hidden");
+}
+
+function validateWorkdaysDateRange(from, to) {
+    if (from && to && from > to) {
+        alert("開始日期不能晚於結束日期");
+        return false;
+    }
+    return true;
+}
+
+function applyWorkdaysDateRange({ silent = false } = {}) {
+    const draft = getWorkdaysDraftDates();
+    if (!validateWorkdaysDateRange(draft.from, draft.to)) {
+        return false;
+    }
+
+    setWorkdaysAppliedDates(draft.from, draft.to);
+    updateWorkdaysAppliedHint();
+    syncWorkdaysPresetHighlight();
+
+    if (!silent) {
+        const panel = document.getElementById("workdays-date-panel");
+        panel?.classList.add("is-applied");
+        window.setTimeout(() => panel?.classList.remove("is-applied"), 220);
+    }
+    return true;
+}
+
+function clearWorkdaysDateRange() {
+    setWorkdaysDraftDates("", "");
+    setWorkdaysAppliedDates("", "");
+    clearWorkdaysPresetActive();
+    updateWorkdaysAppliedHint();
+}
+
+function initWorkdaysDatePicker() {
+    const panel = document.getElementById("workdays-date-panel");
+    if (!panel) return;
+
+    panel.querySelectorAll(".workdays-date-preset").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const range = getWorkdaysPresetRange(btn.dataset.preset);
+            setWorkdaysDraftDates(range.from, range.to);
+            clearWorkdaysPresetActive();
+            btn.classList.add("is-active");
+        });
+    });
+
+    ["qa_stats_date_from_draft", "qa_stats_date_to_draft"].forEach((id) => {
+        const input = document.getElementById(id);
+        input?.addEventListener("change", syncWorkdaysPresetHighlight);
+        input?.addEventListener("input", syncWorkdaysPresetHighlight);
+    });
+
+    document.getElementById("workdays-date-clear-btn")?.addEventListener("click", clearWorkdaysDateRange);
+    document.getElementById("workdays-date-apply-btn")?.addEventListener("click", () => {
+        applyWorkdaysDateRange();
+    });
+}
+
 function toggleAmount(){
     const amountInputDiv = document.getElementById("amount-input-div");
     const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api");
@@ -560,6 +707,16 @@ function validateFormBeforeSubmit() {
         }
     }
 
+    if (isChecked("calculate_workdays")) {
+        if (!applyWorkdaysDateRange({ silent: true })) {
+            return false;
+        }
+        const applied = getWorkdaysAppliedDates();
+        if (!validateWorkdaysDateRange(applied.from, applied.to)) {
+            return false;
+        }
+    }
+
     return true;
 }
 ['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select', 'promotion-checkbox_select']
@@ -621,6 +778,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tcgEl.addEventListener("input", updateRunButtonState);
     }
     initResultModal();
+    initWorkdaysDatePicker();
 });
 
 function initFileUploadZones() {
@@ -991,15 +1149,20 @@ function runSelectScript(){
             runScriptApi(scriptName, { ...extraData });
             continue;
 
-        case "calculate_workdays":
+        case "calculate_workdays": {
+            applyWorkdaysDateRange({ silent: true });
+            const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
+            const tpKeys = tpRaw.split(/[\s,;]+/).filter(Boolean);
+            const appliedDates = getWorkdaysAppliedDates();
             extraData = {
                 assignee: document.getElementById("qa_stats_assignee").value.trim() || "carrine.s",
-                tp_key: document.getElementById("qa_stats_tp_key").value
-                    .split(/[\s,;]+/)
-                    .filter(Boolean),
+                tp_key: tpKeys[0] || "",
+                date_from: appliedDates.from,
+                date_to: appliedDates.to,
             };
             runScriptApi(scriptName, { ...extraData });
             continue;
+        }
 
         case "Extra_Reward_api": {
             const rawTickets = document.getElementById("ticket_id").value.trim();
@@ -1370,7 +1533,8 @@ function renderStatusBadge(status) {
     return `<span class="result-task-status"><span class="status-dot status-${modifier}" aria-hidden="true"></span><span>${escapeHtml(status)}</span></span>`;
 }
 
-function renderStatsBar(cards) {
+function renderStatsBar(cards, options = {}) {
+    const colsClass = options.columns === 4 ? " is-cols-4" : "";
     const items = cards
         .map(
             (card, index) => `
@@ -1384,23 +1548,36 @@ function renderStatsBar(cards) {
         </div>`
         )
         .join("");
-    return `<div class="result-stats-bar">${items}</div>`;
+    return `<div class="result-stats-bar${colsClass}">${items}</div>`;
+}
+
+function formatWorkdaysDateRange(dateFrom, dateTo) {
+    if (dateFrom && dateTo) return `${dateFrom} ~ ${dateTo}`;
+    if (dateFrom) return `${dateFrom} 起`;
+    if (dateTo) return `至 ${dateTo}`;
+    return "全部";
 }
 
 function renderWorkdaysReport(report) {
     const totalCount = Number(report.total_count ?? 0);
     const totalWorkdays = Number(report.total_workdays ?? 0);
-    const summary = renderStatsBar([
-        { label: "TP 單號", value: report.tp_key || "—" },
-        { label: "共查到", numeric: totalCount, suffix: "筆", dimZero: true },
-        { label: "總工作日", numeric: totalWorkdays, dimZero: true },
-    ]);
+    const tpLabel = report.tp_key ? report.tp_key : "全部";
+    const summary = renderStatsBar(
+        [
+            { label: "TP 單號", value: tpLabel },
+            { label: "日期區間", value: formatWorkdaysDateRange(report.date_from, report.date_to) },
+            { label: "共查到", numeric: totalCount, suffix: "筆", dimZero: true },
+            { label: "總工作日", numeric: totalWorkdays, dimZero: true },
+        ],
+        { columns: 4 }
+    );
 
     if (!report.tasks || report.tasks.length === 0) {
-        return `${summary}${renderEmptyState(
-            "目前沒有相關 ticket",
-            `這個 TP 單號（${report.tp_key || "—"}）目前沒有相關的 QA Task，請確認單號或 Jira 帳號是否正確。`
-        )}`;
+        const rangeHint = formatWorkdaysDateRange(report.date_from, report.date_to);
+        const emptyDesc = report.tp_key
+            ? `TP 單號（${report.tp_key}）在日期區間 ${rangeHint} 內沒有相關 QA Task。`
+            : `Jira 帳號（${report.assignee || "—"}）在日期區間 ${rangeHint} 內沒有指派的 QA Task。`;
+        return `${summary}${renderEmptyState("目前沒有相關 ticket", emptyDesc)}`;
     }
 
     const items = report.tasks
@@ -1423,7 +1600,11 @@ function renderWorkdaysReport(report) {
                     <p class="result-task-summary">${escapeHtml(task.summary)}</p>
                 </div>
                 <div class="result-task-side">
-                    <span class="result-task-date">${formatShortDate(task.created)} · ${formatWorkdaysDays(task.workdays)}</span>
+                    <span class="result-task-date">
+                        <span class="result-task-date-label">${formatShortDate(task.created)}</span>
+                        <span class="result-task-date-sep" aria-hidden="true">·</span>
+                        <span class="result-task-workdays${Number(task.workdays) === 0 ? " is-zero" : ""}">${formatWorkdaysDays(task.workdays)}</span>
+                    </span>
                 </div>
             </div>
             <div class="result-task-actions">
