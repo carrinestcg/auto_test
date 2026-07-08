@@ -477,7 +477,7 @@ verify_handler={
     8: (gen_string(), input_twitter_ID),
     9: (gen_string(), input_viber_ID),
     10: (gen_string(), input_telegram_ID),
-    11: (gen_number(1000000, 2000000), binding_virtual_wallet),
+    11: (gen_number(1000000000000, 2000000000000), binding_virtual_wallet),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
