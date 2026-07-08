@@ -679,6 +679,7 @@ function validateFormBeforeSubmit() {
     }
 
     if (
+        isChecked("MANUAL_SIGN") ||
         isChecked("QUEST_bonus") ||
         isChecked("Achievement_bonus") ||
         isChecked("Activity_bonus") ||
@@ -1128,6 +1129,12 @@ function runSelectScript(){
             extraData = {
                 promotion_id: document.getElementById("promotion_id").value.trim(),
                 date: document.getElementById("date_time").value.trim(),
+            };
+            break;
+
+        case "MANUAL_SIGN":
+            extraData = {
+                promotion_id: document.getElementById("promotion_id").value.trim(),
             };
             break;
 

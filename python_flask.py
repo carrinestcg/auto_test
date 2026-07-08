@@ -610,11 +610,16 @@ def api_Deposit():
 
 @python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #手工報名活動API
 def api_Manual_Sign():
-    data=request.json
-    
-    username=data["username"]
-    promotion_id=data["promotion_id"]
-    result=MANUAL_SIGN.main(username,promotion_id)
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    promotion_id = (data.get("promotion_id") or "").strip()
+
+    if not username:
+        return jsonify({"success": False, "message": "請提供 username"}), 400
+    if not promotion_id:
+        return jsonify({"success": False, "message": "請提供 promotion_id（活動 ID）"}), 400
+
+    result=MANUAL_SIGN.main(username, promotion_id)
     if result:
         return jsonify(
             {
