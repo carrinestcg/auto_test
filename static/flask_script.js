@@ -130,36 +130,39 @@ function renderPlayerInfoChoiceCard(item, isSelected) {
         </button>`;
 }
 
-function renderPlayerInfoChoiceGroups(selectedValue = null) {
+function renderPlayerInfoChoiceGroups(selectedValues = []) {
+    const selectedSet = new Set(selectedValues);
     return PLAYER_INFO_GROUPS.map(
         (group) => `
         <section class="player-info-group player-info-group--${group.modifier}">
             <h3 class="player-info-group-title">${escapeHtml(group.title)}</h3>
             <div class="player-info-group-grid">
                 ${group.items
-                    .map((item) => renderPlayerInfoChoiceCard(item, selectedValue === item.value))
+                    .map((item) => renderPlayerInfoChoiceCard(item, selectedSet.has(item.value)))
                     .join("")}
             </div>
         </section>`
     ).join("");
 }
 
-function updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValue) {
+function updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValues) {
+    const selectedSet = new Set(selectedValues);
     root.querySelectorAll(".player-info-card").forEach((card) => {
         const value = Number(card.dataset.value);
-        const isSelected = value === selectedValue;
+        const isSelected = selectedSet.has(value);
         card.classList.toggle("is-selected", isSelected);
         card.setAttribute("aria-selected", isSelected ? "true" : "false");
     });
+    const count = selectedSet.size;
     if (statusEl) {
-        statusEl.textContent = `已選擇 ${selectedValue != null ? 1 : 0} 項`;
+        statusEl.textContent = `已選擇 ${count} 項`;
     }
     if (applyBtn) {
-        applyBtn.disabled = selectedValue == null;
+        applyBtn.disabled = count === 0;
     }
 }
 
-function askPlayerInfoType(defaultType = null) {
+function askPlayerInfoType(defaultTypes = []) {
     return new Promise((resolve) => {
         const modal = document.getElementById("player-info-modal");
         const root = document.getElementById("player-info-choice-root");
@@ -167,14 +170,14 @@ function askPlayerInfoType(defaultType = null) {
         const applyBtn = document.getElementById("player-info-apply-btn");
         const statusEl = document.getElementById("player-info-selection-status");
         if (!modal || !root || !cancelBtn || !applyBtn) {
-            resolve(defaultType);
+            resolve(Array.isArray(defaultTypes) ? defaultTypes : []);
             return;
         }
 
-        let selectedValue = defaultType;
+        let selectedValues = Array.isArray(defaultTypes) ? [...defaultTypes] : [];
 
-        root.innerHTML = renderPlayerInfoChoiceGroups(selectedValue);
-        updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValue);
+        root.innerHTML = renderPlayerInfoChoiceGroups(selectedValues);
+        updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValues);
 
         modal.classList.remove("hidden");
         modal.classList.remove("is-visible");
@@ -200,13 +203,17 @@ function askPlayerInfoType(defaultType = null) {
             if (!card || !root.contains(card)) return;
             const value = Number(card.dataset.value);
             if (!Number.isFinite(value)) return;
-            selectedValue = value;
-            updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValue);
+            if (selectedValues.includes(value)) {
+                selectedValues = selectedValues.filter((item) => item !== value);
+            } else {
+                selectedValues = [...selectedValues, value];
+            }
+            updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValues);
         };
 
         const onApply = () => {
-            if (selectedValue == null) return;
-            cleanup(selectedValue);
+            if (selectedValues.length === 0) return;
+            cleanup([...selectedValues].sort((a, b) => a - b));
         };
 
         const onCancel = () => cleanup(null);
@@ -1206,11 +1213,11 @@ function runSelectScript(){
         }
 
         case "Input_User_Info": {
-            const requireType = await askPlayerInfoType();
-            if (requireType == null) {
+            const requireTypes = await askPlayerInfoType();
+            if (!requireTypes || requireTypes.length === 0) {
                 continue;
             }
-            extraData = { requireType };
+            extraData = { requireTypes };
             break;
         }
 
@@ -1312,9 +1319,12 @@ function showResultPopup(data) {
         "postcard",
         "manual_single_confirm",
         "verify_player_info",
+        "verify_player_info_multi",
         "verify_mobile",
         "verify_id",
         "verify_name",
+        "customer_id",
+        "customer_name",
     ];
     const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
 
@@ -1441,6 +1451,12 @@ function detectResultType(data) {
     if (data.promoType != null || data.data?.promoType != null) {
         return "manual_single_confirm";
     }
+    if (Array.isArray(data.results) && data.results.length > 0) {
+        const first = data.results[0];
+        if (first && ("requireType" in first || "verifyType" in first)) {
+            return data.results.length === 1 ? "verify_player_info" : "verify_player_info_multi";
+        }
+    }
     const verifyType = Number(data.requireType ?? data.verifyType);
     if (verifyType >= 1 && verifyType in PLAYER_INFO_VALUE_FIELDS) {
         return "verify_player_info";
@@ -1456,6 +1472,9 @@ function detectResultType(data) {
     }
     const report = data.data;
     if (!report) return "generic";
+    if (report.customer_id != null && String(report.customer_id).trim() !== "") {
+        return Number(data.type) === 2 ? "customer_name" : "customer_id";
+    }
     if (Array.isArray(report) && report.length > 0 && ("tcg_key" in report[0] || "new_key" in report[0])) {
         return "create_qa_task";
     }
@@ -1727,18 +1746,88 @@ function renderVerifyNameResult(data) {
     ]);
 }
 
-function renderVerifyPlayerInfoResult(data) {
-    const verifyType = Number(data.requireType ?? data.verifyType);
+function getPlayerInfoResultLabel(verifyType) {
+    const mapping = PLAYER_INFO_VALUE_FIELDS[verifyType];
+    return mapping ? mapping[1] : "填入內容";
+}
+
+function getPlayerInfoResultValue(item) {
+    const verifyType = Number(item.requireType ?? item.verifyType);
     const mapping = PLAYER_INFO_VALUE_FIELDS[verifyType];
     const field = mapping ? mapping[0] : null;
-    const label = mapping ? mapping[1] : "填入內容";
-    const value =
-        field && data[field] != null && String(data[field]).trim() !== ""
-            ? String(data[field])
-            : "—";
+    if (!field || item[field] == null || String(item[field]).trim() === "") {
+        return "—";
+    }
+    return String(item[field]);
+}
+
+function renderVerifyPlayerInfoResult(data) {
+    const source = Array.isArray(data.results) && data.results.length === 1 ? data.results[0] : data;
+    const verifyType = Number(source.requireType ?? source.verifyType);
+    const label = getPlayerInfoResultLabel(verifyType);
+    const value = getPlayerInfoResultValue(source);
     return renderStatsBar([
         { label, value },
-        { label: "驗證結果", value: data.success ? "成功" : "失敗" },
+        { label: "驗證結果", value: source.success ? "成功" : "失敗" },
+    ]);
+}
+
+function renderVerifyPlayerInfoMultiResult(data) {
+    const results = Array.isArray(data.results) ? data.results : [];
+    const successCount = results.filter((item) => item.success).length;
+    const summary = renderStatsBar(
+        [
+            { label: "共執行", numeric: results.length, suffix: "項" },
+            { label: "成功", numeric: successCount, suffix: "項" },
+            { label: "失敗", numeric: results.length - successCount, suffix: "項", dimZero: true },
+        ],
+        { columns: 3 }
+    );
+
+    const items = results
+        .map((item) => {
+            const verifyType = Number(item.requireType ?? item.verifyType);
+            const label = getPlayerInfoResultLabel(verifyType);
+            const value = getPlayerInfoResultValue(item);
+            return `
+        <article class="result-task-item result-player-info-item">
+            <div class="result-task-main">
+                <div class="result-task-content">
+                    <div class="result-task-row-top">
+                        <div class="result-task-ids">
+                            ${renderIssueKey(label, { plain: true })}
+                        </div>
+                        ${renderStatusBadge(item.success ? "成功" : "失敗")}
+                    </div>
+                    <p class="result-task-summary">${escapeHtml(value)}</p>
+                </div>
+            </div>
+        </article>`;
+        })
+        .join("");
+
+    return `${summary}<div class="result-task-list">${items}</div>`;
+}
+
+function renderCustomerIdResult(data) {
+    const customerId =
+        data.data?.customer_id != null && String(data.data.customer_id).trim() !== ""
+            ? String(data.data.customer_id)
+            : "—";
+    return renderStatsBar([
+        { label: "玩家 ID", value: customerId },
+        { label: "查詢結果", value: data.success ? "成功" : "失敗" },
+    ]);
+}
+
+function renderCustomerNameResult(data) {
+    const customerName =
+        data.data?.customer_id != null && String(data.data.customer_id).trim() !== ""
+            ? String(data.data.customer_id)
+            : "—";
+    return renderStatsBar([
+        { label: "玩家帳號", value: customerName },
+        { label: "查詢結果", value: data.success ? "成功" : "失敗" },
     ]);
 }
 
@@ -1773,6 +1862,15 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "verify_player_info") {
         return renderVerifyPlayerInfoResult(data);
+    }
+    if (resultType === "verify_player_info_multi") {
+        return renderVerifyPlayerInfoMultiResult(data);
+    }
+    if (resultType === "customer_id") {
+        return renderCustomerIdResult(data);
+    }
+    if (resultType === "customer_name") {
+        return renderCustomerNameResult(data);
     }
 
     return `<p class="result-message">${escapeHtml(data.message || "操作已完成")}</p>`;
