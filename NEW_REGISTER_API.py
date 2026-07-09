@@ -1,7 +1,7 @@
 import requests
 import logging
 from DB_connect import DB_connect
-
+import Customer_id 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -74,13 +74,6 @@ def _classify_create_agent_error(message: str) -> str:
     return "error"
 
 
-def _lookup_customer_id(merchant_code: str, username: str):
-    customer_name = f"{merchant_code}@{username}"
-    return DB_connect(
-        f"SELECT CUSTOMER_ID FROM TCG_CORE.US_CUSTOMER WHERE CUSTOMER_NAME='{customer_name}'"
-    )
-
-
 def create_agent(token, player: str, platform: str):
 
     API_URL = "http://sit-admin2.tcg.com/mcs_console/api/agentInfo/createAgent" 
@@ -91,12 +84,6 @@ def create_agent(token, player: str, platform: str):
     
     config_map = {
         "gi8viet": [
-            {"type": "VIETNAM_LOTTO", "rebateValue": 100, "rebateSubordinateLimit": 100},
-            {"type": "SBO", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
-            {"type": "FISH", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
-            {"type": "ELOTTO", "rebateValue": 120, "rebateSubordinateLimit": 120}
-        ],
-        "gi8": [
             {"type": "VIETNAM_LOTTO", "rebateValue": 100, "rebateSubordinateLimit": 100},
             {"type": "SBO", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
             {"type": "FISH", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
@@ -302,7 +289,7 @@ def main(merchant_code, username_list):
 
     for username in username_list:
         customer_name = f"{merchant_code}@{username}"
-        existing_id = _lookup_customer_id(merchant_code, username)
+        existing_id = Customer_id.main(username, merchant_code, query_type=1)
         if existing_id:
             message = f"帳號 {username} 已存在（{customer_name}）"
             logging.warning(message + f"，customer_id={existing_id}")
@@ -330,7 +317,7 @@ def main(merchant_code, username_list):
             })
             continue
 
-        customer_id = _lookup_customer_id(merchant_code, username)
+        customer_id = Customer_id.main(username, merchant_code, query_type=1)
         print(customer_id)
 
         if customer_id:
