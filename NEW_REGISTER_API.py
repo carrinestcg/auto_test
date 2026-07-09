@@ -92,10 +92,11 @@ def create_agent(token, player: str, platform: str):
     
     config_map = {
         "gi8viet": [
-            {"type": "VIETNAM_LOTTO", "rebateValue": 100, "rebateSubordinateLimit": 100},
-            {"type": "SBO", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
+            {"type": "LIVE", "rebateValue": 2, "rebateSubordinateLimit": 2},
+            {"type": "RNG", "rebateValue": 2, "rebateSubordinateLimit": 2},
+            {"type": "VIETNAM_LOTTO", "rebateValue": 99, "rebateSubordinateLimit": 99},
             {"type": "FISH", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
-            {"type": "ELOTTO", "rebateValue": 120, "rebateSubordinateLimit": 120}
+            {"type": "ELOTTO", "rebateValue": 1980, "rebateSubordinateLimit": 1980}
         ],
         "huamei": [
             {"type": "PVP", "rebateValue": 1, "rebateSubordinateLimit": 1},
@@ -113,6 +114,7 @@ def create_agent(token, player: str, platform: str):
             {"type": "FISH", "rebateValue": 1, "rebateSubordinateLimit": 1},
         ],
         "tcgdemov3": [
+            {"type": "LIVE", "rebateValue": 1, "rebateSubordinateLimit": 1},
             {"type": "11X5_1", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
             {"type": "11X5_1-102", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
             {"type": "K3_1", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
