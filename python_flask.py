@@ -75,15 +75,37 @@ def auto_create_player(platform_type,username_list):
         for platform in platform_type:
             if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
                 try:
-                    result =NEW_REGISTER_API.main(platform,username_list)
-                    if isinstance(result, tuple) and len(result) == 2:
+                    result = NEW_REGISTER_API.main(platform, username_list)
+                    if isinstance(result, dict):
                         return result
-                    else:
-                        return 0,None
+                    if isinstance(result, tuple) and len(result) == 2:
+                        result_code, customer_id = result
+                        return {
+                            "result_code": result_code or 0,
+                            "customer_id": customer_id,
+                            "message": "Create player Failed" if not result_code else "Create player Successfully",
+                            "details": [],
+                        }
+                    return {
+                        "result_code": 0,
+                        "customer_id": None,
+                        "message": "創建玩家失敗",
+                        "details": [],
+                    }
                 except Exception as e:
                     logging.error(f"創建玩家 {username_list} 發生錯誤: {e}")
-                    return 0,None
-        return 0, None
+                    return {
+                        "result_code": 0,
+                        "customer_id": None,
+                        "message": f"創建玩家發生錯誤: {e}",
+                        "details": [],
+                    }
+        return {
+            "result_code": 0,
+            "customer_id": None,
+            "message": "不支援的平台",
+            "details": [],
+        }
 
 def batch_approve_func(deposit_platform_type):
         for platform in deposit_platform_type:
@@ -771,31 +793,36 @@ def api_batch_approve_func():
         )
 @python_flask.route('/api/auto_create_player',methods=['POST']) #創建代理玩家API
 def api_auto_create_player():
-    data=request.json
-    platforms=data["platforms"]  
+    data = request.get_json(silent=True) or {}
+    platforms = data.get("platforms") or []
     username_raw = data.get("username", "")
-    username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
-    result_code, customer_id=auto_create_player(platforms,username_list)
-    if result_code==1:
-        success = True,
-        message = "Create player and Change password Successfully",
-    
-    elif result_code==2:
-        success = True,
-        message = "Create player success but Change password Failed",
-        
-    elif not result_code:
-        success = False,
-        message = "Create player Failed"
+    username_list = [u.strip() for u in str(username_raw).split(",") if u.strip()]
+
+    if not username_list:
+        return jsonify({"success": False, "message": "請提供玩家帳號（username）"}), 400
+
+    result = auto_create_player(platforms, username_list)
+    result_code = result.get("result_code", 0)
+    customer_id = result.get("customer_id")
+    details = result.get("details") or []
+    message = result.get("message") or "Create player Failed"
+
+    if result_code in (1, 2):
+        success = True
+    else:
+        success = False
+
+    status_code = 200 if success or result_code == -1 else 400
     return jsonify(
-            {
-                "success": success,
-                "message": message,
-                "data":{
-                    "customer_id":customer_id
-                }
-                }
-            )
+        {
+            "success": success,
+            "message": message,
+            "data": {
+                "customer_id": customer_id,
+                "details": details,
+            }
+        }
+    ), status_code
 @python_flask.route('/api/create_member_player',methods=['POST']) #新建會員玩家
 def  auto_create_member_account():
     

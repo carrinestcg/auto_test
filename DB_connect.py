@@ -50,6 +50,7 @@ def DB_connect(SQL):
                     
         else:
             logging.info("查無資料")
+            return None
         return str(rows[0][0])
             
     except oracledb.DatabaseError as e:
