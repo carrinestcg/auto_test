@@ -55,6 +55,14 @@ def header(token,MerchantCode):
     "merchantCode": MerchantCode,
     "platform": "TCG"
     }
+def _humanize_create_agent_error(message: str, platform: str) -> str:
+    text = message or "未知錯誤"
+    lower = text.lower()
+    if "rebate value not in range" in lower:
+        return f"平台 {platform} 的返點設定超出允許範圍，請聯絡管理員更新 rebate configs"
+    return text
+
+
 def _classify_create_agent_error(message: str) -> str:
     text = message or ""
     lower = text.lower()
@@ -101,8 +109,8 @@ def create_agent(token, player: str, platform: str):
             {"type": "SSC_3-50", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
             {"type": "BBIN", "rebateValue": 1, "rebateSubordinateLimit": 1},
             {"type": "IBC", "rebateValue": 1, "rebateSubordinateLimit": 1},
-            {"type": "SPORTS-PARLAY", "rebateValue": 1, "rebateSubordinateLimit": 0},
-            {"type": "FISH", "rebateValue": 1, "rebateSubordinateLimit": 1}
+            {"type": "SPORTS-PARLAY", "rebateValue": 0, "rebateSubordinateLimit": 0},
+            {"type": "FISH", "rebateValue": 1, "rebateSubordinateLimit": 1},
         ],
         "tcgdemov3": [
             {"type": "11X5_1", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
@@ -156,7 +164,10 @@ def create_agent(token, player: str, platform: str):
                 "merchant_code": platform,
             }
 
-        error_msg = response_data.get("message", "未知錯誤")
+        error_msg = _humanize_create_agent_error(
+            response_data.get("message", "未知錯誤"),
+            platform,
+        )
         reason = _classify_create_agent_error(error_msg)
         if reason == "exists":
             logging.error(f"帳號已存在: {player}（{error_msg}）")
