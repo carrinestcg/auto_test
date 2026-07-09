@@ -101,8 +101,8 @@ def create_agent(token, player: str, platform: str):
             {"type": "SSC_3-50", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
             {"type": "BBIN", "rebateValue": 1, "rebateSubordinateLimit": 1},
             {"type": "IBC", "rebateValue": 1, "rebateSubordinateLimit": 1},
-            {"type": "FISH", "rebateValue": 1, "rebateSubordinateLimit": 1},
-            {"type": "ELOTTO", "rebateValue": 1, "rebateSubordinateLimit": 1}
+            {"type": "SPORTS-PARLAY", "rebateValue": 1, "rebateSubordinateLimit": 0},
+            {"type": "FISH", "rebateValue": 1, "rebateSubordinateLimit": 1}
         ],
         "tcgdemov3": [
             {"type": "11X5_1", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
