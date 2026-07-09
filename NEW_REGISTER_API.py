@@ -93,10 +93,10 @@ def create_agent(token, player: str, platform: str):
     config_map = {
         "gi8viet": [
             {"type": "LIVE", "rebateValue": 2, "rebateSubordinateLimit": 2},
-            {"type": "RNG", "rebateValue": 2, "rebateSubordinateLimit": 2},
+            {"type": "RNG", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
             {"type": "VIETNAM_LOTTO", "rebateValue": 99, "rebateSubordinateLimit": 99},
             {"type": "FISH", "rebateValue": 1.5, "rebateSubordinateLimit": 1.5},
-            {"type": "ELOTTO", "rebateValue": 1980, "rebateSubordinateLimit": 1980}
+            {"type": "ELOTTO", "rebateValue": 1980, "rebateSubordinateLimit": 1980},
         ],
         "huamei": [
             {"type": "PVP", "rebateValue": 1, "rebateSubordinateLimit": 1},
