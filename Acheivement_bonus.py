@@ -48,36 +48,52 @@ def get_unclaim_Quest(promotionId, CustomerIP, CustomerId, promoType):
         "Accept-Encoding":"gzip, deflate, br",
         "CustomerIP": CustomerIP,
         "Language": "CN",
-        "CustomerId": CustomerId
+        "CustomerId": str(CustomerId),
     }
     params={
         "promotionId": promotionId
     }
-    claimID_list=[]
     respone=requests.get(URL,headers=header,params=params, verify=False)
-    respone_json=respone.json()
+    try:
+        respone_json=respone.json()
+    except ValueError:
+        logging.error("任務列表 API 回傳非 JSON: status=%s body=%s", respone.status_code, respone.text[:500])
+        return []
     if respone.status_code==200:
-        value=respone_json.get("value")
-        claims=value.get("claims", [])
-        activityRewardListResp=value.get("activityRewardListResp", {})
-        aactivities=activityRewardListResp.get("activities", [])
+        value=respone_json.get("value") or {}
         if promoType==2:
+            claims=value.get("claims") or []
+            claimID_list=[]
             for claimid in claims:
-                claimStatus=claimid.get("claimStatus")
-                if claimStatus == "CLAIMABLE":
-                    claimId=claimid.get("claimId")
-                    claimID_list.append(claimId)
+                if not isinstance(claimid, dict):
+                    continue
+                if claimid.get("claimStatus") == "CLAIMABLE":
+                    claim_id = claimid.get("claimId")
+                    if claim_id is not None:
+                        claimID_list.append(claim_id)
+            logging.info(f"找到 {len(claimID_list)} 個 claimId: {claimID_list}")
             return claimID_list
         elif promoType==3:
+            activityRewardListResp=value.get("activityRewardListResp") or {}
+            aactivities=activityRewardListResp.get("activities") or []
             activity_ids = []
             for activity in aactivities:
+                if not isinstance(activity, dict):
+                    continue
                 activity_id = activity.get("activityId")
-                activity_ids.append(activity_id)
+                if activity_id is not None:
+                    activity_ids.append(activity_id)
+            logging.info(f"找到 {len(activity_ids)} 個 activityId: {activity_ids}")
             return activity_ids
-    else:
-        logging.info(f"領取失敗 原因:{respone_json}")
-        return None, None, None
+    logging.info(f"取得任務列表失敗 原因:{respone_json}")
+    return []
+
 def receive_quest_bonus(CustomerIP, CustomerId, claimID_list):
+    if not claimID_list:
+        logging.info("沒有可領取的 claimId")
+        return None, None, None
+
+    claimedMoney = claimedPoint = claimedTickets = None
     for claimid in claimID_list:
         URL="http://10.81.1.20:7001/promo-fe/resources/promo_claim"
         header={
@@ -85,27 +101,35 @@ def receive_quest_bonus(CustomerIP, CustomerId, claimID_list):
             "Accept-Encoding":"gzip, deflate, br",
             "CustomerIP": CustomerIP,
             "Language": "CN",
-            "CustomerId": CustomerId
+            "CustomerId": str(CustomerId),
         }
         payload={
             "claimId": claimid,
             "promotionType": "QUEST"
         }
         respone=requests.post(URL,headers=header,json=payload, verify=False)
-        respone_json=respone.json()
+        try:
+            respone_json=respone.json()
+        except ValueError:
+            logging.error("任務領取 API 回傳非 JSON: status=%s body=%s", respone.status_code, respone.text[:500])
+            return None, None, None
         if respone.status_code==200:
-            value=respone_json.get("value")
+            value=respone_json.get("value") or {}
             claimedMoney=value.get("claimedMoney")
             claimedPoint=value.get("claimedPoint")
             claimedTickets=value.get("claimedTickets")
-            logging.info(f"領取成功: {claimedMoney} {claimedPoint}, {claimedTickets}")
-        
+            logging.info(f"[claimId: {claimid}] 領取成功: {claimedMoney} {claimedPoint}, {claimedTickets}")
         else:
-            logging.info(f"領取失敗 原因:{respone_json}")
+            logging.info(f"[claimId: {claimid}] 領取失敗 原因:{respone_json}")
             return None, None, None
     return claimedMoney, claimedPoint, claimedTickets
 
 def receive_activity_bonus(CustomerIP, CustomerId, activity_list):
+    if not activity_list:
+        logging.info("沒有可領取的 activityId")
+        return None, None, None
+
+    claimedMoney = claimedPoint = claimedTickets = None
     for activity in activity_list:
         URL="http://10.81.1.88:8084/promo-fe/resources/quest/claim/activity"
         header={
@@ -113,23 +137,25 @@ def receive_activity_bonus(CustomerIP, CustomerId, activity_list):
             "Accept-Encoding":"gzip, deflate, br",
             "CustomerIP": CustomerIP,
             "Language": "CN",
-            "CustomerId": CustomerId
+            "CustomerId": str(CustomerId),
         }
         payload={
             "activityId": activity,
-            
         }
         respone=requests.post(URL,headers=header,json=payload, verify=False)
-        respone_json=respone.json()
+        try:
+            respone_json=respone.json()
+        except ValueError:
+            logging.error("活躍度領取 API 回傳非 JSON: status=%s body=%s", respone.status_code, respone.text[:500])
+            return None, None, None
         if respone.status_code==200:
-            value=respone_json.get("value")
+            value=respone_json.get("value") or {}
             claimedMoney=value.get("claimedMoney")
             claimedPoint=value.get("claimedPoint")
             claimedTickets=value.get("claimedTickets")
-            logging.info(f"領取成功: {claimedMoney} {claimedPoint}, {claimedTickets}")
-        
+            logging.info(f"[activityId: {activity}] 領取成功: {claimedMoney} {claimedPoint}, {claimedTickets}")
         else:
-            logging.info(f"領取失敗 原因:{respone_json}")
+            logging.info(f"[activityId: {activity}] 領取失敗 原因:{respone_json}")
             return None, None, None
     return claimedMoney, claimedPoint, claimedTickets
 def _normalize_promo_type(promoType):
@@ -159,13 +185,11 @@ def main(CustomerId, promoType, promotionId):
         if promotionId:
             CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
             logging.info(f"拿到promotionId: {promotionId}")
-            claimID_list= get_unclaim_Quest(promotionId,CustomerIP,CustomerId, promoType)
-            if claimID_list is not None:
-                claimedMoney, claimedPoint, claimedTickets=receive_quest_bonus(CustomerIP,CustomerId,claimID_list)
-                if claimedMoney and claimedPoint and claimedTickets:
+            claimID_list = get_unclaim_Quest(promotionId, CustomerIP, CustomerId, promoType)
+            if claimID_list:
+                claimedMoney, claimedPoint, claimedTickets = receive_quest_bonus(CustomerIP, CustomerId, claimID_list)
+                if claimedMoney is not None or claimedPoint is not None or claimedTickets is not None:
                     return claimedMoney, claimedPoint, claimedTickets
-                else:
-                    return None, None, None
             return None, None, None
         logging.error("沒有拿到promotionId")
         return None, None, None
@@ -173,13 +197,11 @@ def main(CustomerId, promoType, promotionId):
         if promotionId:
             CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
             logging.info(f"拿到promotionId: {promotionId}")
-            activity_list= get_unclaim_Quest(promotionId,CustomerIP,CustomerId, promoType)
-            if activity_list is not None:
-                claimedMoney, claimedPoint, claimedTickets=receive_activity_bonus(CustomerIP,CustomerId,activity_list)
-                if claimedMoney and claimedPoint and claimedTickets:
+            activity_list = get_unclaim_Quest(promotionId, CustomerIP, CustomerId, promoType)
+            if activity_list:
+                claimedMoney, claimedPoint, claimedTickets = receive_activity_bonus(CustomerIP, CustomerId, activity_list)
+                if claimedMoney is not None or claimedPoint is not None or claimedTickets is not None:
                     return claimedMoney, claimedPoint, claimedTickets
-                else:
-                    return None, None, None
             return None, None, None
         logging.error("沒有拿到promotionId")
         return None, None, None

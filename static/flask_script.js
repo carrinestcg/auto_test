@@ -1229,15 +1229,15 @@ function runSelectScript(){
             break;
         case "QUEST_bonus":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
-                type: 2
-            }
+                promotion_id: document.getElementById("promotion_id").value.trim(),
+                type: 2,
+            };
             break;
         case "Activity_bonus":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
-                type: 3
-            }
+                promotion_id: document.getElementById("promotion_id").value.trim(),
+                type: 3,
+            };
             break;
 
         case "auto_create_promotion": {
