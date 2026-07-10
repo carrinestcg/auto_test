@@ -1222,11 +1222,11 @@ function runSelectScript(){
         }
 
         case "Achievement_bonus":
-                extraData = {
-                    promotion_id: document.getElementById("promotion_id").value,
-                    type: 1
-                }
-                break;
+            extraData = {
+                promotion_id: document.getElementById("promotion_id").value.trim(),
+                type: 1,
+            };
+            break;
         case "QUEST_bonus":
             extraData = {
                 promotion_id: document.getElementById("promotion_id").value,

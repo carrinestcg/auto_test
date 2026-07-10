@@ -25,9 +25,13 @@ def Achievement_bonus(promotionId, CustomerIP, CustomerId ):
         "promotionId": promotionId
     }
     respone=requests.post(URL,headers=header,json=payload, verify=False)
-    respone_json=respone.json()
+    try:
+        respone_json=respone.json()
+    except ValueError:
+        logging.error("成就獎勵 API 回傳非 JSON: status=%s body=%s", respone.status_code, respone.text[:500])
+        return None, None, None
     if respone.status_code==200:
-        value=respone_json.get("value")
+        value=respone_json.get("value") or {}
         claimedMoney=value.get("claimedMoney")
         claimedPoint=value.get("claimedPoint")
         claimedTickets=value.get("claimedTickets")
@@ -128,21 +132,30 @@ def receive_activity_bonus(CustomerIP, CustomerId, activity_list):
             logging.info(f"領取失敗 原因:{respone_json}")
             return None, None, None
     return claimedMoney, claimedPoint, claimedTickets
+def _normalize_promo_type(promoType):
+    try:
+        return int(promoType)
+    except (TypeError, ValueError):
+        return None
+
 def main(CustomerId, promoType, promotionId):
-    if promoType== 1:
+    promoType = _normalize_promo_type(promoType)
+    if CustomerId is None:
+        logging.error("沒有拿到 CustomerId")
+        return None, None, None
+
+    if promoType == 1:
         if promotionId:
             CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
             logging.info(f"拿到promotionId: {promotionId}")
-            claimedMoney, claimedPoint, claimedTickets= Achievement_bonus(promotionId,CustomerIP,CustomerId)
-            if claimedMoney is not None and claimedPoint is not None:
+            claimedMoney, claimedPoint, claimedTickets= Achievement_bonus(promotionId,CustomerIP,str(CustomerId))
+            if claimedMoney is not None or claimedPoint is not None or claimedTickets is not None:
                 return claimedMoney, claimedPoint, claimedTickets
-            else:
-                return None, None, None
-        else:
-            logging.error("沒有拿到promotionId")
             return None, None, None
-        
-    elif promoType== 2:
+        logging.error("沒有拿到promotionId")
+        return None, None, None
+
+    elif promoType == 2:
         if promotionId:
             CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
             logging.info(f"拿到promotionId: {promotionId}")
@@ -153,12 +166,10 @@ def main(CustomerId, promoType, promotionId):
                     return claimedMoney, claimedPoint, claimedTickets
                 else:
                     return None, None, None
-            else:
-                return False
-        else:
-            logging.error("沒有拿到promotionId")
             return None, None, None
-    elif promoType== 3:
+        logging.error("沒有拿到promotionId")
+        return None, None, None
+    elif promoType == 3:
         if promotionId:
             CustomerIP=".".join(str(random.randint(0,255)) for _ in range(4))
             logging.info(f"拿到promotionId: {promotionId}")
@@ -169,8 +180,9 @@ def main(CustomerId, promoType, promotionId):
                     return claimedMoney, claimedPoint, claimedTickets
                 else:
                     return None, None, None
-            else:
-                return False
-        else:
-            logging.error("沒有拿到promotionId")
             return None, None, None
+        logging.error("沒有拿到promotionId")
+        return None, None, None
+
+    logging.error("不支援的 promoType: %s", promoType)
+    return None, None, None

@@ -315,8 +315,6 @@ def api_app_download():
 @python_flask.route('/api/Achievement_bonus',methods=['POST']) #成就獎勵API
 def api_Achievement_bonus():
     data=request.get_json(silent=True)
-    platforms=data["platforms"]  
-    data=request.get_json(silent=True)
     if not data:
         return jsonify(
         {
@@ -324,14 +322,25 @@ def api_Achievement_bonus():
             "message": "Trigger API Failed"
             }
         ),400
-        
-    username=data["username"]
-    customer_id=Customer_id.main(username,platforms, Type=1)
-    promoType = data.get("type") 
+
+    platforms=data.get("platforms") or ["gi8viet"]
+    username=data.get("username", "").strip()
+    if not username:
+        return jsonify({"success": False, "message": "請填寫玩家帳號"}), 400
+
+    customer_id=Customer_id.main(username, platforms, 1)
+    if not customer_id:
+        return jsonify({"success": False, "message": f"查無玩家 Customer ID：{username}"}), 400
+
+    promoType = data.get("type")
     promotion_id = data.get("promotion_id")
     logging.info(f"promoType: {promoType}, type: {type(promoType)}")
     logging.info(f"CustomerId: {customer_id}, promotionId: {promotion_id}")
-    claimedMoney, claimedPoint, claimedTickets =Acheivement_bonus.main(customer_id, promoType, promotion_id )
+    result = Acheivement_bonus.main(customer_id, promoType, promotion_id)
+    if not isinstance(result, (tuple, list)) or len(result) != 3:
+        logging.error("Acheivement_bonus.main 回傳格式異常: %s", result)
+        return jsonify({"success": False, "message": "Trigger API Failed"}), 500
+    claimedMoney, claimedPoint, claimedTickets = result
     if claimedMoney is not None or claimedPoint is not None or claimedTickets is not None:
         return jsonify(
             {
