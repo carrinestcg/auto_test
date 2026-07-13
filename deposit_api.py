@@ -106,7 +106,7 @@ def deposit(token,merchantCode):
 def approve_deposit(token,deposit_Info,merchantCode):
     try:
         API_URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-v3-deposit-processAndApprove"
-        if deposit_Info.get("requestAmount") is None:
+        if deposit_Info.get("depositAmount") is None:
             logging.error(f"充值ID: {deposit_Info['depositId']} 缺少存款金額，無法處理")
             return False
         payload={
@@ -115,7 +115,7 @@ def approve_deposit(token,deposit_Info,merchantCode):
         "tpRefNo": None,
         "payerBankAcctName": None,
         "payerBankAcctNum": None,
-        "depositAmount": deposit_Info.get("requestAmount"),
+        "depositAmount": deposit_Info.get("depositAmount"),
         "bankRef":deposit_Info.get("bankRef"),
         "operatorRemark": None,
         "internalRemark": None,
