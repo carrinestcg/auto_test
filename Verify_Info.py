@@ -496,7 +496,7 @@ def input_whatsapp_ID(customerId:int, whatsapp_id:str):
 def input_Facebook_ID(customerId:int, facebook_id:str):
     token=get_token()
     logging.info(f"傳入的Facebook ID:{facebook_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeFacebookId?customerId={customerId}&merchantCode=gi8viet&remark=d&whatsAppId={facebook_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeFacebookId?customerId={customerId}&merchantCode=gi8viet&remark=d&facebookId={facebook_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
