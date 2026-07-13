@@ -85,6 +85,7 @@ const PLAYER_INFO_VALUE_FIELDS = {
     9: ["viberID", "Viber"],
     10: ["telegramID", "Telegram"],
     11: ["virtualWalletID", "虛擬錢包"],
+    12: ["whatsappID", "WhatsAppId"],
 };
 
 const PLAYER_INFO_CHECK_SVG =
@@ -109,6 +110,8 @@ function getPlayerInfoIcon(iconName) {
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.5 2.6a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.5-1.5a2 2 0 0 1 2.1-.5c.8.2 1.7.4 2.6.5A2 2 0 0 1 22 16.9z"/></svg>',
         telegram:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22 11 13 2 9l20-7z"/></svg>',
+        whatsapp:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 4s-.7 2.1-2 3.2c1.6 10-9.4 17.3-18 11.1 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>',
         wallet:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>'
     };

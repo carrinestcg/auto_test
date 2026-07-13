@@ -528,6 +528,7 @@ def api_input_user_info():
         9: "Viber",
         10: "Telegram",
         11: "虛擬錢包",
+        12: "WhatsAppId",
     }
     value_fields = {
         1: "mobileNumber",
@@ -541,6 +542,7 @@ def api_input_user_info():
         9: "viberID",
         10: "telegramID",
         11: "virtualWalletID",
+        12: "whatsappID",
     }
 
     results = []
@@ -555,7 +557,7 @@ def api_input_user_info():
             continue
 
         result, value = verify_info(username, platforms, require_type)
-        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11):
+        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12):
             value = str(value)
         elif value is not None:
             value = str(value)
