@@ -67,6 +67,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 8, label: "Twitter", icon: "twitter" },
             { value: 9, label: "Viber", icon: "viber" },
             { value: 10, label: "Telegram", icon: "telegram" },
+            { value: 12, label: "WhatsAppId", icon: "whatsapp" },
         ],
     },
 ];
