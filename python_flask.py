@@ -529,6 +529,7 @@ def api_input_user_info():
         10: "Telegram",
         11: "虛擬錢包",
         12: "WhatsAppId",
+        13: "Facebook ID",
     }
     value_fields = {
         1: "mobileNumber",
