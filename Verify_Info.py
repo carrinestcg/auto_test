@@ -493,6 +493,31 @@ def input_whatsapp_ID(customerId:int, whatsapp_id:str):
         logging.error(f"WhatsApp ID輸入請求失敗{e}")
         return False
     
+def input_Facebook_ID(customerId:int, facebook_id:str):
+    token=get_token()
+    logging.info(f"傳入的Facebook ID:{facebook_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeFacebookId?customerId={customerId}&merchantCode=gi8viet&remark=d&whatsAppId={facebook_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Facebook ID輸入成功")  
+                return True
+            else:
+                logging.error("Facebook ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Facebook ID輸入請求失敗{e}")
+        return False
+    
 verify_handler={ 
     3: (gen_string(), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
@@ -504,6 +529,7 @@ verify_handler={
     10: (gen_string(), input_telegram_ID),
     11: (gen_number(1000000000000, 2000000000000), binding_virtual_wallet),
     12: (gen_string(10), input_whatsapp_ID),
+    13: (gen_string(9), input_Facebook_ID),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type):

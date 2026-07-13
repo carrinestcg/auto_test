@@ -543,6 +543,7 @@ def api_input_user_info():
         10: "telegramID",
         11: "virtualWalletID",
         12: "whatsappID",
+        13: "facebookID",
     }
 
     results = []
@@ -557,7 +558,7 @@ def api_input_user_info():
             continue
 
         result, value = verify_info(username, platforms, require_type)
-        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12):
+        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12, 13):
             value = str(value)
         elif value is not None:
             value = str(value)

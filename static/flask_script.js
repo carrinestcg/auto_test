@@ -68,6 +68,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 9, label: "Viber", icon: "viber" },
             { value: 10, label: "Telegram", icon: "telegram" },
             { value: 12, label: "WhatsAppId", icon: "whatsapp" },
+            { value: 13, label: "Facebook ID", icon: "user" },
         ],
     },
 ];
@@ -87,6 +88,7 @@ const PLAYER_INFO_VALUE_FIELDS = {
     10: ["telegramID", "Telegram"],
     11: ["virtualWalletID", "虛擬錢包"],
     12: ["whatsappID", "WhatsAppId"],
+    13: ["facebookID", "Facebook ID"],
 };
 
 const PLAYER_INFO_CHECK_SVG =
@@ -114,7 +116,9 @@ function getPlayerInfoIcon(iconName) {
         whatsapp:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M22 4s-.7 2.1-2 3.2c1.6 10-9.4 17.3-18 11.1 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>',
         wallet:
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>',
+        facebook:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v10h3V14h3l1-4h-4z"/></svg>'
     };
     return icons[iconName] || icons.user;
 }
