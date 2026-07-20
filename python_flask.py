@@ -1043,9 +1043,23 @@ def api_calculate_workdays():
         else:
             tasks = calculate_workdays.fetch_qa_tasks_by_assignee(assignee, date_from, date_to)
         report = calculate_workdays.build_report(tp_key, assignee, tasks, date_from, date_to)
-        message = "查詢成功" if tasks else ("查無符合的 QA Task" if tp_key else f"帳號 {assignee} 底下沒有 QA Task")
+        if tasks:
+            message = "查詢成功"
+        elif tp_key:
+            message = (
+                f"查無符合的 QA Task（帳號 {assignee}、TP {tp_key}"
+                f"{f'、日期 {date_from}~{date_to}' if date_from or date_to else ''}）。"
+                "請確認 Jira 帳號、TP 單號，或先清除日期區間再試。"
+            )
+        else:
+            message = (
+                f"帳號 {assignee} 底下沒有 QA Task"
+                f"{f'（日期 {date_from}~{date_to}）' if date_from or date_to else ''}。"
+                "請確認 Jira 帳號是否正確，或先清除日期區間再試。"
+            )
         return jsonify({"success": True, "message": message, "data": report}), 200
     except Exception as e:
+        logging.error("calculate_workdays error: %s", e)
         return jsonify({"success": False, "message": str(e)}), 500
 
 

@@ -724,9 +724,6 @@ function validateFormBeforeSubmit() {
     }
 
     if (isChecked("calculate_workdays")) {
-        if (!applyWorkdaysDateRange({ silent: true })) {
-            return false;
-        }
         const applied = getWorkdaysAppliedDates();
         if (!validateWorkdaysDateRange(applied.from, applied.to)) {
             return false;
@@ -1172,7 +1169,6 @@ function runSelectScript(){
             continue;
 
         case "calculate_workdays": {
-            applyWorkdaysDateRange({ silent: true });
             const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
             const tpKeys = tpRaw.split(/[\s,;]+/).filter(Boolean);
             const appliedDates = getWorkdaysAppliedDates();

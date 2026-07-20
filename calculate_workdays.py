@@ -3,6 +3,7 @@ import requests
 import urllib3
 import os
 import sys
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -15,6 +16,8 @@ JIRA_SSL      = False
 
 JIRA_USERNAME = "carrine.s"
 WORKDAYS_FIELD = "customfield_11701"  # Workdays 欄位
+SEARCH_PAGE_SIZE = 100
+SEARCH_MAX_PAGES = 10
 # ================================
 
 HEADERS = {
@@ -23,6 +26,7 @@ HEADERS = {
 }
 
 _DATE_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_ISSUE_CACHE = {}
 
 
 def normalize_date(value):
@@ -37,6 +41,10 @@ def normalize_date(value):
     return ""
 
 
+def _normalize_tp(value):
+    return re.sub(r"[^A-Z0-9]", "", (value or "").upper())
+
+
 def _append_date_filter(jql, start_date=None, end_date=None):
     clauses = []
     start_date = normalize_date(start_date)
@@ -44,7 +52,11 @@ def _append_date_filter(jql, start_date=None, end_date=None):
     if start_date:
         clauses.append(f'created >= "{start_date}"')
     if end_date:
-        clauses.append(f'created <= "{end_date}"')
+        # Jira date equality is day-level; use next day with < for inclusive end date.
+        end_exclusive = (
+            datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
+        ).strftime("%Y-%m-%d")
+        clauses.append(f'created < "{end_exclusive}"')
     if not clauses:
         return jql
     if "ORDER BY" in jql:
@@ -53,64 +65,167 @@ def _append_date_filter(jql, start_date=None, end_date=None):
     return f"{jql} AND {' AND '.join(clauses)}"
 
 
-def fetch_qa_tasks_by_tp(tp_key, assignee, start_date=None, end_date=None):
-    """抓 Fix Version 開頭為 TP 單號 底下，指派給 assignee 的所有 QA Task"""
-    jql = (
-        f'fixVersion ~ "{tp_key}*" '
-        f'AND assignee = "{assignee}" '
-        f'AND issuetype = "QA Task" '
-        f'ORDER BY created DESC'
+def _jira_error_message(resp):
+    try:
+        body = resp.json()
+        msgs = body.get("errorMessages") or []
+        if msgs:
+            return "; ".join(msgs)
+        errors = body.get("errors") or {}
+        if errors:
+            return "; ".join(f"{k}: {v}" for k, v in errors.items())
+    except ValueError:
+        pass
+    return resp.text[:300] or resp.reason
+
+
+def _build_assignee_clause(assignee):
+    assignee = (assignee or "").strip()
+    return f'(assignee = "{assignee}" OR reporter = "{assignee}")'
+
+
+def _build_qa_task_jql_queries(assignee, start_date=None, end_date=None):
+    """Try multiple JQL shapes; some Jira setups differ on issuetype naming."""
+    user_clause = _build_assignee_clause(assignee)
+    base_queries = [
+        f'{user_clause} AND issuetype = "QA Task" ORDER BY created DESC',
+        f'{user_clause} AND summary ~ "\\\\[QA\\\\]" ORDER BY created DESC',
+        f'{user_clause} AND text ~ "QA Task" ORDER BY created DESC',
+        f'{user_clause} AND summary ~ "PED" AND summary ~ "測試" ORDER BY created DESC',
+    ]
+    return [_append_date_filter(q, start_date, end_date) for q in base_queries]
+
+
+def _get_issue_fields(issue_key, fields):
+    cache_key = (issue_key, tuple(fields))
+    if cache_key in _ISSUE_CACHE:
+        return _ISSUE_CACHE[cache_key]
+
+    resp = requests.get(
+        f"{JIRA_BASE_URL}/rest/api/2/issue/{issue_key}",
+        headers=HEADERS,
+        params={"fields": ",".join(fields)},
+        verify=JIRA_SSL,
     )
-    jql = _append_date_filter(jql, start_date, end_date)
-    return _search_qa_tasks(jql)
+    if not resp.ok:
+        return None
+    data = resp.json().get("fields") or {}
+    _ISSUE_CACHE[cache_key] = data
+    return data
+
+
+def _extract_fix_versions(fields):
+    if not fields:
+        return []
+    return [v.get("name", "") for v in fields.get("fixVersions") or [] if v.get("name")]
+
+
+def _matches_tp_key(task, tp_key):
+    prefix = _normalize_tp(tp_key)
+    if not prefix:
+        return True
+
+    candidates = list(task.get("fix_versions") or [])
+    parent_key = task.get("parent") or ""
+    if parent_key:
+        parent_fields = _get_issue_fields(parent_key, ["fixVersions", "summary"])
+        candidates.extend(_extract_fix_versions(parent_fields))
+        parent_summary = (parent_fields or {}).get("summary") or ""
+        if _normalize_tp(parent_summary).find(prefix) >= 0:
+            return True
+
+    summary = task.get("summary") or ""
+    if _normalize_tp(summary).find(prefix) >= 0:
+        return True
+
+    for name in candidates:
+        normalized = _normalize_tp(name)
+        if normalized.startswith(prefix) or prefix in normalized:
+            return True
+    return False
+
+
+def fetch_qa_tasks_by_tp(tp_key, assignee, start_date=None, end_date=None):
+    tasks = fetch_qa_tasks_by_assignee(assignee, start_date, end_date)
+    return [t for t in tasks if _matches_tp_key(t, tp_key)]
 
 
 def fetch_qa_tasks_by_assignee(assignee, start_date=None, end_date=None):
-    """抓指派給 assignee 的所有 QA Task（不限 TP 單號）"""
-    jql = (
-        f'assignee = "{assignee}" '
-        f'AND issuetype = "QA Task" '
-        f'ORDER BY created DESC'
-    )
-    jql = _append_date_filter(jql, start_date, end_date)
-    return _search_qa_tasks(jql)
+    """Fetch QA tasks assigned/reported by user using multiple JQL fallbacks."""
+    merged = {}
+    errors = []
+
+    for jql in _build_qa_task_jql_queries(assignee, start_date, end_date):
+        try:
+            for task in _search_qa_tasks(jql):
+                merged[task["key"]] = task
+        except requests.HTTPError as exc:
+            errors.append(str(exc))
+
+    if not merged and errors:
+        raise requests.HTTPError(errors[0])
+
+    tasks = list(merged.values())
+    tasks.sort(key=lambda t: t.get("created", ""), reverse=True)
+    return tasks
 
 
 def _search_qa_tasks(jql):
-    payload = {
-        "jql": jql,
-        "maxResults": 100,
-        "fields": ["summary", "status", WORKDAYS_FIELD, "created", "parent", "fixVersions"]
-    }
-
-    resp = requests.post(
-        f"{JIRA_BASE_URL}/rest/api/2/search",
-        headers=HEADERS,
-        json=payload,
-        verify=JIRA_SSL
-    )
-    resp.raise_for_status()
-    issues = resp.json().get("issues", [])
-
+    fields = ["summary", "status", WORKDAYS_FIELD, "created", "parent", "fixVersions", "assignee", "reporter"]
     results = []
-    for i in issues:
-        f = i["fields"]
-        workdays = f.get(WORKDAYS_FIELD)
-        fix_version_names = [v["name"] for v in f.get("fixVersions", [])]
-        results.append({
-            "key": i["key"],
-            "summary": f.get("summary", ""),
-            "status": f.get("status", {}).get("name", ""),
-            "workdays": float(workdays) if workdays else 0.0,
-            "created": f.get("created", "")[:10],
-            "parent": f.get("parent", {}).get("key", "") if f.get("parent") else "",
-            "fix_versions": fix_version_names
-        })
+    start_at = 0
+
+    for _ in range(SEARCH_MAX_PAGES):
+        payload = {
+            "jql": jql,
+            "startAt": start_at,
+            "maxResults": SEARCH_PAGE_SIZE,
+            "fields": fields,
+        }
+        resp = requests.post(
+            f"{JIRA_BASE_URL}/rest/api/2/search",
+            headers=HEADERS,
+            json=payload,
+            verify=JIRA_SSL,
+        )
+        if not resp.ok:
+            detail = _jira_error_message(resp)
+            raise requests.HTTPError(
+                f"{resp.status_code} Client Error: {detail} for url: {resp.url}",
+                response=resp,
+            )
+
+        body = resp.json()
+        issues = body.get("issues", [])
+        if not issues:
+            break
+
+        for issue in issues:
+            f = issue["fields"]
+            workdays = f.get(WORKDAYS_FIELD)
+            fix_version_names = _extract_fix_versions(f)
+            parent = f.get("parent") or {}
+            results.append({
+                "key": issue["key"],
+                "summary": f.get("summary", ""),
+                "status": (f.get("status") or {}).get("name", ""),
+                "workdays": float(workdays) if workdays else 0.0,
+                "created": (f.get("created") or "")[:10],
+                "parent": parent.get("key", "") if parent else "",
+                "fix_versions": fix_version_names,
+                "assignee": ((f.get("assignee") or {}).get("name") or ""),
+                "reporter": ((f.get("reporter") or {}).get("name") or ""),
+            })
+
+        start_at += len(issues)
+        total = body.get("total", 0)
+        if start_at >= total:
+            break
+
     return results
 
 
 def build_report(tp_key, assignee, tasks, start_date=None, end_date=None):
-    """組成可直接回傳給前端（或印出）的統計結果字典"""
     total_workdays = sum(t["workdays"] for t in tasks)
     by_status = {}
     for t in tasks:
@@ -129,12 +244,11 @@ def build_report(tp_key, assignee, tasks, start_date=None, end_date=None):
             status: {"count": d["count"], "workdays": round(d["workdays"], 2)}
             for status, d in by_status.items()
         },
-        "tasks": tasks
+        "tasks": tasks,
     }
 
 
 def print_report(report):
-    """把 build_report 回傳的字典印到 terminal（CLI 模式用）"""
     print(f"\n{'='*60}")
     if report["tp_key"]:
         print(f"📊 {report['tp_key']} — QA Task 工作量統計（{report['assignee']}）")
