@@ -1547,12 +1547,23 @@ function formatWorkdaysDays(workdays) {
     return `${value}d`;
 }
 
+const DONE_STATUS_TOKENS = new Set(["done", "closed", "resolved"]);
+
+function tokenizeStatus(status) {
+    return String(status || "")
+        .toLowerCase()
+        .split(/[\s/_-]+/)
+        .filter(Boolean);
+}
+
+function isDoneStatus(status) {
+    return tokenizeStatus(status).some((token) => DONE_STATUS_TOKENS.has(token));
+}
+
 function getStatusModifier(status) {
+    if (isDoneStatus(status)) return "closed";
     const normalized = String(status || "").toLowerCase();
     if (normalized.includes("open")) return "open";
-    if (normalized.includes("closed") || normalized.includes("done") || normalized.includes("resolved")) {
-        return "closed";
-    }
     if (normalized.includes("progress")) return "in-progress";
     if (normalized.includes("fail")) return "fail";
     return "default";
@@ -1564,7 +1575,8 @@ function renderStatusBadge(status) {
 }
 
 function renderStatsBar(cards, options = {}) {
-    const colsClass = options.columns === 4 ? " is-cols-4" : "";
+    const colsClass =
+        options.columns === 6 ? " is-cols-6" : options.columns === 4 ? " is-cols-4" : "";
     const items = cards
         .map(
             (card, index) => `
@@ -1588,9 +1600,24 @@ function formatWorkdaysDateRange(dateFrom, dateTo) {
     return "全部";
 }
 
+function renderProgressBar(rate) {
+    const pct = Math.min(100, Math.max(0, Number(rate) || 0));
+    return `<div class="tp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="QA Task 完成率">
+        <div class="tp-progress-meta">
+            <span>QA Task 完成率</span>
+            <span>${pct}%</span>
+        </div>
+        <div class="tp-progress-track">
+            <div class="tp-progress-fill" style="width:${pct}%"></div>
+        </div>
+    </div>`;
+}
+
 function renderWorkdaysReport(report) {
     const totalCount = Number(report.total_count ?? 0);
     const totalWorkdays = Number(report.total_workdays ?? 0);
+    const doneCount = Number(report.done_count ?? 0);
+    const completionRate = Number(report.completion_rate ?? 0);
     const tpLabel = report.tp_key ? report.tp_key : "全部";
     const summary = renderStatsBar(
         [
@@ -1598,8 +1625,10 @@ function renderWorkdaysReport(report) {
             { label: "日期區間", value: formatWorkdaysDateRange(report.date_from, report.date_to) },
             { label: "共查到", numeric: totalCount, suffix: "筆", dimZero: true },
             { label: "總工作日", numeric: totalWorkdays, dimZero: true },
+            { label: "已完成", numeric: doneCount, suffix: "張", dimZero: true },
+            { label: "完成率", value: `${completionRate}%` },
         ],
-        { columns: 4 }
+        { columns: 6 }
     );
 
     if (!report.tasks || report.tasks.length === 0) {
@@ -1610,6 +1639,7 @@ function renderWorkdaysReport(report) {
         return `${summary}${renderEmptyState("目前沒有相關 ticket", emptyDesc)}`;
     }
 
+    const progress = renderProgressBar(completionRate);
     const items = report.tasks
         .map((task) => {
             const parent = task.parent
@@ -1644,7 +1674,7 @@ function renderWorkdaysReport(report) {
         })
         .join("");
 
-    return `${summary}<div class="result-task-list">${items}</div>`;
+    return `${summary}${progress}<div class="result-task-list">${items}</div>`;
 }
 
 function renderCreateQaTaskResults(items) {

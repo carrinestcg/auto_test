@@ -224,6 +224,10 @@ def _search_qa_tasks(jql):
 
     return results
 
+_DONE_TOKENS = ("done", "closed", "resolved")
+def _is_done_status(status):
+    tokens = re.split(r"[\s/_-]+", (status or "").lower())
+    return any(t in _DONE_TOKENS for t in tokens if t)
 
 def build_report(tp_key, assignee, tasks, start_date=None, end_date=None):
     total_workdays = sum(t["workdays"] for t in tasks)
@@ -232,7 +236,11 @@ def build_report(tp_key, assignee, tasks, start_date=None, end_date=None):
         by_status.setdefault(t["status"], {"count": 0, "workdays": 0.0})
         by_status[t["status"]]["count"] += 1
         by_status[t["status"]]["workdays"] += t["workdays"]
-
+        
+    done_count = sum(1 for t in tasks if _is_done_status(t["status"]))
+    total = len(tasks)
+    completion_rate = round(done_count / total * 100, 1) if total else 0.0
+    
     return {
         "tp_key": tp_key,
         "assignee": assignee,
@@ -245,6 +253,9 @@ def build_report(tp_key, assignee, tasks, start_date=None, end_date=None):
             for status, d in by_status.items()
         },
         "tasks": tasks,
+        "done_count": done_count,
+        "total": total,
+        "completion_rate": completion_rate
     }
 
 

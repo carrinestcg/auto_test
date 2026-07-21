@@ -26,7 +26,7 @@ class Frontend:
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url='http://www.sit-gi8viet.com/wps/session/login/unsecure'
+            login_url='http://sit3.sit-gi8viet.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
@@ -39,9 +39,17 @@ class Frontend:
             
             requests_data=self.session.post(login_url,json=login_data,headers=headers)
             print(requests_data.text)
-            self.username = requests_data.json()['value']['userName']
-            self.userid = requests_data.json()['value']['id']
-            self.token=requests_data.json()['value']['token']
+            body = requests_data.json()
+            if not body.get("success"):
+                logging.error("前台登入失敗: %s", body.get("message") or body)
+                return None
+            value = body.get("value") or {}
+            self.username = value.get("userName")
+            self.userid = value.get("id")
+            self.token = value.get("token")
+            if not self.token:
+                logging.error("前台登入回應缺少 token: %s", body)
+                return None
 
             self.token_expire=datetime.now()+timedelta(minutes=25)
             return self.token
@@ -70,8 +78,8 @@ class Frontend:
                 "Authorization":self.token,
                 'Connection': 'keep-alive',
                 'Language': 'EN',
-                'Origin': 'http://www.sit-gi8viet.com',
-                'Referer': 'http://www.sit-gi8viet.com/',
+                'Origin': 'http://sit3.sit-gi8viet.com',
+                'Referer': 'http://sit3.sit-gi8viet.com/',
                 'ModuleId': 'DPSTBAS3',
                 'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
                 'x-requested-with': 'XMLHttpRequest',  
@@ -79,7 +87,7 @@ class Frontend:
             }
         
     def get_mcssite_manualtransfer_channel(self):
-        url = 'http://www.sit-gi8viet.com/wps/relay/MCSFE_getDepositPaymentChannels?webSupported=Y&mobileSupported=N&groupMTByChannelName=Y'
+        url = 'http://sit3.sit-gi8viet.com/wps/relay/MCSFE_getDepositPaymentChannels?webSupported=Y&mobileSupported=N&groupMTByChannelName=Y'
         headers = self.header()
         response = self.session.get(url, headers=headers)
         print(response.json())
@@ -103,8 +111,31 @@ class Frontend:
         else:
             logging.error(f"錯誤{response}")
             return []
+    def get_DiscountTicketList(self):
+        url = 'http://sit3.sit-gi8viet.com/wps/relay/PROMOFE_getDiscountTicketList?status=AVAILABLE'
+        headers = self.header()
+        response = self.session.get(url, headers=headers)
+        print(response.json())
+        response_json=response.json()
+        ticket_list=[]
+        if response_json.get("success"):
+            value = response_json.get("value", [])
+            for item in value:  
+                status=item.get("status")
+                if status != "AVAILABLE":
+                    ticket_id = item.get("ticketId")
+                    id=item.get("id")
+                    ticket_list.append({
+                    "ticketId": ticket_id,
+                    "id": id
+                })
+
+            return ticket_list
+        else:
+            logging.error(f"錯誤{response}")
+            return []
     def get_mcssite_fixed_amount_channel(self):
-        URL="http://www.sit6.sit-gi8viet.com/wps/relay/PROMOFE_getFixedAmtDepositList"
+        URL="http://sit3.sit-gi8viet.com/wps/relay/PROMOFE_getFixedAmtDepositList"
         headers=self.header()
         response = self.session.get(URL, headers=headers)
         print(response.json())
@@ -123,7 +154,7 @@ class Frontend:
         else:
             logging.error("沒有快捷充值送活動")
             return None, None
-    def deposit_QAD(self,username, channel_info:list, promotion_id=None, depositAmount=None, amount=None):
+    def deposit_QAD(self,username, channel_info:list, promotion_id=None, depositAmount=None, amount=None, claimID=None, discountAmount=None):
         success_fail=0
         success_count=0
         print(channel_info)
@@ -136,7 +167,7 @@ class Frontend:
                 self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
-            login_URL="http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
+            login_URL="http://sit3.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
 
             headers=self.header()
             payload={
@@ -157,6 +188,11 @@ class Frontend:
             if promotion_id and depositAmount:
                 payload["promotionId"] = promotion_id
                 payload["amount"] = depositAmount
+                
+            if  claimID:
+                payload["ticketClaimId"] = claimID
+                payload["discountAmount"] = discountAmount
+                payload["match"] = "N"
 
             response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
             response_json=response.json()
@@ -175,11 +211,22 @@ class Frontend:
         return success_count  
             
         
-def main(username,amount, type):
+def main(username, amount, type, ticket_id=None, discountAmount=None):
     print(f"username: {username}, amount: {amount}")
-    success_count=0
-    fail_count=0
-    counts=Counter(username)
+    if isinstance(username, str):
+        username = [u.strip() for u in username.replace(",", " ").split() if u.strip()]
+    elif isinstance(username, (list, tuple)):
+        username = [str(u).strip() for u in username if str(u).strip()]
+    else:
+        username = [str(username).strip()] if str(username).strip() else []
+
+    if not username:
+        logging.error("請提供至少一個玩家帳號")
+        return False
+
+    success_count = 0
+    fail_count = 0
+    counts = Counter(username)
     for account, repeat in counts.items():
     #填入玩家帳號
         credential = {
@@ -210,6 +257,24 @@ def main(username,amount, type):
                         else:
                             fail_count += 1
                         time.sleep(1)
+                        
+                elif type ==3: #使用充值折抵券
+                    channel_info = frontend.get_mcssite_manualtransfer_channel()
+                    ticket_list = frontend.get_DiscountTicketList()
+                    if not ticket_list:
+                        logging.error("沒有可用的充值折抵券")
+                        return False
+                        
+                    for ticket in ticket_list:
+                        if ticket["ticketId"] == ticket_id:
+                            claimID=ticket["id"]
+                            logging.info(f"找到指定的充值折抵券 {ticket_id}")
+                            count = frontend.deposit_QAD(credential['username'], channel_info, amount=amount, claimID=claimID, discountAmount=discountAmount)
+                            if count > 0:
+                                success_count += count
+                            else:
+                                fail_count += 1
+                            time.sleep(1)
             else:
                 logging.error("登入失敗 無法取得Token")
                 return False
@@ -220,6 +285,11 @@ def main(username,amount, type):
     
     logging.info(f"所有帳號 成功{success_count}筆 失敗{fail_count}筆")
     return success_count 
+
+if __name__ == "__main__":
+    import sys
+    user = sys.argv[1] if len(sys.argv) > 1 else "bnm985"
+    main([user], 1000, type=3, ticket_id=1466025, discountAmount=100)
             
 
 
