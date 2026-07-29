@@ -65,6 +65,25 @@ def _append_date_filter(jql, start_date=None, end_date=None):
     return f"{jql} AND {' AND '.join(clauses)}"
 
 
+def _filter_tasks_by_date_range(tasks, start_date=None, end_date=None):
+    """Python-side guard: enforce created date range even if JQL misses edge cases."""
+    start_date = normalize_date(start_date)
+    end_date = normalize_date(end_date)
+    if not start_date and not end_date:
+        return tasks
+
+    filtered = []
+    for task in tasks:
+        created = normalize_date((task.get("created") or "")[:10])
+        if not created:
+            continue
+        if start_date and created < start_date:
+            continue
+        if end_date and created > end_date:
+            continue
+        filtered.append(task)
+    return filtered
+
 def _jira_error_message(resp):
     try:
         body = resp.json()
@@ -79,14 +98,39 @@ def _jira_error_message(resp):
     return resp.text[:300] or resp.reason
 
 
-def _build_assignee_clause(assignee):
+def _normalize_jira_user(value):
+    return (value or "").strip().lower()
+
+
+def _build_assignee_clause(assignee, include_reporter=False):
     assignee = (assignee or "").strip()
-    return f'(assignee = "{assignee}" OR reporter = "{assignee}")'
+    if include_reporter:
+        return f'(assignee = "{assignee}" OR reporter = "{assignee}")'
+    return f'assignee = "{assignee}"'
 
 
-def _build_qa_task_jql_queries(assignee, start_date=None, end_date=None):
+def _task_is_assignee(task, assignee):
+    return _normalize_jira_user(task.get("assignee")) == _normalize_jira_user(assignee)
+
+
+def _task_is_reporter_only(task, assignee):
+    user = _normalize_jira_user(assignee)
+    if not user:
+        return False
+    reporter = _normalize_jira_user(task.get("reporter"))
+    assignee_name = _normalize_jira_user(task.get("assignee"))
+    return reporter == user and assignee_name != user
+
+
+def _filter_tasks_for_user(tasks, assignee, include_reporter=False):
+    if include_reporter:
+        return tasks
+    return [task for task in tasks if _task_is_assignee(task, assignee)]
+
+
+def _build_qa_task_jql_queries(assignee, start_date=None, end_date=None, include_reporter=False):
     """Try multiple JQL shapes; some Jira setups differ on issuetype naming."""
-    user_clause = _build_assignee_clause(assignee)
+    user_clause = _build_assignee_clause(assignee, include_reporter=include_reporter)
     base_queries = [
         f'{user_clause} AND issuetype = "QA Task" ORDER BY created DESC',
         f'{user_clause} AND summary ~ "\\\\[QA\\\\]" ORDER BY created DESC',
@@ -145,17 +189,21 @@ def _matches_tp_key(task, tp_key):
     return False
 
 
-def fetch_qa_tasks_by_tp(tp_key, assignee, start_date=None, end_date=None):
-    tasks = fetch_qa_tasks_by_assignee(assignee, start_date, end_date)
+def fetch_qa_tasks_by_tp(tp_key, assignee, start_date=None, end_date=None, include_reporter=False):
+    tasks = fetch_qa_tasks_by_assignee(
+        assignee, start_date, end_date, include_reporter=include_reporter
+    )
     return [t for t in tasks if _matches_tp_key(t, tp_key)]
 
 
-def fetch_qa_tasks_by_assignee(assignee, start_date=None, end_date=None):
-    """Fetch QA tasks assigned/reported by user using multiple JQL fallbacks."""
+def fetch_qa_tasks_by_assignee(assignee, start_date=None, end_date=None, include_reporter=False):
+    """Fetch QA tasks for a user. Default: assignee only (excludes reporter-only tickets)."""
     merged = {}
     errors = []
 
-    for jql in _build_qa_task_jql_queries(assignee, start_date, end_date):
+    for jql in _build_qa_task_jql_queries(
+        assignee, start_date, end_date, include_reporter=include_reporter
+    ):
         try:
             for task in _search_qa_tasks(jql):
                 merged[task["key"]] = task
@@ -166,6 +214,8 @@ def fetch_qa_tasks_by_assignee(assignee, start_date=None, end_date=None):
         raise requests.HTTPError(errors[0])
 
     tasks = list(merged.values())
+    tasks = _filter_tasks_for_user(tasks, assignee, include_reporter=include_reporter)
+    tasks = _filter_tasks_by_date_range(tasks, start_date, end_date)
     tasks.sort(key=lambda t: t.get("created", ""), reverse=True)
     return tasks
 
@@ -205,6 +255,8 @@ def _search_qa_tasks(jql):
             workdays = f.get(WORKDAYS_FIELD)
             fix_version_names = _extract_fix_versions(f)
             parent = f.get("parent") or {}
+            assignee_name = ((f.get("assignee") or {}).get("name") or "")
+            reporter_name = ((f.get("reporter") or {}).get("name") or "")
             results.append({
                 "key": issue["key"],
                 "summary": f.get("summary", ""),
@@ -213,8 +265,8 @@ def _search_qa_tasks(jql):
                 "created": (f.get("created") or "")[:10],
                 "parent": parent.get("key", "") if parent else "",
                 "fix_versions": fix_version_names,
-                "assignee": ((f.get("assignee") or {}).get("name") or ""),
-                "reporter": ((f.get("reporter") or {}).get("name") or ""),
+                "assignee": assignee_name,
+                "reporter": reporter_name,
             })
 
         start_at += len(issues)

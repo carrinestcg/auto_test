@@ -109,12 +109,20 @@
                     <div id="amount-input-div" class="input-group hidden">
                         <label for="amount">輸入數量</label>
                         <input type="number" id="amount" name="amount" min="0" step="1">
-                        <small id="amount_hint" class="field-hint">此欄位必填</small>
+                        <small class="field-helper">留空將帶入 1</small>
+                        <small id="amount_hint" class="field-hint" >此欄位必填</small>
+                    </div>
+
+                    <div id="deposit-amount-input-div" class="input-group hidden">
+                        <label for="deposit_amount">充值金額</label>
+                        <input type="number" id="deposit_amount" name="deposit_amount" min="0" step="1">
+                        <small id="deposit_amount_hint" class="field-hint">此欄位必填</small>
                     </div>
 
                     <div id="promotion_id-input-div" class="input-group hidden">
                         <label for="promotion_id">活動 ID</label>
                         <input type="text" id="promotion_id" name="promotion_id">
+                        <small class="field-helper">留空將帶入 4023101</small>
                     </div>
                     <div id="round_id-input-div" class="input-group hidden">
                         <label for="round_id">Round ID</label>
@@ -129,7 +137,7 @@
                     <div id="ticket_id-input-div" class="input-group hidden">
                         <label for="ticket_id">票券 ID</label>
                         <input type="text" id="ticket_id" name="ticket_id">
-                        <small id="ticket_hint" class="field-hint">此欄位必填</small>
+                        <small class="field-helper">可留空</small>
                     </div>
 
                     <div id="extra_reward_promo_id-input-div" class="input-group hidden">
@@ -138,7 +146,7 @@
                         <small id="promo_hint" class="field-hint">此欄位必填</small>
                     </div>
 
-                    <div id="deposit-amount-input-div" class="input-group hidden">
+                    <div id="extra-deposit-amount-input-div" class="input-group hidden">
                         <label for="deposit-amount-id">翻倍充值金額 ID</label>
                         <input type="text" id="deposit-amount-id" name="deposit_amount">
                         <small id="deposit_hint" class="field-hint">此欄位必填</small>
@@ -156,6 +164,7 @@
                         <input type="text" id="qa_stats_tp_key" placeholder="TP-5229，留空則查該帳號全部 QA Task" class="account-line-input">
                         <label for="qa_stats_assignee" class="field-label qa-stats-assignee-label">Jira 帳號（assignee）</label>
                         <input type="text" id="qa_stats_assignee" placeholder="carrine.s" class="account-line-input">
+                        <p class="field-helper">只統計<strong>指派給你</strong>的 QA Task；僅為 reporter 的單不計入 workdays。</p>
                         <span class="field-label qa-stats-date-label">日期區間（選填）</span>
                         <div class="workdays-date-panel" id="workdays-date-panel">
                             <div class="workdays-date-panel-head">
@@ -193,13 +202,13 @@
                         </div>
                         <input type="hidden" id="qa_stats_date_from" value="">
                         <input type="hidden" id="qa_stats_date_to" value="">
-                        <p class="field-helper workdays-date-helper">不選則不限制日期，套用後可再次點擊修改</p>
+                        <p class="field-helper workdays-date-helper">不選則不限制日期；按「開始測試」時會自動套用上方日期區間</p>
                         <p id="workdays-date-applied-hint" class="workdays-date-applied-hint hidden" aria-live="polite"></p>
                     </div>
 
                     <div class="multi-select-wrapper input-group" id="platform-select-wrap">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
-                        <select multiple id="frontend-checkbox_manual_platform" size="3" name="platform_type_manual" class="multi-select hidden" onchange="toggleInput()">
+                        <select multiple id="frontend-checkbox_manual_platform" size="6" name="platform_type_manual" class="multi-select hidden">
                             <option value="gi8viet" selected>gi8viet</option>
                             <option value="huamei">Huamei</option>
                             <option value="tcgdemov3">tcgdemov3</option>
@@ -211,7 +220,7 @@
 
                     <div class="input-group field-ticket-select" id="ticket-select-wrap">
                         <label class="field-label" for="frontend-checkbox_select">票券類型（可複選）</label>
-                        <select multiple id="frontend-checkbox_select" size="3" name="ticket_type" class="multi-select hidden" onchange="toggleInput()">
+                        <select multiple id="frontend-checkbox_select" size="7" name="ticket_type" class="multi-select hidden">
                         <option value="CASH" selected>現金兌換券</option>
                         <option value="RAFFLE">幸運紅包</option>
                         <option value="GOLDEN_EGG">砸金蛋</option>
@@ -224,7 +233,7 @@
 
                     <div id="promotion-type-select-wrap" class="input-group field-ticket-select hidden">
                         <label class="field-label" for="promotion-checkbox_select">活動類型（可複選）</label>
-                        <select multiple id="promotion-checkbox_select" size="5" name="promotion_type" class="multi-select hidden" onchange="toggleInput()">
+                        <select multiple id="promotion-checkbox_select" size="8" name="promotion_type" class="multi-select hidden">
                         <option value="ALL">全部</option>
                         <option value="Deposit">充值送</option>
                         <option value="Raffle">幸運抽獎</option>

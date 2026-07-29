@@ -205,7 +205,7 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str,promoTy
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
-def main(username,promotionid,ticket_id,platform,amount):
+def main(username,promotionid,platform,amount, ticket_id=None):
     
     try:
         token = get_token(platform)

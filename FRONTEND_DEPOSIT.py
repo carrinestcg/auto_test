@@ -122,7 +122,7 @@ class Frontend:
             value = response_json.get("value", [])
             for item in value:  
                 status=item.get("status")
-                if status != "AVAILABLE":
+                if status == "AVAILABLE":
                     ticket_id = item.get("ticketId")
                     id=item.get("id")
                     ticket_list.append({
@@ -193,7 +193,7 @@ class Frontend:
                 payload["ticketClaimId"] = claimID
                 payload["discountAmount"] = discountAmount
                 payload["match"] = "N"
-
+            print(f"payload: {payload}")
             response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies,verify=False)
             response_json=response.json()
             logging.info(f"充值 response: {response_json}") 
@@ -211,7 +211,7 @@ class Frontend:
         return success_count  
             
         
-def main(username, amount, type, ticket_id=None, discountAmount=None):
+def main(username, amount, type, ticket_id=None, promotion_id = None, discountAmount=None, depositAmount=None):
     print(f"username: {username}, amount: {amount}")
     if isinstance(username, str):
         username = [u.strip() for u in username.replace(",", " ").split() if u.strip()]
@@ -269,7 +269,7 @@ def main(username, amount, type, ticket_id=None, discountAmount=None):
                         if ticket["ticketId"] == ticket_id:
                             claimID=ticket["id"]
                             logging.info(f"找到指定的充值折抵券 {ticket_id}")
-                            count = frontend.deposit_QAD(credential['username'], channel_info, amount=amount, claimID=claimID, discountAmount=discountAmount)
+                            count = frontend.deposit_QAD(credential['username'], channel_info, amount=amount, claimID=claimID, discountAmount=discountAmount, promotion_id=promotion_id, depositAmount=depositAmount)
                             if count > 0:
                                 success_count += count
                             else:

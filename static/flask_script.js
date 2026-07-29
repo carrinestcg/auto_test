@@ -1,6 +1,21 @@
 /** Checkbox helper — must be module-level; toggleDepositAmount / toggleExtraPromo use it. */
 const isChecked = (id) => document.getElementById(id)?.checked;
 
+const DEFAULT_FORM_AMOUNT = "1";
+const DEFAULT_PROMOTION_ID = "4023101";
+
+function getFormAmountValue() {
+    const raw = document.getElementById("amount")?.value;
+    const trimmed = raw == null ? "" : String(raw).trim();
+    return trimmed || DEFAULT_FORM_AMOUNT;
+}
+
+function getFormPromotionIdValue() {
+    const raw = document.getElementById("promotion_id")?.value;
+    const trimmed = raw == null ? "" : String(raw).trim();
+    return trimmed || DEFAULT_PROMOTION_ID;
+}
+
 function askConfirm(message, options = {}) {
     return new Promise((resolve) => {
         const modal = document.getElementById("confirm-modal");
@@ -301,10 +316,10 @@ function togglePromotionTypeList() {
     promoSelect.classList.toggle("hidden", !need);
 }
 function toggleDepositAmount(){
-    const depositAmountDiv = document.getElementById("deposit-amount-input-div");
+    const extra_depositAmountDiv = document.getElementById("extra-deposit-amount-input-div");
     const requestDepositInput = isChecked("Extra_Reward_api");
-    if (!depositAmountDiv) return;
-    depositAmountDiv.classList.toggle("hidden", !requestDepositInput);
+    if (!extra_depositAmountDiv) return;
+    extra_depositAmountDiv.classList.toggle("hidden", !requestDepositInput);
 }
 
 function toggleExtraPromo(){
@@ -364,6 +379,26 @@ function getWorkdaysAppliedDates() {
         from: document.getElementById("qa_stats_date_from")?.value || "",
         to: document.getElementById("qa_stats_date_to")?.value || "",
     };
+}
+
+function getWorkdaysEffectiveDates({ autoApply = false } = {}) {
+    const draft = getWorkdaysDraftDates();
+    const applied = getWorkdaysAppliedDates();
+    const draftChanged =
+        draft.from !== applied.from || draft.to !== applied.to;
+
+    if ((draft.from || draft.to) && draftChanged) {
+        if (autoApply) {
+            if (!validateWorkdaysDateRange(draft.from, draft.to)) {
+                return { from: "", to: "" };
+            }
+            applyWorkdaysDateRange({ silent: true });
+            return getWorkdaysAppliedDates();
+        }
+        return draft;
+    }
+
+    return applied;
 }
 
 function setWorkdaysDraftDates(from, to) {
@@ -475,9 +510,21 @@ function initWorkdaysDatePicker() {
 
 function toggleAmount(){
     const amountInputDiv = document.getElementById("amount-input-div");
-    const requireamount = isChecked("frontend-checkbox_lott")||isChecked("frontend-checkbox")||isChecked("frontend-checkbox_manual")||isChecked("frontend-checkbox_member")||isChecked("Extra_Reward_api");
-    if (!amountInputDiv) return
-    amountInputDiv.classList.toggle("hidden", !requireamount);
+    const depositAmountDiv = document.getElementById("deposit-amount-input-div");
+    const requireAmount =
+        isChecked("frontend-checkbox_lott") ||
+        isChecked("frontend-checkbox_manual") ||
+        isChecked("frontend-checkbox_member") ||
+        isChecked("Extra_Reward_api") ||
+        isChecked("frontend-fix_deposit");
+    const requireDepositAmount = isChecked("frontend-checkbox");
+
+    if (amountInputDiv) {
+        amountInputDiv.classList.toggle("hidden", !requireAmount);
+    }
+    if (depositAmountDiv) {
+        depositAmountDiv.classList.toggle("hidden", !requireDepositAmount);
+    }
 }
 function toggleTicket() {
     const ticket_select = document.getElementById("frontend-checkbox_select");
@@ -538,6 +585,15 @@ if (amountInput){
         if (amountInput.value.trim()!==""){
         document.getElementById("amount_hint").style.display = "none";
     }});
+}
+const depositAmountInput = document.getElementById("deposit_amount");
+if (depositAmountInput) {
+    depositAmountInput.addEventListener("input", () => {
+        if (depositAmountInput.value.trim() !== "") {
+            const hint = document.getElementById("deposit_amount_hint");
+            if (hint) hint.style.display = "none";
+        }
+    });
 }
 function toggleUsernamePassword() {
     const userDiv = document.getElementById("username-input-div");
@@ -652,16 +708,23 @@ function validateFormBeforeSubmit() {
     const needUsername = isUsernameFieldRequired();
         const amountDiv = document.getElementById("amount-input-div");
         const needAmount = amountDiv && !amountDiv.classList.contains("hidden");
+        const depositAmountDiv = document.getElementById("deposit-amount-input-div");
+        const needDepositAmount = depositAmountDiv && !depositAmountDiv.classList.contains("hidden");
         const qaTaskDiv = document.getElementById("qa-task-input-div");
         const needQATaskInput = qaTaskDiv && !qaTaskDiv.classList.contains("hidden");
         
-    if (needAmount && (!amountInput || amountInput.value.trim() === "")) {
-        document.getElementById("amount_hint").style.display = "inline";
-        console.log("❌ 被 amount 擋");
-        return false; 
-    }else{
+    if (needAmount) {
         document.getElementById("amount_hint").style.display = "none";
-    };
+    }
+
+    if (needDepositAmount && (!depositAmountInput || depositAmountInput.value.trim() === "")) {
+        const depositHint = document.getElementById("deposit_amount_hint");
+        if (depositHint) depositHint.style.display = "inline";
+        return false;
+    } else {
+        const depositHint = document.getElementById("deposit_amount_hint");
+        if (depositHint) depositHint.style.display = "none";
+    }
 
     
     if (needUsername && !usernameInputDiv.value.trim()) {
@@ -693,20 +756,6 @@ function validateFormBeforeSubmit() {
         }
     }
 
-    if (
-        isChecked("MANUAL_SIGN") ||
-        isChecked("QUEST_bonus") ||
-        isChecked("Achievement_bonus") ||
-        isChecked("Activity_bonus") ||
-        isChecked("Schedule_manual_bonus")
-    ) {
-        const promoId = document.getElementById("promotion_id");
-        if (!promoId || !promoId.value.trim()) {
-            alert("請填寫活動 ID（promotion_id）");
-            return false;
-        }
-    }
-
     if (isChecked("Schedule_manual_bonus")) {
         const dateEl = document.getElementById("date_time");
         if (!dateEl || !dateEl.value.trim()) {
@@ -724,57 +773,83 @@ function validateFormBeforeSubmit() {
     }
 
     if (isChecked("calculate_workdays")) {
-        const applied = getWorkdaysAppliedDates();
-        if (!validateWorkdaysDateRange(applied.from, applied.to)) {
+        const effective = getWorkdaysEffectiveDates({ autoApply: true });
+        if (!validateWorkdaysDateRange(effective.from, effective.to)) {
             return false;
         }
     }
 
     return true;
 }
-['frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select', 'promotion-checkbox_select']
-    .forEach(id => {
-        const el=document.getElementById(id);
-        if (!el){
-            return;
-        }
-        el.addEventListener('change', function() {
-            if(!this.options){
-                toggleInput();
-                return;
-            }
-            const alloption = this.querySelector('option[value="ALL"]');
-            const otheroption = Array.from(this.options).filter(option => option.value !== 'ALL');
-            const anyOtherSelected = otheroption.some((o) => o.selected);
 
-            // 「全部」與「只選部分類型」不可同時為 true；否則會誤觸發「全選其餘」分支（例如 HTML 曾預設 ALL selected）
-            if (alloption && alloption.selected && anyOtherSelected) {
-                alloption.selected = false;
-            }
+const MULTI_SELECT_IDS = [
+    "frontend-checkbox_select",
+    "frontend-checkbox_select_platform",
+    "frontend-checkbox_manual_platform",
+    "frontend-checkbox_7_Ticket_select",
+    "promotion-checkbox_select",
+];
 
-            if (alloption && alloption.selected) {
-                otheroption.forEach(option => option.selected = true);
-                alloption.selected = false;
-            }
-            toggleInput();
+function restoreMultiSelectScroll(selectEl, scrollTop) {
+    if (!selectEl) return;
+    const apply = () => {
+        selectEl.scrollTop = scrollTop;
+    };
+    apply();
+    requestAnimationFrame(() => {
+        apply();
+        requestAnimationFrame(apply);
+    });
+}
+
+function handleMultiSelectChange(selectEl) {
+    const scrollTop = selectEl.scrollTop;
+
+    if (!selectEl.options) {
+        toggleInput();
+        restoreMultiSelectScroll(selectEl, scrollTop);
+        return;
+    }
+
+    const alloption = selectEl.querySelector('option[value="ALL"]');
+    const otheroption = Array.from(selectEl.options).filter((option) => option.value !== "ALL");
+    const anyOtherSelected = otheroption.some((o) => o.selected);
+
+    // 「全部」與「只選部分類型」不可同時為 true；否則會誤觸發「全選其餘」分支（例如 HTML 曾預設 ALL selected）
+    if (alloption && alloption.selected && anyOtherSelected) {
+        alloption.selected = false;
+    }
+
+    if (alloption && alloption.selected) {
+        otheroption.forEach((option) => {
+            option.selected = true;
         });
+        alloption.selected = false;
+    }
+
+    toggleInput();
+    restoreMultiSelectScroll(selectEl, scrollTop);
+}
+
+MULTI_SELECT_IDS.forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    el.addEventListener("change", function onMultiSelectChange() {
+        handleMultiSelectChange(this);
     });
 
-['frontend-checkbox_select', 'frontend-checkbox_select_platform', 'frontend-checkbox_manual_platform','frontend-checkbox_7_Ticket_select', 'promotion-checkbox_select']
-    .forEach(id => {
-        const el=document.getElementById(id);
-        if (!el){
-            return;
-        }
-        el.addEventListener('mousedown', function(e) {
-            const option = e.target;
-            if (option.tagName === 'OPTION') {
-                e.preventDefault();
-                option.selected = !option.selected;
-                this.dispatchEvent(new Event('change'));
-            }
-        });
+    // 不用 Ctrl 即可複選；preventDefault 後需手動還原 scrollTop，否則點下方選項會跳回頂部
+    el.addEventListener("mousedown", function onMultiSelectMouseDown(e) {
+        const option = e.target;
+        if (option.tagName !== "OPTION") return;
+        e.preventDefault();
+        const scrollTop = this.scrollTop;
+        option.selected = !option.selected;
+        handleMultiSelectChange(this);
+        restoreMultiSelectScroll(this, scrollTop);
     });
+});
 
 document.addEventListener("DOMContentLoaded", function () {
     toggleInput();
@@ -1047,15 +1122,15 @@ function runSelectScript(){
     switch (scriptName) {
         case "SIGLE_PROMO_7_TICKET":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
+                promotion_id: getFormPromotionIdValue(),
             };
             break;
 
         case "MANUAL_CREATE_SINGLE_CONFIRM":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value,
+                promotion_id: getFormPromotionIdValue(),
                 ticket_id: document.getElementById("ticket_id").value,
-                amount: document.getElementById("amount").value,
+                amount: getFormAmountValue(),
             };
             break;
 
@@ -1097,13 +1172,13 @@ function runSelectScript(){
 
         case "LOTTERY_BET":
             extraData = {
-                amount: document.getElementById("amount").value,
+                amount: getFormAmountValue(),
             };
             break;
 
         case "create_member_player":
             extraData = {
-                amount: document.getElementById("amount").value,
+                amount: getFormAmountValue(),
             };
             break;
 
@@ -1113,7 +1188,7 @@ function runSelectScript(){
                 : [];
             extraData = {
                 username_list,
-                amount: document.getElementById("amount").value,
+                deposit_amount: document.getElementById("deposit_amount").value,
                 type: 1
             };
             runScriptApi(scriptName, { username, ...extraData });
@@ -1125,7 +1200,7 @@ function runSelectScript(){
                 : [];
             extraData = {
                 deposit_list,
-                amount: document.getElementById("amount").value,
+                amount: getFormAmountValue(),
                 type: 2
             };
             runScriptApi(scriptName, { username, ...extraData });
@@ -1139,14 +1214,14 @@ function runSelectScript(){
 
         case "Schedule_manual_bonus":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value.trim(),
+                promotion_id: getFormPromotionIdValue(),
                 date: document.getElementById("date_time").value.trim(),
             };
             break;
 
         case "MANUAL_SIGN":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value.trim(),
+                promotion_id: getFormPromotionIdValue(),
             };
             break;
 
@@ -1171,12 +1246,12 @@ function runSelectScript(){
         case "calculate_workdays": {
             const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
             const tpKeys = tpRaw.split(/[\s,;]+/).filter(Boolean);
-            const appliedDates = getWorkdaysAppliedDates();
+            const effectiveDates = getWorkdaysEffectiveDates({ autoApply: true });
             extraData = {
                 assignee: document.getElementById("qa_stats_assignee").value.trim() || "carrine.s",
                 tp_key: tpKeys[0] || "",
-                date_from: appliedDates.from,
-                date_to: appliedDates.to,
+                date_from: effectiveDates.from,
+                date_to: effectiveDates.to,
             };
             runScriptApi(scriptName, { ...extraData });
             continue;
@@ -1189,8 +1264,8 @@ function runSelectScript(){
                 : [];
             extraData = {
                 ticket_id_list,
-                amount: document.getElementById("amount").value,
-                promotion_id: document.getElementById("promotion_id").value,
+                amount: getFormAmountValue(),
+                promotion_id: getFormPromotionIdValue(),
                 "deposit-amount-id": document.getElementById("deposit-amount-id").value,
                 extra_promo_id: document.getElementById("extra_promo_id").value,
             };
@@ -1227,19 +1302,19 @@ function runSelectScript(){
 
         case "Achievement_bonus":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value.trim(),
+                promotion_id: getFormPromotionIdValue(),
                 type: 1,
             };
             break;
         case "QUEST_bonus":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value.trim(),
+                promotion_id: getFormPromotionIdValue(),
                 type: 2,
             };
             break;
         case "Activity_bonus":
             extraData = {
-                promotion_id: document.getElementById("promotion_id").value.trim(),
+                promotion_id: getFormPromotionIdValue(),
                 type: 3,
             };
             break;
@@ -1636,7 +1711,7 @@ function renderWorkdaysReport(report) {
         const emptyDesc = report.tp_key
             ? `TP 單號（${report.tp_key}）在日期區間 ${rangeHint} 內沒有相關 QA Task。`
             : `Jira 帳號（${report.assignee || "—"}）在日期區間 ${rangeHint} 內沒有指派的 QA Task。`;
-        return `${summary}${renderEmptyState("目前沒有相關 ticket", emptyDesc)}`;
+        return `${summary}${renderEmptyState("目前沒有指派的 QA Task", emptyDesc)}`;
     }
 
     const progress = renderProgressBar(completionRate);

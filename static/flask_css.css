@@ -547,6 +547,7 @@ input[type="text"].account-line-input {
 }
 
 .account-config #amount,
+.account-config #deposit_amount,
 .account-config #promotion_id,
 .account-config #ticket_id {
     width: var(--account-field-width, 180px);
@@ -555,6 +556,7 @@ input[type="text"].account-line-input {
 }
 
 .account-config #amount-input-div,
+.account-config #deposit-amount-input-div,
 .account-config #promotion_id-input-div,
 .account-config #ticket_id-input-div,
 .account-config #round_id-input-div {
@@ -1163,7 +1165,7 @@ select.multi-select:not(.hidden) {
 
 select.multi-select {
     width: 220px;
-    max-height: 150px;
+    max-height: 240px;
     min-height: 40px;
     padding: 8px 10px;
     border: 1px solid var(--border-strong);
@@ -1172,6 +1174,7 @@ select.multi-select {
     font-size: 0.875rem;
     cursor: pointer;
     overflow-y: auto;
+    overflow-anchor: none;
 }
 
 select.multi-select:focus {

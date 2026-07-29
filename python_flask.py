@@ -116,7 +116,7 @@ def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
-                result, promoType = Manual_create_single_with_confirm.main(username,promotion,ticket_id,platform,amount)
+                result, promoType = Manual_create_single_with_confirm.main(username,promotion,platform,amount, ticket_id)
                 return result, promoType
         return False, None
 
@@ -670,7 +670,7 @@ def api_Deposit():
     data=request.json
     username_raw = data.get("username", "")
     username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
-    amount = data.get("amount") 
+    amount = data.get("deposit_amount") or data.get("amount")
     verify_type = data.get("type") 
     if verify_type == 1:
         result = FRONTEND_DEPOSIT.main(username_list,amount, verify_type)
@@ -1038,10 +1038,15 @@ def api_calculate_workdays():
         return jsonify({"success": False, "message": "開始日期不能晚於結束日期"}), 400
 
     try:
+        include_reporter = str(data.get("include_reporter", "")).lower() in ("1", "true", "yes")
         if tp_key:
-            tasks = calculate_workdays.fetch_qa_tasks_by_tp(tp_key, assignee, date_from, date_to)
+            tasks = calculate_workdays.fetch_qa_tasks_by_tp(
+                tp_key, assignee, date_from, date_to, include_reporter=include_reporter
+            )
         else:
-            tasks = calculate_workdays.fetch_qa_tasks_by_assignee(assignee, date_from, date_to)
+            tasks = calculate_workdays.fetch_qa_tasks_by_assignee(
+                assignee, date_from, date_to, include_reporter=include_reporter
+            )
         report = calculate_workdays.build_report(tp_key, assignee, tasks, date_from, date_to)
         if tasks:
             message = "查詢成功"
