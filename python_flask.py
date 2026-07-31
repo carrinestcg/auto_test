@@ -40,6 +40,7 @@ import create_qa_task
 import calculate_workdays
 from Verify_Info import verify_info
 from version_util import load_version_info
+import SameTimeReceiveTicket
 
 
 logging.basicConfig(
@@ -753,6 +754,21 @@ def api_auto_create_7_ticket():
             "message": "Trigger API Successfully"
             }
         )
+    
+@python_flask.route('/api/SameTime_ReceiveTicket',methods=['POST']) #同時領取同張票券API
+def SameTimeReceiveTicket_api():
+    data=request.json
+    username1=data["username"]
+    username2=data["username2"] 
+    SameTimeReceiveTicket.main(username1,username2)
+    
+    return jsonify(
+        {
+            "success": True,
+            "message": "Trigger API Successfully"
+            }
+        )
+    
 @python_flask.route('/api/MANUAL_CREATE_SINGLE_CONFIRM',methods=['POST']) #手動紅利派發API
 def api_manual_create_bonus():
     data=request.json

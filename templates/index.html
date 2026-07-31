@@ -93,13 +93,18 @@
                             <input type="text" id="username" name="username" autocomplete="username" class="account-line-input">
                             <small id="username_hint" class="field-hint">此欄位必填</small>
                         </div>
+                        <div id="username2-input-div" class="input-group">
+                            <label for="username2">玩家帳號2</label>
+                            <input type="text" id="username2" name="username2" autocomplete="username" class="account-line-input">
+                            <small id="username2_hint" class="field-hint">此欄位必填</small>
+                        </div>
                         <div id="ticket-input-div" class="input-group hidden">
                             <label for="ticket_input">票券名稱</label>
                             <input type="text" id="ticket_input" name="ticket_input" class="account-line-input">
                         </div>
                     </div>
 
-                    <div id="password-input-div" class="input-group account-field-col">
+                    <div id="password-input-div" class="input-group account-field-col hidden">
                         <label for="password">用戶密碼</label>
                         <input type="text" id="password" name="password" class="account-line-input" autocomplete="current-password">
                         <small class="field-helper">tcgdemov3 預設為 qwe123；留空將自動帶入 123qwe</small>
@@ -108,8 +113,7 @@
 
                     <div id="amount-input-div" class="input-group hidden">
                         <label for="amount">輸入數量</label>
-                        <input type="number" id="amount" name="amount" min="0" step="1">
-                        <small class="field-helper">留空將帶入 1</small>
+                        <input type="number" id="amount" name="amount" min="0" step="1" placeholder="留空將帶入 1">
                         <small id="amount_hint" class="field-hint" >此欄位必填</small>
                     </div>
 
@@ -121,8 +125,7 @@
 
                     <div id="promotion_id-input-div" class="input-group hidden">
                         <label for="promotion_id">活動 ID</label>
-                        <input type="text" id="promotion_id" name="promotion_id">
-                        <small class="field-helper">留空將帶入 4023101</small>
+                        <input type="text" id="promotion_id" name="promotion_id" placeholder="留空將帶入 4023101">
                     </div>
                     <div id="round_id-input-div" class="input-group hidden">
                         <label for="round_id">Round ID</label>
@@ -136,8 +139,7 @@
 
                     <div id="ticket_id-input-div" class="input-group hidden">
                         <label for="ticket_id">票券 ID</label>
-                        <input type="text" id="ticket_id" name="ticket_id">
-                        <small class="field-helper">可留空</small>
+                        <input type="text" id="ticket_id" name="ticket_id" placeholder="可留空">
                     </div>
 
                     <div id="extra_reward_promo_id-input-div" class="input-group hidden">
@@ -425,6 +427,10 @@
                     <label>
                         <input type="checkbox" name="script" value="Schedule_manual_bonus" id="Schedule_manual_bonus" onchange="toggleInput()">
                         定時任務API
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="SameTime_ReceiveTicket" id="SameTime_ReceiveTicket" onchange="toggleInput()">
+                        同時領取票券
                     </label>
                 </div>
             </div>

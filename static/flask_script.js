@@ -259,6 +259,7 @@ function toggleInput() {
     toggleDateTime();
     toggleUsernamePassword();
     updateRunButtonState();
+    toggleSecondUsername();
 }
 /** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
 const SCRIPTS_NEED_USERNAME = [
@@ -293,6 +294,7 @@ const SCRIPTS_NEED_USERNAME = [
     "test_Extra_bonus",
     "MANUAL_SINGLE",
     "MANUAL_BATCH",
+    "SameTime_ReceiveTicket"
 ];
 
 /** 勾選這些腳本（且無其他需要 username 的腳本）時，隱藏 username / password */
@@ -320,6 +322,12 @@ function toggleDepositAmount(){
     const requestDepositInput = isChecked("Extra_Reward_api");
     if (!extra_depositAmountDiv) return;
     extra_depositAmountDiv.classList.toggle("hidden", !requestDepositInput);
+}
+function toggleSecondUsername(){
+    const extra_UserName = document.getElementById("username2-input-div");
+    const requestSecondUserName = isChecked("SameTime_ReceiveTicket");
+    if (!extra_UserName) return;
+    extra_UserName.classList.toggle("hidden", !requestSecondUserName);
 }
 
 function toggleExtraPromo(){
@@ -573,7 +581,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","calculate_workdays"];  /*不需要選平台*/
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","calculate_workdays","SameTime_ReceiveTicket"];  /*不需要選平台*/
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -609,17 +617,11 @@ function toggleUsernamePassword() {
     const shouldHide = !anyNeedUsername && checkedScripts.some(s => SCRIPTS_HIDE_USERNAME.includes(s));
 
     userDiv.classList.toggle("hidden", shouldHide);
-    pwdWrap.classList.toggle("hidden", shouldHide);
-    // 一併收合外層 account-column，否則 username 隱藏後仍佔 180px 空白
+    // pwdWrap.classList.toggle("hidden", shouldHide);  ← 刪掉這行，密碼欄位交給 HTML 上的 hidden 永久控制
     if (userColumn) {
         userColumn.classList.toggle("hidden", shouldHide);
     }
 
-    // 平台選單的 margin-left 直接用 id 抓，準確控制
-    const platformWrap = document.getElementById("platform-select-wrap");
-    if (platformWrap) {
-        platformWrap.style.marginLeft = shouldHide ? "0" : "";
-    }
     updateRunButtonState();
 }
 
@@ -1123,6 +1125,12 @@ function runSelectScript(){
         case "SIGLE_PROMO_7_TICKET":
             extraData = {
                 promotion_id: getFormPromotionIdValue(),
+            };
+            break;
+
+        case "SameTime_ReceiveTicket":
+            extraData = {
+                username2: document.getElementById("username2").value,
             };
             break;
 
