@@ -16,6 +16,210 @@ function getFormPromotionIdValue() {
     return trimmed || DEFAULT_PROMOTION_ID;
 }
 
+const TEST_SCENARIOS = [
+    {
+        id: "manual_create_confirm",
+        title: "創建個人＋審核",
+        summary: "後台 · 個人審核",
+        tab: "Backend",
+        scripts: ["MANUAL_CREATE_SINGLE_CONFIRM"],
+        fields: { promotion_id: DEFAULT_PROMOTION_ID, amount: DEFAULT_FORM_AMOUNT },
+        platforms: ["gi8viet"],
+        followUp: "填玩家帳號；票券 ID 依活動需要再補。",
+    },
+    {
+        id: "customer_info",
+        title: "查詢玩家資訊",
+        summary: "Customer_id",
+        tab: "Player Management",
+        scripts: ["Customer_id"],
+        platforms: ["gi8viet"],
+        followUp: "填玩家帳號後執行，結果顯示在彈窗。",
+    },
+    {
+        id: "create_member",
+        title: "創建玩家",
+        summary: "新建代理帳號",
+        tab: "Player Management",
+        scripts: ["auto_create_player"],
+        platforms: ["gi8viet"],
+        followUp: "填玩家帳號作為新建代理帳號。",
+    },
+    {
+        id: "deposit_frontend_backend",
+        title: "前台充值＋後台審核",
+        summary: "充值 → 審核",
+        tab: "TestingTooLTab",
+        scripts: ["FRONTEND_DEPOSIT", "DEPOSIT_API"],
+        fields: { deposit_amount: "100", password: "123qwe" },
+        followUp: "先填玩家帳號；依序跑前台充值再後台批量審核。",
+    },
+    {
+        id: "create_qa_task",
+        title: "建立 QA Task",
+        summary: "QA Task",
+        tab: "SanityTooLTab",
+        scripts: ["create_qa_task"],
+        followUp: "填 TCG 單號（可多筆，逗號分隔）後執行。",
+    },
+    {
+        id: "change_password",
+        title: "變更玩家密碼",
+        summary: "重設為 123qwe",
+        tab: "TestingTooLTab",
+        scripts: ["Change_password"],
+        platforms: ["gi8viet"],
+        followUp: "填玩家帳號後執行，密碼將重設為 123qwe。",
+    },
+];
+
+let activeScenarioId = null;
+
+function getCheckedScriptValues() {
+    return Array.from(document.querySelectorAll('input[name="script"]:checked')).map((el) => el.value);
+}
+
+function scriptsMatchScenario(scenario, checkedScripts) {
+    if (!scenario?.scripts?.length || checkedScripts.length !== scenario.scripts.length) {
+        return false;
+    }
+    const checkedSet = new Set(checkedScripts);
+    return scenario.scripts.every((script) => checkedSet.has(script));
+}
+
+function clearScenarioSelection() {
+    activeScenarioId = null;
+    document.querySelectorAll('input[name="script"]').forEach((checkbox) => {
+        checkbox.checked = false;
+    });
+    document.querySelectorAll(".scenario-card").forEach((card) => {
+        card.classList.remove("is-active");
+    });
+    const followUp = document.getElementById("scenario-followup");
+    if (followUp) {
+        followUp.textContent = "";
+        followUp.classList.add("hidden");
+    }
+    toggleInput();
+}
+
+function syncScenarioPanelWithSelection() {
+    const checked = getCheckedScriptValues();
+    const activeScenario = TEST_SCENARIOS.find((scenario) => scenario.id === activeScenarioId);
+
+    if (!checked.length || !activeScenario || !scriptsMatchScenario(activeScenario, checked)) {
+        activeScenarioId = null;
+        document.querySelectorAll(".scenario-card").forEach((card) => {
+            card.classList.remove("is-active");
+        });
+        const followUp = document.getElementById("scenario-followup");
+        if (followUp) {
+            followUp.textContent = "";
+            followUp.classList.add("hidden");
+        }
+    }
+}
+
+function activateTab(tabId) {
+    const navBtn = Array.from(document.querySelectorAll(".nav-item, .tab-version-btn")).find((btn) => {
+        const onclick = btn.getAttribute("onclick") || "";
+        return onclick.includes(`'${tabId}'`);
+    });
+    switchTab({ currentTarget: navBtn || document.body }, tabId);
+}
+
+function setPlatformSelection(platforms) {
+    const select = document.getElementById("frontend-checkbox_manual_platform");
+    if (!select || !platforms?.length) return;
+    Array.from(select.options).forEach((option) => {
+        option.selected = platforms.includes(option.value);
+    });
+}
+
+function fillScenarioPastDateTime() {
+    const input = document.getElementById("date_time");
+    if (!input) return;
+    const date = new Date();
+    date.setDate(date.getDate() - 1);
+    date.setHours(10, 0, 0, 0);
+    const pad = (n) => String(n).padStart(2, "0");
+    input.value = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
+function applyTestScenario(scenario) {
+    if (!scenario) return;
+
+    if (activeScenarioId === scenario.id) {
+        clearScenarioSelection();
+        return;
+    }
+
+    document.querySelectorAll('input[name="script"]').forEach((checkbox) => {
+        checkbox.checked = false;
+    });
+
+    activateTab(scenario.tab);
+
+    scenario.scripts.forEach((value) => {
+        const checkbox = document.querySelector(`input[name="script"][value="${CSS.escape(value)}"]`);
+        if (checkbox) checkbox.checked = true;
+    });
+
+    if (scenario.fields) {
+        Object.entries(scenario.fields).forEach(([fieldId, value]) => {
+            const input = document.getElementById(fieldId);
+            if (input) input.value = value;
+        });
+    }
+
+    if (scenario.fillPastDate) {
+        fillScenarioPastDateTime();
+    }
+
+    setPlatformSelection(scenario.platforms);
+    toggleInput();
+
+    activeScenarioId = scenario.id;
+    document.querySelectorAll(".scenario-card").forEach((card) => {
+        card.classList.toggle("is-active", card.dataset.scenarioId === scenario.id);
+    });
+
+    const followUp = document.getElementById("scenario-followup");
+    if (followUp) {
+        followUp.textContent = scenario.followUp || "";
+        followUp.classList.toggle("hidden", !scenario.followUp);
+    }
+
+    const username = document.getElementById("username");
+    const usernameWrap = document.getElementById("username-input-div");
+    if (username && usernameWrap && !usernameWrap.classList.contains("hidden")) {
+        username.focus();
+    }
+}
+
+function renderTestScenarios() {
+    const root = document.getElementById("scenario-list");
+    if (!root) return;
+
+    root.innerHTML = "";
+    TEST_SCENARIOS.forEach((scenario) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "scenario-card";
+        button.dataset.scenarioId = scenario.id;
+        button.innerHTML = `
+            <span class="scenario-card-title">${scenario.title}</span>
+            <span class="scenario-card-summary">${scenario.summary}</span>
+        `;
+        button.addEventListener("click", () => applyTestScenario(scenario));
+        root.appendChild(button);
+    });
+}
+
+function initScenarioPanel() {
+    renderTestScenarios();
+}
+
 function askConfirm(message, options = {}) {
     return new Promise((resolve) => {
         const modal = document.getElementById("confirm-modal");
@@ -67,8 +271,9 @@ function askSign(message, options = {}) {
         const titleEl = document.getElementById("sign-modal-title");
         const yesBtn = document.getElementById("sign-yes-btn");
         const noBtn = document.getElementById("sign-no-btn");
+        const closeBtn = document.getElementById("sign-close-btn");
         if (!modal || !yesBtn || !noBtn) {
-            resolve(false);
+            resolve(null);
             return;
         }
 
@@ -94,13 +299,16 @@ function askSign(message, options = {}) {
             }, 180);
             yesBtn.removeEventListener("click", onYes);
             noBtn.removeEventListener("click", onNo);
+            closeBtn?.removeEventListener("click", onClose);
             resolve(result);
         };
         const onYes = () => cleanup(true);
         const onNo = () => cleanup(false);
+        const onClose = () => cleanup(null);
 
         yesBtn.addEventListener("click", onYes);
         noBtn.addEventListener("click", onNo);
+        closeBtn?.addEventListener("click", onClose);
     });
 }
 
@@ -304,6 +512,9 @@ function toggleInput() {
     toggleUsernamePassword();
     updateRunButtonState();
     toggleSecondUsername();
+    toggleQATaskInput();
+    toggleWorkdaysInput();
+    syncScenarioPanelWithSelection();
 }
 /** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
 const SCRIPTS_NEED_USERNAME = [
@@ -671,10 +882,6 @@ function toggleUsernamePassword() {
 
 let activeRunRequests = 0;
 
-function getCheckedScriptValues() {
-    return Array.from(document.querySelectorAll('input[name="script"]:checked')).map((el) => el.value);
-}
-
 function isUsernameFieldRequired() {
     const userDiv = document.getElementById("username-input-div");
     if (!userDiv || userDiv.classList.contains("hidden")) return false;
@@ -913,6 +1120,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     initResultModal();
     initWorkdaysDatePicker();
+    initScenarioPanel();
 });
 
 function initFileUploadZones() {
@@ -1271,13 +1479,17 @@ function runSelectScript(){
             };
             break;
 
-        case "MANUAL_SIGN":
-            const wantApprove = await askSign("選擇報名類型？");
+        case "MANUAL_SIGN": {
+            const signChoice = await askSign("選擇報名類型？");
+            if (signChoice === null) {
+                continue;
+            }
             extraData = {
                 promotion_id: getFormPromotionIdValue(),
-                requireType: wantApprove ? "A" : "B",
+                requireType: signChoice ? "A" : "B",
             };
             break;
+        }
 
         /** 領取郵寄碼：先詢問是否要審核，Y/N 帶給後端 requireType */
         case "PostCard_api": {

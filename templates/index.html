@@ -86,6 +86,7 @@
             </div>
             <div class="card-body">
             <div class="account-wrap">
+                <div class="account-main">
                 <div class="account-config">
                     <div class="account-column account-field-col">
                         <div id="username-input-div" class="input-group">
@@ -266,6 +267,24 @@
                         <p id="run-test-hint" class="run-test-hint" role="status"></p>
                     </div>
                 </div>
+
+                <aside class="operation-assist scenario-bar" id="operation-assist" aria-labelledby="operation-assist-heading">
+                    <div class="scenario-panel-head">
+                        <div class="operation-assist-header">
+                            <span class="operation-assist-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                </svg>
+                            </span>
+                            <h3 id="operation-assist-heading" class="operation-assist-title">常用場景</h3>
+                        </div>
+                        <p class="scenario-panel-desc">一鍵套用勾選、切換分頁與預設欄位，再填帳號即可執行。</p>
+                    </div>
+                    <div class="scenario-list" id="scenario-list"></div>
+                    <p class="scenario-followup hidden" id="scenario-followup" aria-live="polite"></p>
+                </aside>
+                </div>
             </div>
 
         </section>
@@ -375,63 +394,108 @@
             </div>
 
             <div id="TestingTooLTab" class="tabcontent active" role="tabpanel">
-                <div class="script-grid">
-                    <label>
-                        <input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">
-                        品牌管理員並行操作測試
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Compensation_api" id="Compensation_api" onchange="toggleInput()">
-                        幸運注單補派獎
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
-                        觸發 APP 下載獎勵
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="PostCard_api" id="PostCard_api" onchange="toggleInput()">
-                        領取郵寄碼
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Extra_Reward_api" id="Extra_Reward_api" onchange="toggleInput()">
-                        觸發翻倍獎勵
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">
-                        用戶前台充值
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Achievement_bonus" id="Achievement_bonus" onchange="toggleInput()">
-                        領取成就獎勵
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="QUEST_bonus" id="QUEST_bonus" onchange="toggleInput()">
-                        領取任務獎勵
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
-                        後台批量審核充值
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Activity_bonus" id="Activity_bonus" onchange="toggleInput()">
-                        領取活躍度獎勵
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="FIXED_DEPOSIT" id="frontend-fix_deposit" onchange="toggleInput()">
-                        快捷充值送
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
-                        變更玩家密碼
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Schedule_manual_bonus" id="Schedule_manual_bonus" onchange="toggleInput()">
-                        定時任務API
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="SameTime_ReceiveTicket" id="SameTime_ReceiveTicket" onchange="toggleInput()">
-                        同時領取票券
-                    </label>
+                <div class="script-categories">
+                    <section class="script-category" aria-labelledby="script-cat-deposit">
+                        <div class="script-category-header">
+                            <span class="script-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
+                                    <path d="M16 12h.01"/>
+                                    <path d="M2 10h20"/>
+                                </svg>
+                            </span>
+                            <h3 id="script-cat-deposit" class="script-category-title">充值相關</h3>
+                        </div>
+                        <div class="script-grid script-category-grid">
+                            <label>
+                                <input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">
+                                用戶前台充值
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
+                                後台批量審核充值
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="FIXED_DEPOSIT" id="frontend-fix_deposit" onchange="toggleInput()">
+                                快捷充值送
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="script-category" aria-labelledby="script-cat-reward">
+                        <div class="script-category-header">
+                            <span class="script-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="20 12 20 22 4 22 4 12"/>
+                                    <rect x="2" y="7" width="20" height="5"/>
+                                    <line x1="12" y1="22" x2="12" y2="7"/>
+                                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                                </svg>
+                            </span>
+                            <h3 id="script-cat-reward" class="script-category-title">領取 / 獎勵相關</h3>
+                        </div>
+                        <div class="script-grid script-category-grid">
+                            <label>
+                                <input type="checkbox" name="script" value="Compensation_api" id="Compensation_api" onchange="toggleInput()">
+                                幸運注單補派獎
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
+                                觸發 APP 下載獎勵
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="Extra_Reward_api" id="Extra_Reward_api" onchange="toggleInput()">
+                                觸發翻倍獎勵
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="PostCard_api" id="PostCard_api" onchange="toggleInput()">
+                                領取郵寄碼
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="Achievement_bonus" id="Achievement_bonus" onchange="toggleInput()">
+                                領取成就獎勵
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="QUEST_bonus" id="QUEST_bonus" onchange="toggleInput()">
+                                領取任務獎勵
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="Activity_bonus" id="Activity_bonus" onchange="toggleInput()">
+                                領取活躍度獎勵
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="SameTime_ReceiveTicket" id="SameTime_ReceiveTicket" onchange="toggleInput()">
+                                同時領取票券
+                            </label>
+                        </div>
+                    </section>
+
+                    <section class="script-category" aria-labelledby="script-cat-system">
+                        <div class="script-category-header">
+                            <span class="script-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                            </span>
+                            <h3 id="script-cat-system" class="script-category-title">系統 / 帳號管理</h3>
+                        </div>
+                        <div class="script-grid script-category-grid">
+                            <label>
+                                <input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">
+                                品牌管理員並行操作測試
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
+                                變更玩家密碼
+                            </label>
+                            <label>
+                                <input type="checkbox" name="script" value="Schedule_manual_bonus" id="Schedule_manual_bonus" onchange="toggleInput()">
+                                定時任務 API
+                            </label>
+                        </div>
+                    </section>
                 </div>
             </div>
             <div id="SanityTooLTab" class="tabcontent" role="tabpanel">
@@ -599,7 +663,8 @@
     <div id="sign-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sign-modal-title">
         <div class="modal-content result-modal-content sign-modal-content">
             <div class="result-modal-top">
-                <div class="result-modal-head">
+                <div class="result-modal-head result-modal-head-with-close">
+                    <button type="button" class="modal-close-btn" id="sign-close-btn" aria-label="關閉">×</button>
                     <p class="result-eyebrow">MANUAL_SIGN · CONFIRM</p>
                     <h2 class="result-modal-title" id="sign-modal-title">報名類型</h2>
                 </div>
