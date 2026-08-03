@@ -822,9 +822,8 @@ button {
     flex-wrap: wrap;
     gap: 6px;
     align-items: flex-start;
-    width: 100%;
     margin-top: 8px;
-    order: 999;
+  
 }
 
 .run-test-hint {
@@ -1424,6 +1423,35 @@ select.multi-select option:checked {
 }
 
 #confirm-modal.hidden {
+    display: flex;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+#sign-modal {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 180ms ease-out, visibility 180ms ease-out;
+}
+
+#sign-modal.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#sign-modal .sign-modal-content {
+    transform: scale(0.97) translateY(4px);
+    transition: transform 180ms ease-out;
+}
+
+#sign-modal.is-visible .sign-modal-content {
+    transform: scale(1) translateY(0);
+}
+
+#sign-modal.hidden {
     display: flex;
     opacity: 0;
     visibility: hidden;

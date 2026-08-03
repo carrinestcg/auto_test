@@ -210,7 +210,7 @@
 
                     <div class="multi-select-wrapper input-group" id="platform-select-wrap">
                         <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
-                        <select multiple id="frontend-checkbox_manual_platform" size="6" name="platform_type_manual" class="multi-select hidden">
+                        <select multiple id="frontend-checkbox_manual_platform" size="4" name="platform_type_manual" class="multi-select hidden">
                             <option value="gi8viet" selected>gi8viet</option>
                             <option value="huamei">Huamei</option>
                             <option value="tcgdemov3">tcgdemov3</option>
@@ -255,7 +255,7 @@
                         <option value="sign_new">新用戶簽到</option>
                         </select>
                     </div>
-
+                </div>      
                     <div class="button-group">
                         <button type="button" id="run-test-btn" class="btn-primary" onclick="runSelectScript()" disabled aria-busy="false">
                             <span class="btn-icon btn-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="8 5 19 12 8 19"/></svg></span>
@@ -267,7 +267,7 @@
                     </div>
                 </div>
             </div>
-            </div>
+
         </section>
 
         <section class="card tabs-wrap" id="scripts-section" aria-labelledby="scripts-heading">
@@ -595,6 +595,25 @@
             </div>
         </div>
     </div>
+
+    <div id="sign-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="sign-modal-title">
+        <div class="modal-content result-modal-content sign-modal-content">
+            <div class="result-modal-top">
+                <div class="result-modal-head">
+                    <p class="result-eyebrow">MANUAL_SIGN · CONFIRM</p>
+                    <h2 class="result-modal-title" id="sign-modal-title">報名類型</h2>
+                </div>
+            </div>
+            <div class="modal-body result-modal-body">
+                <p class="result-message" id="sign-modal-message">選擇報名類型</p>
+            </div>
+            <div class="modal-footer result-modal-footer sign-footer">
+                <button type="button" class="btn-outline btn-sm" id="sign-no-btn">直接報名</button>
+                <button type="button" class="btn-primary btn-sm" id="sign-yes-btn">填寫附言</button>
+            </div>
+        </div>
+    </div>
+    
 
     <div id="player-info-modal" class="modal confirm-modal hidden" role="dialog" aria-modal="true" aria-labelledby="player-info-modal-title">
         <div class="modal-content result-modal-content confirm-modal-content player-info-modal-content">

@@ -60,6 +60,50 @@ function askConfirm(message, options = {}) {
     });
 }
 
+function askSign(message, options = {}) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById("sign-modal");
+        const messageEl = document.getElementById("sign-modal-message");
+        const titleEl = document.getElementById("sign-modal-title");
+        const yesBtn = document.getElementById("sign-yes-btn");
+        const noBtn = document.getElementById("sign-no-btn");
+        if (!modal || !yesBtn || !noBtn) {
+            resolve(false);
+            return;
+        }
+
+        if (titleEl) {
+            titleEl.textContent = options.title || "報名類型";
+        }
+        if (messageEl) {
+            messageEl.textContent = message;
+        }
+
+        modal.classList.remove("hidden");
+        modal.classList.remove("is-visible");
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                modal.classList.add("is-visible");
+            });
+        });
+
+        const cleanup = (result) => {
+            modal.classList.remove("is-visible");
+            window.setTimeout(() => {
+                modal.classList.add("hidden");
+            }, 180);
+            yesBtn.removeEventListener("click", onYes);
+            noBtn.removeEventListener("click", onNo);
+            resolve(result);
+        };
+        const onYes = () => cleanup(true);
+        const onNo = () => cleanup(false);
+
+        yesBtn.addEventListener("click", onYes);
+        noBtn.addEventListener("click", onNo);
+    });
+}
+
 const PLAYER_INFO_GROUPS = [
     {
         title: "基本資訊",
@@ -1228,8 +1272,10 @@ function runSelectScript(){
             break;
 
         case "MANUAL_SIGN":
+            const wantApprove = await askSign("選擇報名類型？");
             extraData = {
                 promotion_id: getFormPromotionIdValue(),
+                requireType: wantApprove ? "A" : "B",
             };
             break;
 
