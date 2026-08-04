@@ -112,9 +112,9 @@
                         <small id="password_hint" class="field-hint">此欄位必填</small>
                     </div>
 
-                    <div id="amount-input-div" class="input-group hidden">
+                    <div id="amount-input-div" class="input-group account-field-col hidden">
                         <label for="amount">輸入數量</label>
-                        <input type="number" id="amount" name="amount" min="0" step="1" placeholder="留空將帶入 1">
+                        <input type="number" id="amount" name="amount" min="0" step="1" placeholder="留空將帶入 1" class="account-line-input">
                         <small id="amount_hint" class="field-hint" >此欄位必填</small>
                     </div>
 
@@ -124,9 +124,9 @@
                         <small id="deposit_amount_hint" class="field-hint">此欄位必填</small>
                     </div>
 
-                    <div id="promotion_id-input-div" class="input-group hidden">
+                    <div id="promotion_id-input-div" class="input-group account-field-col hidden">
                         <label for="promotion_id">活動 ID</label>
-                        <input type="text" id="promotion_id" name="promotion_id" placeholder="留空將帶入 4023101">
+                        <input type="text" id="promotion_id" name="promotion_id" placeholder="留空將帶入 4023101" class="account-line-input">
                     </div>
                     <div id="round_id-input-div" class="input-group hidden">
                         <label for="round_id">Round ID</label>
@@ -138,9 +138,9 @@
                         <input type="text" id="date_time" name="date_time" class="input-narrow" placeholder="格式:2026-06-22 需過去時間">
                     </div>
 
-                    <div id="ticket_id-input-div" class="input-group hidden">
+                    <div id="ticket_id-input-div" class="input-group account-field-col hidden">
                         <label for="ticket_id">票券 ID</label>
-                        <input type="text" id="ticket_id" name="ticket_id" placeholder="可留空">
+                        <input type="text" id="ticket_id" name="ticket_id" placeholder="可留空" class="account-line-input">
                     </div>
 
                     <div id="extra_reward_promo_id-input-div" class="input-group hidden">
@@ -209,9 +209,9 @@
                         <p id="workdays-date-applied-hint" class="workdays-date-applied-hint hidden" aria-live="polite"></p>
                     </div>
 
-                    <div class="multi-select-wrapper input-group" id="platform-select-wrap">
-                        <label class="field-label" for="frontend-checkbox_manual_platform">平台（可複選）</label>
-                        <select multiple id="frontend-checkbox_manual_platform" size="4" name="platform_type_manual" class="multi-select hidden">
+                    <div class="multi-select-wrapper input-group platform-select-wrap hidden" id="platform-select-wrap">
+                        <label class="field-label" for="platform-chip-picker">平台（可複選）</label>
+                        <select multiple id="frontend-checkbox_manual_platform" name="platform_type_manual" class="platform-select-hidden" tabindex="-1" aria-hidden="true">
                             <option value="gi8viet" selected>gi8viet</option>
                             <option value="huamei">Huamei</option>
                             <option value="tcgdemov3">tcgdemov3</option>
@@ -219,9 +219,10 @@
                             <option value="lodibet">lodibet</option>
                             <option value="jkscus1">jkscus1</option>
                         </select>
+                        <div class="platform-chip-picker" id="platform-chip-picker" role="group" aria-label="平台（可複選）"></div>
                     </div>
 
-                    <div class="input-group field-ticket-select" id="ticket-select-wrap">
+                    <div class="input-group field-ticket-select hidden" id="ticket-select-wrap">
                         <label class="field-label" for="frontend-checkbox_select">票券類型（可複選）</label>
                         <select multiple id="frontend-checkbox_select" size="7" name="ticket_type" class="multi-select hidden">
                         <option value="CASH" selected>現金兌換券</option>
@@ -256,8 +257,8 @@
                         <option value="sign_new">新用戶簽到</option>
                         </select>
                     </div>
-                </div>      
-                    <div class="button-group">
+
+                    <div class="button-group account-run-row">
                         <button type="button" id="run-test-btn" class="btn-primary" onclick="runSelectScript()" disabled aria-busy="false">
                             <span class="btn-icon btn-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="8 5 19 12 8 19"/></svg></span>
                             <span class="btn-spinner" aria-hidden="true"></span>
@@ -266,6 +267,7 @@
                         </button>
                         <p id="run-test-hint" class="run-test-hint" role="status"></p>
                     </div>
+                </div>
                 </div>
 
                 <aside class="operation-assist scenario-bar" id="operation-assist" aria-labelledby="operation-assist-heading">

@@ -3,17 +3,62 @@ const isChecked = (id) => document.getElementById(id)?.checked;
 
 const DEFAULT_FORM_AMOUNT = "1";
 const DEFAULT_PROMOTION_ID = "4023101";
+const PLATFORM_DEFAULT_PROMOTION_ID = {
+    jkscus1: "4616092",
+};
 
-function getFormAmountValue() {
-    const raw = document.getElementById("amount")?.value;
-    const trimmed = raw == null ? "" : String(raw).trim();
-    return trimmed || DEFAULT_FORM_AMOUNT;
+function getSelectedPlatforms() {
+    const select = document.getElementById("frontend-checkbox_manual_platform");
+    if (!select) return ["gi8viet"];
+    const platforms = Array.from(select.selectedOptions).map((opt) => opt.value);
+    return platforms.length ? platforms : ["gi8viet"];
+}
+
+function getDefaultPromotionIdForPlatform(platform) {
+    return PLATFORM_DEFAULT_PROMOTION_ID[platform] || DEFAULT_PROMOTION_ID;
+}
+
+function getDefaultPromotionIdForSelection() {
+    const platforms = getSelectedPlatforms();
+    const primary = platforms[0] || "gi8viet";
+    return getDefaultPromotionIdForPlatform(primary);
+}
+
+function getKnownPromotionDefaults() {
+    return new Set([DEFAULT_PROMOTION_ID, ...Object.values(PLATFORM_DEFAULT_PROMOTION_ID)]);
+}
+
+function updatePromotionIdPlaceholder(defaultId = getDefaultPromotionIdForSelection()) {
+    const input = document.getElementById("promotion_id");
+    if (input) {
+        input.placeholder = `留空將帶入 ${defaultId}`;
+    }
+}
+
+function syncPromotionIdForPlatformSelection() {
+    const input = document.getElementById("promotion_id");
+    if (!input) return;
+
+    const newDefault = getDefaultPromotionIdForSelection();
+    const current = input.value.trim();
+    const knownDefaults = getKnownPromotionDefaults();
+
+    if (!current || knownDefaults.has(current)) {
+        input.value = newDefault;
+    }
+    updatePromotionIdPlaceholder(newDefault);
 }
 
 function getFormPromotionIdValue() {
     const raw = document.getElementById("promotion_id")?.value;
     const trimmed = raw == null ? "" : String(raw).trim();
-    return trimmed || DEFAULT_PROMOTION_ID;
+    return trimmed || getDefaultPromotionIdForSelection();
+}
+
+function getFormAmountValue() {
+    const raw = document.getElementById("amount")?.value;
+    const trimmed = raw == null ? "" : String(raw).trim();
+    return trimmed || DEFAULT_FORM_AMOUNT;
 }
 
 const TEST_SCENARIOS = [
@@ -47,7 +92,7 @@ const TEST_SCENARIOS = [
     },
     {
         id: "deposit_frontend_backend",
-        title: "前台充值＋後台審核",
+        title: "充值＋審核",
         summary: "充值 → 審核",
         tab: "TestingTooLTab",
         scripts: ["FRONTEND_DEPOSIT", "DEPOSIT_API"],
@@ -128,12 +173,56 @@ function activateTab(tabId) {
     switchTab({ currentTarget: navBtn || document.body }, tabId);
 }
 
+function syncPlatformChipsFromSelect() {
+    const select = document.getElementById("frontend-checkbox_manual_platform");
+    const picker = document.getElementById("platform-chip-picker");
+    if (!select || !picker) return;
+
+    picker.querySelectorAll(".platform-chip").forEach((chip) => {
+        const value = chip.dataset.value;
+        const option = Array.from(select.options).find((opt) => opt.value === value);
+        const selected = !!option?.selected;
+        chip.classList.toggle("is-selected", selected);
+        chip.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+}
+
+function initPlatformChipPicker() {
+    const select = document.getElementById("frontend-checkbox_manual_platform");
+    const picker = document.getElementById("platform-chip-picker");
+    if (!select || !picker || picker.dataset.initialized === "true") return;
+
+    picker.dataset.initialized = "true";
+    picker.innerHTML = "";
+
+    Array.from(select.options).forEach((option) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "platform-chip";
+        chip.dataset.value = option.value;
+        chip.textContent = option.textContent.trim() || option.value;
+        chip.setAttribute("aria-pressed", option.selected ? "true" : "false");
+        if (option.selected) {
+            chip.classList.add("is-selected");
+        }
+        chip.addEventListener("click", () => {
+            option.selected = !option.selected;
+            syncPlatformChipsFromSelect();
+            syncPromotionIdForPlatformSelection();
+            toggleInput();
+        });
+        picker.appendChild(chip);
+    });
+}
+
 function setPlatformSelection(platforms) {
     const select = document.getElementById("frontend-checkbox_manual_platform");
     if (!select || !platforms?.length) return;
     Array.from(select.options).forEach((option) => {
         option.selected = platforms.includes(option.value);
     });
+    syncPlatformChipsFromSelect();
+    syncPromotionIdForPlatformSelection();
 }
 
 function fillScenarioPastDateTime() {
@@ -792,22 +881,20 @@ function toggleAmount(){
 function toggleTicket() {
     const ticket_select = document.getElementById("frontend-checkbox_select");
     const ticket_input = document.getElementById("ticket-input-div");
-    const ticket_wrap = document.getElementById("ticket-select-wrap"); 
+    const ticket_wrap = document.getElementById("ticket-select-wrap");
     const ticket_id_input = document.getElementById("ticket_id-input-div");
     const manual_cb = document.getElementById("frontend-checkbox_manual");
+    const checkbox = document.getElementById("frontend-checkbox_ticket");
     const requireTicket_input =
         (manual_cb && manual_cb.checked) ||
         isChecked("Extra_Reward_api") ||
         isChecked("Codition_create_bonus");
-    const checkbox = document.getElementById("frontend-checkbox_ticket");
     const hasSelectTicket = ticket_select && Array.from(ticket_select.selectedOptions).length > 0;
+    const showTicketSelect = !!(checkbox && checkbox.checked);
 
-    if (!ticket_select || !checkbox) return;
-
-    if (ticket_wrap) ticket_wrap.classList.toggle("hidden", !checkbox.checked);
-    ticket_select.classList.toggle("hidden", !checkbox.checked);
-
-    ticket_input.classList.toggle("hidden", !(checkbox.checked && hasSelectTicket));
+    if (ticket_wrap) ticket_wrap.classList.toggle("hidden", !showTicketSelect);
+    if (ticket_select) ticket_select.classList.toggle("hidden", !showTicketSelect);
+    if (ticket_input) ticket_input.classList.toggle("hidden", !(showTicketSelect && hasSelectTicket));
     if (ticket_id_input) ticket_id_input.classList.toggle("hidden", !requireTicket_input);
 }
 function togglePromotion() {
@@ -840,7 +927,6 @@ function togglePlatform() {
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
-    select.classList.toggle("hidden", !needPlatform);
 }
 const amountInput = document.getElementById("amount");
 if (amountInput){
@@ -1038,7 +1124,6 @@ function validateFormBeforeSubmit() {
 const MULTI_SELECT_IDS = [
     "frontend-checkbox_select",
     "frontend-checkbox_select_platform",
-    "frontend-checkbox_manual_platform",
     "frontend-checkbox_7_Ticket_select",
     "promotion-checkbox_select",
 ];
@@ -1121,6 +1206,9 @@ document.addEventListener("DOMContentLoaded", function () {
     initResultModal();
     initWorkdaysDatePicker();
     initScenarioPanel();
+    initPlatformChipPicker();
+    syncPlatformChipsFromSelect();
+    syncPromotionIdForPlatformSelection();
 });
 
 function initFileUploadZones() {
