@@ -80,6 +80,7 @@ def input_mobile_number(customerId:int,number:int,platform:str):
         response.raise_for_status()
 
         response_data=response.json()
+        print(response_data)
         if response_data.get("success"):
             logging.info("手機號輸入成功")  
             return True
@@ -535,7 +536,8 @@ verify_handler={
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
         
     customer_id=main(PLAYER_ACCOUNT, platform, 1)
-    
+    platform=platform[0]
+    print(platform)
     if not customer_id:
         logging.error(f"找不到玩家 {PLAYER_ACCOUNT} 的 customer_id")
         return False, None
