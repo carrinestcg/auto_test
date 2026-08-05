@@ -66,10 +66,10 @@ def gen_number(a, b):
 def gen_string(k=8):
     return lambda: ''.join(random.choices(string.ascii_uppercase, k=k))
 
-def input_mobile_number(customerId:int,number:int):
+def input_mobile_number(customerId:int,number:int,platform:str):
     token=get_token()
     logging.info(f"傳入的手機號:{number}")
-    API_URL=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeMobile?customerId={customerId}&merchantCode=gi8viet&countryCode=66&playerMobile={number}&remark=22"
+    API_URL=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeMobile?customerId={customerId}&merchantCode={platform}&countryCode=66&playerMobile={number}&remark=22"
     headers = header(token)
     cookies = {
         "language": "zh_CN"
@@ -114,10 +114,10 @@ def verify_phone_number(customerId:int):
         logging.error(f"手機號驗證請求失敗{e}")
         return False
 
-def _verify_mobile_number(customerId:int):
+def _verify_mobile_number(customerId:int, platform:str):
     mobile_number=random.randint(100000000,999999999)
         
-    if not input_mobile_number(customerId, mobile_number):
+    if not input_mobile_number(customerId, mobile_number, platform):
         return False, None
     
     if not verify_phone_number(customerId):
@@ -125,10 +125,10 @@ def _verify_mobile_number(customerId:int):
     
     return True, mobile_number
         
-def input_personal_id(customerId:int, number:int):
+def input_personal_id(customerId:int, number:int, platform:str):
         token=get_token()
         logging.info(f"傳入的身分證ID:{number}")
-        API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeIdNumber?customerId={customerId}&merchantCode=gi8viet&remark=33&idNumber={number}"
+        API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeIdNumber?customerId={customerId}&merchantCode={platform}&remark=33&idNumber={number}"
         
         headers=header(token)
         cookies = {
@@ -218,10 +218,10 @@ def confirm_personal_id(customerId:int):
             logging.error("審核請求失敗")
             return False
 
-def _verify_id_card(customerId:int):
+def _verify_id_card(customerId:int, platform:str):
     ID_number = random.randint(100000000, 999999999)
         
-    if not input_personal_id(customerId, ID_number):
+    if not input_personal_id(customerId, ID_number, platform):
         return False, None
     
     if not input_personal_picture(customerId, ID_number):
@@ -256,10 +256,10 @@ def input_personal_name(customerId:int, new_Name:str):
         logging.error(f"名字輸入請求失敗{e}")
         return False
     
-def input_wechat_ID(customerId:int, wechat_id:str):
+def input_wechat_ID(customerId:int, wechat_id:str, platform):
     token=get_token()
     logging.info(f"傳入的WeChat ID:{wechat_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeWechat?customerId={customerId}&merchantCode=gi8viet&remark=ff&wechat={wechat_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeWechat?customerId={customerId}&merchantCode={platform}&remark=ff&wechat={wechat_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -281,10 +281,10 @@ def input_wechat_ID(customerId:int, wechat_id:str):
         logging.error(f"WeChat ID輸入請求失敗{e}")
         return False
     
-def input_address(customerId:int, address:str):
+def input_address(customerId:int, address:str, platform:str):
     token=get_token()
     logging.info(f"傳入的地址:{address}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeAddress?customerId={customerId}&merchantCode=gi8viet&&remark=ss&address={address}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeAddress?customerId={customerId}&merchantCode={platform}&remark=ss&address={address}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -306,10 +306,10 @@ def input_address(customerId:int, address:str):
         logging.error(f"地址輸入請求失敗{e}")
         return False
     
-def input_line_ID(customerId:int, line_id:str):
+def input_line_ID(customerId:int, line_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的Line ID:{line_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeLineId?customerId={customerId}&merchantCode=gi8viet&remark=d&lineId={line_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeLineId?customerId={customerId}&merchantCode={platform}&remark=d&lineId={line_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -331,10 +331,10 @@ def input_line_ID(customerId:int, line_id:str):
         logging.error(f"Line ID輸入請求失敗{e}")
         return False
     
-def input_apple_ID(customerId:int, apple_id:str):
+def input_apple_ID(customerId:int, apple_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的Apple ID:{apple_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeAppleId?customerId={customerId}&merchantCode=gi8viet&remark=d&appleId={apple_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeAppleId?customerId={customerId}&merchantCode={platform}&remark=d&appleId={apple_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -356,10 +356,10 @@ def input_apple_ID(customerId:int, apple_id:str):
         logging.error(f"Apple ID輸入請求失敗{e}")
         return False
 
-def input_telegram_ID(customerId:int, telegram_id:str):
+def input_telegram_ID(customerId:int, telegram_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的Telegram ID:{telegram_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeTelegram?customerId={customerId}&merchantCode=gi8viet&remark=x&telegram={telegram_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeTelegram?customerId={customerId}&merchantCode={platform}&remark=x&telegram={telegram_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -381,10 +381,10 @@ def input_telegram_ID(customerId:int, telegram_id:str):
         logging.error(f"Telegram ID輸入請求失敗{e}")
         return False
         
-def input_twitter_ID(customerId:int, twitter_id:str):
+def input_twitter_ID(customerId:int, twitter_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的Twitter ID:{twitter_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeTwitter?customerId={customerId}&merchantCode=gi8viet&remark=s&twitter={twitter_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeTwitter?customerId={customerId}&merchantCode={platform}&remark=s&twitter={twitter_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -406,10 +406,10 @@ def input_twitter_ID(customerId:int, twitter_id:str):
         logging.error(f"Twitter ID輸入請求失敗{e}")
         return False
     
-def input_viber_ID(customerId:int, viber_id:str):
+def input_viber_ID(customerId:int, viber_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的Viber ID:{viber_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeViber?customerId={customerId}&merchantCode=gi8viet&remark=d&viber={viber_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-changeViber?customerId={customerId}&merchantCode={platform}&remark=d&viber={viber_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -468,10 +468,10 @@ def binding_virtual_wallet(customerId:int, cardNumber:str):
         logging.error(f"虛擬錢包綁定請求失敗{e}")
         return False
 
-def input_whatsapp_ID(customerId:int, whatsapp_id:str):
+def input_whatsapp_ID(customerId:int, whatsapp_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的WhatsApp ID:{whatsapp_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeWhatsAppId?customerId={customerId}&merchantCode=gi8viet&remark=d&whatsAppId={whatsapp_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeWhatsAppId?customerId={customerId}&merchantCode={platform}&remark=d&whatsAppId={whatsapp_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -493,10 +493,10 @@ def input_whatsapp_ID(customerId:int, whatsapp_id:str):
         logging.error(f"WhatsApp ID輸入請求失敗{e}")
         return False
     
-def input_Facebook_ID(customerId:int, facebook_id:str):
+def input_Facebook_ID(customerId:int, facebook_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的Facebook ID:{facebook_id}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeFacebookId?customerId={customerId}&merchantCode=gi8viet&remark=d&facebookId={facebook_id}"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeFacebookId?customerId={customerId}&merchantCode={platform}&remark=d&facebookId={facebook_id}"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -541,10 +541,10 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
         return False, None
     
     if verify_type == 1:
-        return _verify_mobile_number(customer_id)
+        return _verify_mobile_number(customer_id, platform)
         
     elif verify_type == 2:
-        return _verify_id_card(customer_id)
+        return _verify_id_card(customer_id, platform)
         
     gen_value, handler = verify_handler.get(verify_type, (None, None))
     if handler is None:
@@ -553,7 +553,7 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
     
     value = gen_value() 
     
-    if handler(customer_id, value):
+    if handler(customer_id, value, platform):
         
         logging.info(f"驗證類型 {verify_type} 成功，值: {value}")
         return True, value

@@ -448,6 +448,7 @@ def main(username, promo_id, type_value, password="123qwe"):
                 value_dict=backend.get_payload__detail(record)
                 if not value_dict:
                     continue
+                
                 result=backend.Approve_to_send_bounus(str(username), promo_id, record, value_dict)  
                 if result:
                     return {
