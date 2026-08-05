@@ -232,10 +232,10 @@ def _verify_id_card(customerId:int, platform:str):
         return False, None
     
     return True, ID_number    
-def input_personal_name(customerId:int, new_Name:str):
+def input_personal_name(customerId:int, new_Name:str, platform:str):
     token=get_token()
     logging.info(f"傳入的名字:{new_Name}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changePayeeName?customerId={customerId}&merchantCode=gi8viet&newPayeeName={new_Name}&remark=e&updateCard=true"
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changePayeeName?customerId={customerId}&merchantCode={platform}&newPayeeName={new_Name}&remark=e&updateCard=true"
     headers=header(token)
     cookies = {
             "language": "zh_CN"
