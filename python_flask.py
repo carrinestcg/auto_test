@@ -41,6 +41,7 @@ import calculate_workdays
 from Verify_Info import verify_info
 from version_util import load_version_info
 import SameTimeReceiveTicket
+import Backend_Deposit
 
 
 logging.basicConfig(
@@ -667,11 +668,13 @@ def api_lottery_bet():
             )
 @python_flask.route('/api/FIXED_DEPOSIT',methods=['POST'])#快捷充值API
 @python_flask.route('/api/FRONTEND_DEPOSIT',methods=['POST']) #前台充值API
+@python_flask.route('/api/BACKEND_DEPOSIT',methods=['POST']) #後台充值API
 def api_Deposit():
     data=request.json
     username_raw = data.get("username", "")
     username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
     amount = data.get("deposit_amount") or data.get("amount")
+    platforms = data.get("merchantCode") or []
     verify_type = data.get("type")
     if verify_type == 1:
         result = FRONTEND_DEPOSIT.main(username_list, amount, verify_type)
@@ -708,6 +711,9 @@ def api_Deposit():
             depositAmount=deposit_amount_promo,
         )
         label = "充值折抵券"
+    elif verify_type == 4:
+            result = Backend_Deposit.main_batch(username_list, platforms ,amount)
+            label = "後台充值"
     else:
         return jsonify({"success": False, "message": f"Unknown type: {verify_type}"}), 400
 

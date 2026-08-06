@@ -880,7 +880,7 @@ function toggleAmount(){
         isChecked("frontend-checkbox_member") ||
         isChecked("Extra_Reward_api") ||
         isChecked("frontend-fix_deposit");
-    const requireDepositAmount = isChecked("frontend-checkbox");
+    const requireDepositAmount = isChecked("frontend-checkbox")||isChecked("backend-checkbox");
 
     if (amountInputDiv) {
         amountInputDiv.classList.toggle("hidden", !requireAmount);
@@ -1608,6 +1608,20 @@ function runSelectScript(){
                 deposit_list,
                 amount: getFormAmountValue(),
                 type: 2
+            };
+            requestPayload = { username, ...extraData };
+            break;
+        }
+        case "BACKEND_DEPOSIT": {
+            const username_list = username
+                ? username.split(/[\s,]+/).filter(Boolean)
+                : [];
+            const deposit_amount = document.getElementById("deposit_amount").value;    
+            extraData = {
+                username_list,
+                deposit_amount,
+                type: 4,
+                merchantCode: platforms[0] || "gi8viet",
             };
             requestPayload = { username, ...extraData };
             break;
