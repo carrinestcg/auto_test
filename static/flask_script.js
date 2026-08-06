@@ -1,6 +1,16 @@
 /** Checkbox helper — must be module-level; toggleDepositAmount / toggleExtraPromo use it. */
 const isChecked = (id) => document.getElementById(id)?.checked;
 
+/** 前台充值是否使用充值折抵券（type=3；後台審核需 requestType=D） */
+function isDiscountCouponDepositMode() {
+    return isChecked("frontend-deposit-coupon");
+}
+
+/** 後台批量審核：折抵券充值帶 "D"，一般充值不帶 */
+function getDepositApproveRequestType() {
+    return isDiscountCouponDepositMode() ? "D" : null;
+}
+
 const DEFAULT_FORM_AMOUNT = "1";
 const DEFAULT_PROMOTION_ID = "4023101";
 const PLATFORM_DEFAULT_PROMOTION_ID = {
@@ -596,6 +606,7 @@ function toggleInput() {
     togglePlatform();
     toggleRoundID();
     toggleDepositAmount();
+    toggleDepositCouponFields();
     toggleExtraPromo();
     toggleDateTime();
     toggleUsernamePassword();
@@ -878,6 +889,18 @@ function toggleAmount(){
         depositAmountDiv.classList.toggle("hidden", !requireDepositAmount);
     }
 }
+
+function toggleDepositCouponFields() {
+    const couponWrap = document.getElementById("deposit-coupon-wrap");
+    const discountDiv = document.getElementById("discount-amount-input-div");
+    const showCouponOption =
+        isChecked("frontend-checkbox") || isChecked("DEPOSIT_API_script");
+    const couponOn = isDiscountCouponDepositMode();
+
+    if (couponWrap) couponWrap.classList.toggle("hidden", !showCouponOption);
+    if (discountDiv) discountDiv.classList.toggle("hidden", !couponOn);
+}
+
 function toggleTicket() {
     const ticket_select = document.getElementById("frontend-checkbox_select");
     const ticket_input = document.getElementById("ticket-input-div");
@@ -888,7 +911,8 @@ function toggleTicket() {
     const requireTicket_input =
         (manual_cb && manual_cb.checked) ||
         isChecked("Extra_Reward_api") ||
-        isChecked("Codition_create_bonus");
+        isChecked("Codition_create_bonus") ||
+        isDiscountCouponDepositMode();
     const hasSelectTicket = ticket_select && Array.from(ticket_select.selectedOptions).length > 0;
     const showTicketSelect = !!(checkbox && checkbox.checked);
 
@@ -899,7 +923,7 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus').checked||document.getElementById('Activity_bonus').checked||document.getElementById('Schedule_manual_bonus').checked;
+    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus').checked||document.getElementById('Activity_bonus').checked||document.getElementById('Schedule_manual_bonus').checked || isDiscountCouponDepositMode();
     
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 
@@ -1063,6 +1087,14 @@ function validateFormBeforeSubmit() {
     } else {
         const depositHint = document.getElementById("deposit_amount_hint");
         if (depositHint) depositHint.style.display = "none";
+    }
+
+    if (isDiscountCouponDepositMode() && isChecked("frontend-checkbox")) {
+        const ticketIdEl = document.getElementById("ticket_id");
+        if (!ticketIdEl || !ticketIdEl.value.trim()) {
+            alert("使用充值折抵券時請填寫票券 ID（ticket_id）");
+            return false;
+        }
     }
 
     
@@ -1459,8 +1491,10 @@ function runSelectScript(){
 
     (async () => {
     for (const scriptName of checkSelectScript) {
-        let extraData={}
-    
+        let extraData = {};
+        /** 非 null 時覆寫預設 payload（username + platforms + extraData） */
+        let requestPayload = null;
+
     switch (scriptName) {
         case "SIGLE_PROMO_7_TICKET":
             extraData = {
@@ -1524,25 +1558,49 @@ function runSelectScript(){
             };
             break;
 
+        case "DEPOSIT_API": {
+            const requestType = getDepositApproveRequestType();
+            extraData = requestType ? { requestType } : {};
+            break;
+        }
+
         case "create_member_player":
             extraData = {
                 amount: getFormAmountValue(),
             };
             break;
 
-        case "FRONTEND_DEPOSIT":
+        case "FRONTEND_DEPOSIT": {
             const username_list = username
                 ? username.split(/[\s,]+/).filter(Boolean)
                 : [];
-            extraData = {
-                username_list,
-                deposit_amount: document.getElementById("deposit_amount").value,
-                type: 1
-            };
-            runScriptApi(scriptName, { username, ...extraData });
-            continue;
+            const deposit_amount = document.getElementById("deposit_amount").value;
+            if (isDiscountCouponDepositMode()) {
+                const ticketIdRaw = document.getElementById("ticket_id")?.value.trim() || "";
+                const discountRaw = document.getElementById("discount_amount")?.value.trim();
+                const promotionRaw = document.getElementById("promotion_id")?.value.trim();
+                extraData = {
+                    username_list,
+                    deposit_amount,
+                    type: 3,
+                    ticket_id: ticketIdRaw,
+                    discountAmount: discountRaw ? Number(discountRaw) : 100,
+                };
+                if (promotionRaw) {
+                    extraData.promotion_id = promotionRaw;
+                }
+            } else {
+                extraData = {
+                    username_list,
+                    deposit_amount,
+                    type: 1,
+                };
+            }
+            requestPayload = { username, ...extraData };
+            break;
+        }
 
-        case "FIXED_DEPOSIT":
+        case "FIXED_DEPOSIT": {
             const deposit_list = username
                 ? username.split(/[\s,]+/).filter(Boolean)
                 : [];
@@ -1551,8 +1609,9 @@ function runSelectScript(){
                 amount: getFormAmountValue(),
                 type: 2
             };
-            runScriptApi(scriptName, { username, ...extraData });
-            continue;
+            requestPayload = { username, ...extraData };
+            break;
+        }
 
         case "Compensation_api":
             extraData = {
@@ -1594,8 +1653,8 @@ function runSelectScript(){
                     .split(/[\s,;]+/)
                     .filter(Boolean),
             };
-            runScriptApi(scriptName, { ...extraData });
-            continue;
+            requestPayload = { ...extraData };
+            break;
 
         case "calculate_workdays": {
             const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
@@ -1607,8 +1666,8 @@ function runSelectScript(){
                 date_from: effectiveDates.from,
                 date_to: effectiveDates.to,
             };
-            runScriptApi(scriptName, { ...extraData });
-            continue;
+            requestPayload = { ...extraData };
+            break;
         }
 
         case "Extra_Reward_api": {
@@ -1689,32 +1748,34 @@ function runSelectScript(){
             extraData = {};
             console.warn("[runSelectScript] 未定義腳本，使用空 extraData:", scriptName);
     }
-    
-    
-    runScriptApi(scriptName,{username,platforms,...extraData})
+
+    const payload = requestPayload ?? { username, platforms, ...extraData };
+    await runScriptApi(scriptName, payload);
     }
     })();
 }
 
-function runScriptApi(scriptName,payload){
+async function runScriptApi(scriptName, payload) {
     trackRunRequestStart();
-    fetch(`/api/${scriptName}`,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(payload)
-    })
-    .then(res=>res.json())
-    .then(data=>{
-        console.log(scriptName,data);
+    try {
+        const res = await fetch(`/api/${scriptName}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        console.log(scriptName, data);
         showResultPopup(data);
-}).catch(err=>{
-    showResultPopup({
-        success:false,
-        message: "API 呼叫失敗：" + err
-    });
-}).finally(()=>{
-    trackRunRequestEnd();
-});
+        return data;
+    } catch (err) {
+        showResultPopup({
+            success: false,
+            message: "API 呼叫失敗：" + err,
+        });
+        return { success: false, message: String(err) };
+    } finally {
+        trackRunRequestEnd();
+    }
 }
 
 function showResultPopup(data) {

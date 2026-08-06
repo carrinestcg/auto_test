@@ -103,10 +103,10 @@ def deposit(token,merchantCode):
     except Exception as e:
         logging.error(f"狀態碼: {response.status_code}",e)
         return []
-def approve_deposit(token,deposit_Info,merchantCode):
+def approve_deposit(token,deposit_Info,merchantCode, requestType=None):
     try:
         API_URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-v3-deposit-processAndApprove"
-        if deposit_Info.get("depositAmount") is None:
+        if deposit_Info.get("requestAmount") is None:
             logging.error(f"充值ID: {deposit_Info['depositId']} 缺少存款金額，無法處理")
             return False
         payload={
@@ -115,7 +115,7 @@ def approve_deposit(token,deposit_Info,merchantCode):
         "tpRefNo": None,
         "payerBankAcctName": None,
         "payerBankAcctNum": None,
-        "depositAmount": deposit_Info.get("depositAmount"),
+        "depositAmount": deposit_Info.get("requestAmount"),
         "bankRef":deposit_Info.get("bankRef"),
         "operatorRemark": None,
         "internalRemark": None,
@@ -127,6 +127,9 @@ def approve_deposit(token,deposit_Info,merchantCode):
         cookies = {
         "language": "zh_CN"
         }
+        if requestType=="D":
+            payload["depositAmount"]=deposit_Info.get("depositAmount")
+            logging.info(f"充值ID: {deposit_Info['depositId']} , 金額: {deposit_Info.get('depositAmount')} , 進行D類型處理")
         response=requests.post(API_URL, json=payload,cookies=cookies,verify=False, headers=headers)
         response_data = response.json()
 
@@ -140,12 +143,13 @@ def approve_deposit(token,deposit_Info,merchantCode):
         logging.error(f"處理充值 ID: {deposit_Info['depositId']} 時發生錯誤: {e}")
         return False
     
-def batch_approve(merchantCode):
+def batch_approve(merchantCode, requestType=None):
     logging.info("已進入 batch_approve 函數") 
     deposit_Info = None
     try:
         token=get_token()
         deposit_list=deposit(token,merchantCode)
+        print(f"拿到的充值list: {deposit_list}")
         if not deposit_list:
             logging.info("沒有找到充值ID")
             return
@@ -155,7 +159,7 @@ def batch_approve(merchantCode):
 
         for index, deposit_Info in enumerate(deposit_list,1):
             logging.info(f"正在處理第{index}/{total_count}的充值list,金額{deposit_Info['requestAmount']}")
-            if approve_deposit(token,deposit_Info,merchantCode):
+            if approve_deposit(token,deposit_Info,merchantCode, requestType):
                 success_count+=1
             else:
                 fail_count+=1

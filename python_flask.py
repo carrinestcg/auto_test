@@ -108,10 +108,10 @@ def auto_create_player(platform_type,username_list):
             "details": [],
         }
 
-def batch_approve_func(deposit_platform_type):
+def batch_approve_func(deposit_platform_type, requestType=None):
         for platform in deposit_platform_type:
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
-                batch_approve(platform)
+                batch_approve(platform, requestType=requestType)
 
 def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
@@ -672,20 +672,49 @@ def api_Deposit():
     username_raw = data.get("username", "")
     username_list = [u.strip() for u in username_raw.split(",") if u.strip()]
     amount = data.get("deposit_amount") or data.get("amount")
-    verify_type = data.get("type") 
+    verify_type = data.get("type")
     if verify_type == 1:
-        result = FRONTEND_DEPOSIT.main(username_list,amount, verify_type)
+        result = FRONTEND_DEPOSIT.main(username_list, amount, verify_type)
         label = "充值送"
     elif verify_type == 2:
-        result = FRONTEND_DEPOSIT.main(username_list,amount, verify_type)
+        result = FRONTEND_DEPOSIT.main(username_list, amount, verify_type)
         label = "快捷充值送"
+    elif verify_type == 3:
+        ticket_id = data.get("ticket_id")
+        if not ticket_id:
+            return jsonify({"success": False, "message": "type=3 請提供 ticket_id（充值折抵券 ID）"}), 400
+        discount_amount = data.get("discountAmount") or data.get("discount_amount") or 100
+        promotion_id = data.get("promotion_id") or None
+        if promotion_id == "":
+            promotion_id = None
+        deposit_amount_promo = data.get("depositAmount")
+        if deposit_amount_promo == "":
+            deposit_amount_promo = None
+        try:
+            ticket_id_val = int(ticket_id)
+        except (TypeError, ValueError):
+            ticket_id_val = ticket_id
+        try:
+            discount_val = int(discount_amount)
+        except (TypeError, ValueError):
+            discount_val = discount_amount
+        result = FRONTEND_DEPOSIT.main(
+            username_list,
+            amount,
+            verify_type,
+            ticket_id=ticket_id_val,
+            promotion_id=promotion_id,
+            discountAmount=discount_val,
+            depositAmount=deposit_amount_promo,
+        )
+        label = "充值折抵券"
     else:
-        return {"success": False, "message": "Unknown type"}, 400
+        return jsonify({"success": False, "message": f"Unknown type: {verify_type}"}), 400
 
-    return {
+    return jsonify({
         "success": True,
-        "message": f"Trigger {label} {'Successfully' if result else 'Failed'}"
-    }
+        "message": f"Trigger {label} {'Successfully' if result else 'Failed'}",
+    })
 
 @python_flask.route('/api/MANUAL_SIGN',methods=['POST']) #手工報名活動API
 def api_Manual_Sign():
@@ -826,7 +855,8 @@ def api_manual_batch():
 def api_batch_approve_func():
     data=request.json
     platforms=data["platforms"]  
-    batch_approve_func(platforms)
+    requestType=data.get("requestType")
+    batch_approve_func(platforms, requestType=requestType)
     
     return jsonify(
         {
