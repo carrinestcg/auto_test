@@ -3,29 +3,57 @@
 from __future__ import annotations
 
 import io
+import json
 import math
 import os
 import re
 from pathlib import Path
 
 import pandas as pd
+from dotenv import load_dotenv
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 APP_DIR = Path(__file__).resolve().parent
+load_dotenv(APP_DIR / ".env")
+
 SCOPES = ["https://www.googleapis.com/auth/drive.readonly"]
 DEFAULT_FILE_ID = "1furK670_lIyKe3kpMRXiaHCt3ajRzJ_-"
-DEFAULT_CREDENTIALS = APP_DIR / "tcg-sheet-integration-14bdf407092b.json"
 
 _drive_service = None
 
 
-def _credentials_path() -> Path:
-    env_path = os.environ.get("GOOGLE_SHEETS_CREDENTIALS")
-    if env_path:
-        return Path(env_path).expanduser().resolve()
-    return DEFAULT_CREDENTIALS
+def _credentials_path() -> Path | None:
+    env_path = os.environ.get("GOOGLE_SHEETS_CREDENTIALS", "").strip()
+    if not env_path:
+        return None
+    path = Path(env_path).expanduser()
+    if not path.is_absolute():
+        path = (APP_DIR / path).resolve()
+    else:
+        path = path.resolve()
+    return path
+
+
+def _load_service_account_credentials():
+    json_str = os.environ.get("GOOGLE_SHEETS_CREDENTIALS_JSON", "").strip()
+    if json_str:
+        info = json.loads(json_str)
+        return service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+
+    cred_path = _credentials_path()
+    if cred_path is None:
+        raise FileNotFoundError(
+            "未設定 Google 服務帳號金鑰，請在 .env 設定 "
+            "GOOGLE_SHEETS_CREDENTIALS_JSON 或 GOOGLE_SHEETS_CREDENTIALS"
+        )
+    if not cred_path.is_file():
+        raise FileNotFoundError(
+            "找不到 Google 服務帳號金鑰檔："
+            f"{cred_path}（請確認 .env 的 GOOGLE_SHEETS_CREDENTIALS 路徑正確）"
+        )
+    return service_account.Credentials.from_service_account_file(str(cred_path), scopes=SCOPES)
 
 
 def parse_google_sheet_id(value: str | None) -> str:
@@ -59,16 +87,7 @@ def _get_drive_service():
     if _drive_service is not None:
         return _drive_service
 
-    cred_path = _credentials_path()
-    if not cred_path.is_file():
-        raise FileNotFoundError(
-            f"找不到 Google 服務帳號金鑰：{cred_path}（可設 GOOGLE_SHEETS_CREDENTIALS）"
-        )
-
-    creds = service_account.Credentials.from_service_account_file(
-        str(cred_path),
-        scopes=SCOPES,
-    )
+    creds = _load_service_account_credentials()
     _drive_service = build("drive", "v3", credentials=creds, cache_discovery=False)
     return _drive_service
 

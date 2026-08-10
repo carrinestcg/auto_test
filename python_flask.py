@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, jsonify, Response, json
 from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parent / ".env")
 import MANUAL_SINGLE
 import MANUAL_BATCH
 import PROMOCODE_BATCH
