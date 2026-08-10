@@ -1134,7 +1134,39 @@ def api_calculate_workdays():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
-@python_flask.route('/upload_excel', methods=['POST']) 
+@python_flask.route('/api/excel-progress', methods=['GET'])
+def api_excel_progress():
+    """從 Google Drive 試算表讀取各 TCG 分頁進度（excel_progress.check_progress）。"""
+    google_sheet_id = request.args.get("sheet_id", "").strip()
+    if not google_sheet_id:
+        return jsonify({"success": False, "message": "請輸入 Google Sheet ID 或試算表連結"}), 400
+    try:
+        from excel_progress import check_progress_rows, parse_google_sheet_id
+
+        file_id = parse_google_sheet_id(google_sheet_id)
+        rows = check_progress_rows(google_sheet_id)
+        return jsonify(
+            {
+                "success": True,
+                "message": f"共 {len(rows)} 張 TCG 分頁",
+                "data": {
+                    "sheets": rows,
+                    "total_count": len(rows),
+                    "sheet_id": file_id,
+                },
+            }
+        )
+    except ValueError as e:
+        return jsonify({"success": False, "message": str(e)}), 400
+    except FileNotFoundError as e:
+        logging.error("excel_progress credentials missing: %s", e)
+        return jsonify({"success": False, "message": str(e)}), 500
+    except Exception as e:
+        logging.error("excel_progress error: %s", e)
+        return jsonify({"success": False, "message": str(e)}), 500
+
+
+@python_flask.route('/upload_excel', methods=['POST'])
 def upload_excel():
     file=request.files.get('file')
     if not file:

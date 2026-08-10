@@ -552,6 +552,23 @@
                         </form>
                     </section>
 
+                    <section class="excel-tool-section" aria-labelledby="excel-progress-heading">
+                        <h3 id="excel-progress-heading" class="subsection-title">TCG 試算表進度</h3>
+                        <p class="excel-tool-desc">輸入 Google 試算表 ID 或完整連結，即時讀取各 TCG 分頁的「進度」欄位。</p>
+                        <div class="upload-row excel-progress-form">
+                            <input
+                                type="text"
+                                id="googleSheetIdInput"
+                                class="account-line-input excel-sheet-id-input"
+                                placeholder="Google Sheet ID 或 https://docs.google.com/spreadsheets/d/..."
+                                autocomplete="off"
+                                aria-describedby="google_sheet_id_hint"
+                            >
+                            <button type="button" id="excelProgressBtn" class="btn-primary">查詢 TCG 進度</button>
+                        </div>
+                        <small id="google_sheet_id_hint" class="field-hint">可貼上試算表網址，或只填 ID（例如 1furK670_lIyKe3kpMRXiaHCt3ajRzJ_-）</small>
+                    </section>
+
                     <section class="excel-tool-section" aria-labelledby="upload-compare-heading">
                         <h3 id="upload-compare-heading" class="subsection-title">雙檔 Excel 比對</h3>
                         <p class="excel-tool-desc">上傳兩份 Excel，比對差異內容。</p>

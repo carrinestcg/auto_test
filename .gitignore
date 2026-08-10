@@ -8,3 +8,8 @@ __pycache__/
 *.pyc
 daily_sync.py
 .env
+# Google service account keys（僅本機使用，勿提交）
+tcg-sheet-integration*.json
+*.json
+tcg-sheet-integration-*.json
+credentials*.json

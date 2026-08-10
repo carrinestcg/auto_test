@@ -1383,6 +1383,159 @@ function showLoading(show=true){
     loading.classList.toggle('show', show);
 }
 
+function parseProgressPercent(raw) {
+    if (raw == null || raw === "") return null;
+    if (typeof raw === "number") {
+        if (raw <= 1 && raw >= 0) return Math.round(raw * 100);
+        return Math.round(raw);
+    }
+    const text = String(raw).trim();
+    if (!text) return null;
+    const m = text.match(/^([\d.]+)\s*%?$/);
+    if (!m) return null;
+    const num = Number(m[1]);
+    if (!Number.isFinite(num)) return null;
+    return num <= 1 && text.indexOf("%") === -1 && num > 0 ? Math.round(num * 100) : Math.round(num);
+}
+
+function progressTierClass(pct) {
+    if (pct == null) return "is-none";
+    if (pct <= 0) return "is-zero";
+    if (pct < 50) return "is-low";
+    if (pct < 80) return "is-mid";
+    return "is-high";
+}
+
+function formatProgressLabel(pct) {
+    const clamped = Math.min(100, Math.max(0, Number(pct) || 0));
+    return clamped <= 0 ? "未開始" : `${clamped}%`;
+}
+
+function renderSheetProgressBar(label, rate) {
+    const pct = parseProgressPercent(rate);
+    if (pct == null) {
+        return `<div class="tp-progress tp-progress--sheet is-none">
+            <div class="tp-progress-meta">
+                <span class="tp-progress-label">${escapeHtml(label)}</span>
+                <span class="tp-progress-pct is-none">—</span>
+            </div>
+            <div class="tp-progress-track is-none"><div class="tp-progress-fill" style="width:0"></div></div>
+        </div>`;
+    }
+    const clamped = Math.min(100, Math.max(0, pct));
+    const tier = progressTierClass(clamped);
+    return `<div class="tp-progress tp-progress--sheet ${tier}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${clamped}" aria-label="${escapeHtml(label)} 進度">
+        <div class="tp-progress-meta">
+            <span class="tp-progress-label">${escapeHtml(label)}</span>
+            <span class="tp-progress-pct ${tier}">${escapeHtml(formatProgressLabel(clamped))}</span>
+        </div>
+        <div class="tp-progress-track ${tier}">
+            <div class="tp-progress-fill ${tier}" style="width:${clamped}%"></div>
+        </div>
+    </div>`;
+}
+
+function renderExcelProgressTable(rows) {
+    if (!rows || rows.length === 0) {
+        return renderEmptyState("沒有 TCG 分頁", "試算表內找不到以 TCG- 開頭的分頁。");
+    }
+    const sorted = [...rows].sort((a, b) => String(a["分頁名稱"] || "").localeCompare(String(b["分頁名稱"] || "")));
+    const bars = sorted
+        .map((row) => renderSheetProgressBar(row["分頁名稱"] || "—", row["進度"]))
+        .join("");
+    return `<div class="result-task-list excel-progress-list">${bars}</div>`;
+}
+
+function renderExcelProgressReport(report) {
+    const sheets = Array.isArray(report?.sheets) ? report.sheets : [];
+    const totalCount = Number(report?.total_count ?? sheets.length);
+    const withProgress = sheets.filter((row) => parseProgressPercent(row["進度"]) != null);
+    const avgProgress =
+        withProgress.length === 0
+            ? null
+            : Math.round(
+                  withProgress.reduce((sum, row) => sum + parseProgressPercent(row["進度"]), 0) /
+                      withProgress.length
+              );
+
+    const summary = renderStatsBar(
+        [
+            { label: "TCG 分頁", numeric: totalCount, suffix: "張", dimZero: true },
+            { label: "有進度", numeric: withProgress.length, suffix: "張", dimZero: true },
+            {
+                label: "平均進度",
+                value: avgProgress == null ? "—" : formatProgressLabel(avgProgress),
+                valueClass: avgProgress == null ? "" : `tp-progress-pct ${progressTierClass(avgProgress)}`,
+            },
+        ],
+        { columns: 3 }
+    );
+
+    if (sheets.length === 0) {
+        return `${summary}${renderEmptyState(
+            "沒有 TCG 分頁",
+            "試算表內找不到以 TCG- 開頭的分頁。"
+        )}`;
+    }
+
+    const overallProgress = avgProgress == null ? "" : renderProgressBar(avgProgress, "平均進度");
+    return `${summary}${overallProgress}${renderExcelProgressTable(sheets)}`;
+}
+
+const EXCEL_SHEET_ID_STORAGE_KEY = "excelProgressSheetId";
+
+const excelProgressBtn = document.getElementById("excelProgressBtn");
+const googleSheetIdInput = document.getElementById("googleSheetIdInput");
+if (googleSheetIdInput) {
+    const savedSheetId = localStorage.getItem(EXCEL_SHEET_ID_STORAGE_KEY);
+    if (savedSheetId) {
+        googleSheetIdInput.value = savedSheetId;
+    }
+}
+if (excelProgressBtn) {
+    excelProgressBtn.addEventListener("click", async () => {
+        const sheetId = googleSheetIdInput?.value?.trim() || "";
+        if (!sheetId) {
+            showResultPopup({
+                success: false,
+                message: "請輸入 Google Sheet ID 或試算表連結",
+            });
+            googleSheetIdInput?.focus();
+            return;
+        }
+
+        showLoading(true);
+        try {
+            localStorage.setItem(EXCEL_SHEET_ID_STORAGE_KEY, sheetId);
+            const response = await fetch(
+                `/api/excel-progress?sheet_id=${encodeURIComponent(sheetId)}`
+            );
+            const raw = await response.text();
+            let data;
+            try {
+                data = JSON.parse(raw);
+            } catch (parseErr) {
+                throw new Error(`回應不是合法 JSON：${raw.slice(0, 120)}`);
+            }
+            if (!response.ok || !data.success) {
+                showResultPopup({
+                    success: false,
+                    message: data.message || `HTTP ${response.status}`,
+                });
+                return;
+            }
+            showResultPopup(data);
+        } catch (err) {
+            showResultPopup({
+                success: false,
+                message: err.message || String(err),
+            });
+        } finally {
+            showLoading(false);
+        }
+    });
+}
+
 document.getElementById('uploadform').addEventListener('submit',async(e)=>{
     e.preventDefault();
     const formdata=new FormData();
@@ -1989,6 +2142,9 @@ function detectResultType(data) {
     if (report.tasks && Array.isArray(report.tasks) && "total_count" in report) {
         return "calculate_workdays";
     }
+    if (report.sheets && Array.isArray(report.sheets) && "total_count" in report) {
+        return "excel_progress";
+    }
     return "generic";
 }
 
@@ -2089,7 +2245,7 @@ function renderStatsBar(cards, options = {}) {
             ${
                 card.numeric != null
                     ? formatStatNumber(card.numeric, { suffix: card.suffix, dimZero: card.dimZero })
-                    : `<span class="result-stat-value">${escapeHtml(card.value)}</span>`
+                    : `<span class="result-stat-value${card.valueClass ? ` ${card.valueClass}` : ""}">${escapeHtml(card.value)}</span>`
             }
         </div>`
         )
@@ -2104,15 +2260,16 @@ function formatWorkdaysDateRange(dateFrom, dateTo) {
     return "全部";
 }
 
-function renderProgressBar(rate) {
+function renderProgressBar(rate, label = "QA Task 完成率") {
     const pct = Math.min(100, Math.max(0, Number(rate) || 0));
-    return `<div class="tp-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="QA Task 完成率">
+    const tier = progressTierClass(pct);
+    return `<div class="tp-progress tp-progress--overall ${tier}" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${escapeHtml(label)}">
         <div class="tp-progress-meta">
-            <span>QA Task 完成率</span>
-            <span>${pct}%</span>
+            <span class="tp-progress-label">${escapeHtml(label)}</span>
+            <span class="tp-progress-pct ${tier}">${escapeHtml(formatProgressLabel(pct))}</span>
         </div>
-        <div class="tp-progress-track">
-            <div class="tp-progress-fill" style="width:${pct}%"></div>
+        <div class="tp-progress-track ${tier}">
+            <div class="tp-progress-fill ${tier}" style="width:${pct}%"></div>
         </div>
     </div>`;
 }
@@ -2379,6 +2536,9 @@ function renderManualSingleConfirmResult(data) {
 function renderFormattedResult(data, resultType) {
     if (resultType === "calculate_workdays") {
         return renderWorkdaysReport(data.data);
+    }
+    if (resultType === "excel_progress") {
+        return renderExcelProgressReport(data.data);
     }
     if (resultType === "create_qa_task") {
         return renderCreateQaTaskResults(data.data);
