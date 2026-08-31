@@ -603,7 +603,7 @@ verify_handler={
     11: (gen_number(1000000000000, 2000000000000), binding_virtual_wallet),
     12: (gen_string(10), input_whatsapp_ID),
     13: (gen_string(9), input_Facebook_ID),
-    14: (gen_string(9), input_zalo_ID),
+    15: (gen_string(9), input_zalo_ID),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
@@ -620,9 +620,16 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
         
     elif verify_type == 2:
         return _verify_id_card(customer_id, platform)
-    
-    elif verify_type == 5:
-            return input_upline(customer_id, platform, newUpline)
+
+    elif verify_type == 14:
+        if not (newUpline or "").strip():
+            logging.error("上級代理 newUpline 不可為空")
+            return False, None
+        new_upline = newUpline.strip()
+        if input_upline(customer_id, platform, new_upline):
+            logging.info(f"驗證類型 14 成功，值: {new_upline}")
+            return True, new_upline
+        return False, None
         
     gen_value, handler = verify_handler.get(verify_type, (None, None))
     if handler is None:

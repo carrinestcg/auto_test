@@ -544,6 +544,18 @@ function updatePlayerInfoSelectionUI(root, statusEl, applyBtn, selectedValues) {
     }
 }
 
+function askNewUpline() {
+    return new Promise((resolve) => {
+        const value = window.prompt("請輸入上級代理帳號（newUpline）：", "");
+        if (value === null) {
+            resolve(null);
+            return;
+        }
+        const trimmed = value.trim();
+        resolve(trimmed || null);
+    });
+}
+
 function askPlayerInfoType(defaultTypes = []) {
     return new Promise((resolve) => {
         const modal = document.getElementById("player-info-modal");
@@ -1885,6 +1897,13 @@ function runSelectScript(){
                 continue;
             }
             extraData = { requireTypes };
+            if (requireTypes.includes(14)) {
+                const newUpline = await askNewUpline();
+                if (!newUpline) {
+                    continue;
+                }
+                extraData.newUpline = newUpline;
+            }
             break;
         }
 

@@ -568,6 +568,17 @@ def api_input_user_info():
             })
             continue
 
+        if require_type == 14 and not newUpline:
+            results.append({
+                "requireType": require_type,
+                "verifyType": require_type,
+                "success": False,
+                "message": "Verify Upline Failed: newUpline is required",
+                **{field: None for field in value_fields.values()},
+                "upline": None,
+            })
+            continue
+
         result, value = verify_info(username, platforms, require_type, newUpline)
         if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12, 13, 14, 15):
             value = str(value)
