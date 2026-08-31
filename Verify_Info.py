@@ -567,6 +567,30 @@ def input_upline(customerId:int, platform:str, newUpline:str):
         logging.error(f"上級代理輸入請求失敗{e}")
         return False
     
+def input_zalo_ID(customerId:int, zalo_id:str, platform:str):
+    token=get_token()
+    logging.info(f"傳入的Zalo ID:{zalo_id}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeZalo?customerId={customerId}&merchantCode={platform}&remark=d&zalo={zalo_id}"
+    headers=header(token)
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("Zalo ID輸入成功")  
+                return True
+            else:
+                logging.error("Zalo ID輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"Zalo ID輸入請求失敗{e}")
+        return False
 verify_handler={ 
     3: (gen_string(), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
@@ -579,6 +603,7 @@ verify_handler={
     11: (gen_number(1000000000000, 2000000000000), binding_virtual_wallet),
     12: (gen_string(10), input_whatsapp_ID),
     13: (gen_string(9), input_Facebook_ID),
+    14: (gen_string(9), input_zalo_ID),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):

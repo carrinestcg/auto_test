@@ -419,6 +419,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 1, label: "手機號碼", icon: "mobile" },
             { value: 2, label: "身分證", icon: "id" },
             { value: 3, label: "玩家名稱", icon: "user" },
+            { value: 14, label: "上級代理", icon: "upline" },
             { value: 7, label: "地址", icon: "address" },
             { value: 11, label: "虛擬錢包", icon: "wallet" },
         ],
@@ -435,6 +436,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 10, label: "Telegram", icon: "telegram" },
             { value: 12, label: "WhatsAppId", icon: "whatsapp" },
             { value: 13, label: "Facebook ID", icon: "user" },
+            { value: 15, label: "Zalo ID", icon: "zalo" },
         ],
     },
 ];
@@ -455,6 +457,8 @@ const PLAYER_INFO_VALUE_FIELDS = {
     11: ["virtualWalletID", "虛擬錢包"],
     12: ["whatsappID", "WhatsAppId"],
     13: ["facebookID", "Facebook ID"],
+    14: ["upline", "Upline"],
+    15: ["zaloID", "Zalo ID"]
 };
 
 const PLAYER_INFO_CHECK_SVG =
@@ -484,7 +488,11 @@ function getPlayerInfoIcon(iconName) {
         wallet:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>',
         facebook:
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v10h3V14h3l1-4h-4z"/></svg>'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v10h3V14h3l1-4h-4z"/></svg>',
+        zalo:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M15.5 9h-7v6h7v-6z"/></svg>',
+        upline:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M12 7v5l4.3 2.6"/></svg>'
     };
     return icons[iconName] || icons.user;
 }

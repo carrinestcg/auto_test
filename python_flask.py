@@ -504,6 +504,7 @@ def api_input_user_info():
     data = request.get_json(silent=True) or {}
     username = data.get("username")
     platforms = data.get("platforms")
+    newUpline = data.get("newUpline", "").strip()
 
     require_types_raw = data.get("requireTypes")
     if require_types_raw is None:
@@ -535,6 +536,8 @@ def api_input_user_info():
         11: "虛擬錢包",
         12: "WhatsAppId",
         13: "Facebook ID",
+        14: "Upline",
+        15: "Zalo ID",
     }
     value_fields = {
         1: "mobileNumber",
@@ -550,6 +553,8 @@ def api_input_user_info():
         11: "virtualWalletID",
         12: "whatsappID",
         13: "facebookID",
+        14: "upline",
+        15: "zaloID",
     }
 
     results = []
@@ -563,8 +568,8 @@ def api_input_user_info():
             })
             continue
 
-        result, value = verify_info(username, platforms, require_type)
-        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12, 13):
+        result, value = verify_info(username, platforms, require_type, newUpline)
+        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12, 13, 14, 15):
             value = str(value)
         elif value is not None:
             value = str(value)
@@ -1122,13 +1127,13 @@ def api_calculate_workdays():
         elif tp_key:
             message = (
                 f"查無符合的 QA Task（帳號 {assignee}、TP {tp_key}"
-                f"{f'、結案日 {date_from}~{date_to}' if date_from or date_to else ''}）。"
+                f"{f'、日期 {date_from}~{date_to}' if date_from or date_to else ''}）。"
                 "請確認 Jira 帳號、TP 單號，或先清除日期區間再試。"
             )
         else:
             message = (
                 f"帳號 {assignee} 底下沒有 QA Task"
-                f"{f'（結案日 {date_from}~{date_to}）' if date_from or date_to else ''}。"
+                f"{f'（日期 {date_from}~{date_to}）' if date_from or date_to else ''}。"
                 "請確認 Jira 帳號是否正確，或先清除日期區間再試。"
             )
         return jsonify({"success": True, "message": message, "data": report}), 200
