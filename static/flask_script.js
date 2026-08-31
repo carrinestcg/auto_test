@@ -84,7 +84,7 @@ const TEST_SCENARIOS = [
     },
     {
         id: "customer_info",
-        title: "查詢玩家資訊",
+        title: "查詢 customer_id",
         summary: "Customer_id",
         tab: "Player Management",
         scripts: ["Customer_id"],
