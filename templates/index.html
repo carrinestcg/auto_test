@@ -16,6 +16,10 @@
                 if (localStorage.getItem("auto_test_theme") === "dark") {
                     document.documentElement.setAttribute("data-theme", "dark");
                 }
+                var savedPanelWidth = localStorage.getItem("auto_test_right_panel_width");
+                if (savedPanelWidth) {
+                    document.documentElement.style.setProperty("--right-panel-width", savedPanelWidth + "px");
+                }
             } catch (e) {}
         })();
     </script>
@@ -73,7 +77,8 @@
         </div>
     </aside>
 
-    <main class="main">
+    <div class="workspace">
+    <main class="main center-panel">
         <header class="page-header">
             <h2>Test Automation Management</h2>
             <p>選擇測試腳本、帳號與平台後執行</p>
@@ -647,8 +652,55 @@
         </div>
     </div>
 
-    <div id="result" aria-live="polite"></div>
+    <div id="result" class="sr-only" aria-live="polite"></div>
     </main>
+
+    <div
+        class="panel-resizer"
+        id="right-panel-resizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="拖曳調整執行面板寬度"
+        aria-valuemin="280"
+        aria-valuemax="720"
+        aria-valuenow="380"
+        title="拖曳左右調整執行面板寬度"
+        tabindex="0"
+    ></div>
+
+    <aside class="right-panel" id="right-panel" aria-label="執行結果與狀態">
+        <div class="right-panel-header">
+            <h2 class="right-panel-title">執行面板</h2>
+            <p class="right-panel-subtitle">即時 log、結果與 Excel 輸出</p>
+        </div>
+        <div class="right-panel-tabs" role="tablist" aria-label="右側面板分頁">
+            <button type="button" class="right-panel-tab" data-right-tab="log" role="tab" aria-selected="false">執行紀錄</button>
+            <button type="button" class="right-panel-tab active" data-right-tab="result" role="tab" aria-selected="true">執行結果</button>
+            <button type="button" class="right-panel-tab" data-right-tab="excel" role="tab" aria-selected="false">Excel</button>
+            <button type="button" class="right-panel-tab" data-right-tab="history" role="tab" aria-selected="false">歷史</button>
+        </div>
+        <div class="right-panel-body">
+            <div id="right-panel-log" class="right-panel-pane" role="tabpanel" hidden>
+                <div id="right-panel-log-content" class="run-log-console" aria-live="polite"></div>
+            </div>
+            <div id="right-panel-result" class="right-panel-pane active" role="tabpanel">
+                <div id="right-panel-result-status" class="right-result-status">
+                    <span class="right-result-badge" id="right-result-badge">待執行</span>
+                    <p class="right-result-message" id="right-result-message">勾選測試項目並按「開始測試」，結果會顯示於此。</p>
+                </div>
+                <div id="right-panel-result-body" class="right-result-body"></div>
+            </div>
+            <div id="right-panel-excel" class="right-panel-pane" role="tabpanel" hidden>
+                <div id="right-panel-excel-body" class="right-result-body">
+                    <p class="right-panel-empty">Excel 比對或 TCG 進度查詢結果會顯示於此。</p>
+                </div>
+            </div>
+            <div id="right-panel-history" class="right-panel-pane" role="tabpanel" hidden>
+                <ul id="right-panel-history-list" class="run-history-list" aria-label="歷史測試紀錄"></ul>
+            </div>
+        </div>
+    </aside>
+    </div>
 </div>
 
     <div id="result-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-header-title">

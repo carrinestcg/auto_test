@@ -1074,6 +1074,11 @@ function trackRunRequestStart() {
     if (activeRunRequests === 1) {
         setRunButtonLoading(true);
         showLoading(true);
+        const badge = document.getElementById("right-result-badge");
+        if (badge) {
+            badge.textContent = "執行中";
+            badge.className = "right-result-badge is-running";
+        }
     }
 }
 
@@ -1256,6 +1261,7 @@ document.addEventListener("DOMContentLoaded", function () {
         tcgEl.addEventListener("input", updateRunButtonState);
     }
     initResultModal();
+    initRightPanel();
     initWorkdaysDatePicker();
     initScenarioPanel();
     initPlatformChipPicker();
@@ -1576,9 +1582,9 @@ document.getElementById('uploadform').addEventListener('submit',async(e)=>{
             body:formdata
         });
         const data=await response.json();
-        document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
+        let html = "";
         if (data.full_dupes){
-            let html="<table border=1 cellpadding='5'<tr>";
+            html="<table border=1 cellpadding='5'><tr>";
             Object.keys(data.full_dupes[0]).forEach(k=>html+=`<th>${k}</th>`);
             html += "</tr>";
 
@@ -1588,10 +1594,12 @@ document.getElementById('uploadform').addEventListener('submit',async(e)=>{
                 html += "</tr>";
             });
             html+="</table>";
-            document.getElementById('result').innerHTML+=html;
         }
+        showExcelPanelContent(html, data.message);
+        appendRunLog(`Excel 重複除錯：${data.message || "完成"}`, "ok");
     }catch(err){
         alert("上傳失敗：" + err);
+        appendRunLog(`Excel 重複除錯失敗：${err}`, "err");
     }
     finally{
         showLoading(false)
@@ -1619,9 +1627,9 @@ document.getElementById('Compare_Two_Excel').addEventListener('submit',async(e)=
             body:formdata
         });
         const data=await response.json();
-        document.getElementById('result').innerHTML = `<p>${data.message}</p>`;
+        let html = "";
         if (data.full_dupes){
-            let html="<table border=1 cellpadding='5'<tr>";
+            html="<table border=1 cellpadding='5'><tr>";
             Object.keys(data.full_dupes[0]).forEach(k=>html+=`<th>${k}</th>`);
             html += "</tr>";
 
@@ -1631,10 +1639,12 @@ document.getElementById('Compare_Two_Excel').addEventListener('submit',async(e)=
                 html += "</tr>";
             });
             html+="</table>";
-            document.getElementById('result').innerHTML+=html;
         }
+        showExcelPanelContent(html, data.message);
+        appendRunLog(`雙檔 Excel 比對：${data.message || "完成"}`, "ok");
     }catch(err){
         alert("上傳失敗：" + err);
+        appendRunLog(`雙檔 Excel 比對失敗：${err}`, "err");
     }
     finally{
         showLoading(false)
@@ -1663,6 +1673,9 @@ function runSelectScript(){
     }
 
     (async () => {
+    if (checkSelectScript.length) {
+        appendRunLog(`批次開始：${checkSelectScript.join(" → ")}`, "warn");
+    }
     for (const scriptName of checkSelectScript) {
         let extraData = {};
         /** 非 null 時覆寫預設 payload（username + platforms + extraData） */
@@ -1951,6 +1964,7 @@ function runSelectScript(){
 
 async function runScriptApi(scriptName, payload) {
     trackRunRequestStart();
+    appendRunLog(`▶ ${scriptName} 開始…`);
     try {
         const res = await fetch(`/api/${scriptName}`, {
             method: "POST",
@@ -1959,21 +1973,305 @@ async function runScriptApi(scriptName, payload) {
         });
         const data = await res.json();
         console.log(scriptName, data);
-        showResultPopup(data);
+        appendRunLog(
+            `${scriptName}：${data.success ? "成功" : "失敗"}${data.message ? " — " + data.message : ""}`,
+            data.success ? "ok" : "err"
+        );
+        showResultPopup(data, { scriptName });
         return data;
     } catch (err) {
+        appendRunLog(`${scriptName}：API 失敗 — ${err}`, "err");
         showResultPopup({
             success: false,
             message: "API 呼叫失敗：" + err,
-        });
+        }, { scriptName });
         return { success: false, message: String(err) };
     } finally {
         trackRunRequestEnd();
     }
 }
 
-function showResultPopup(data) {
+const RUN_HISTORY_KEY = "auto_test_run_history";
+const RUN_HISTORY_LIMIT = 40;
+const RIGHT_PANEL_WIDTH_KEY = "auto_test_right_panel_width";
+const RIGHT_PANEL_MIN_WIDTH = 280;
+const RIGHT_PANEL_MAX_WIDTH = 720;
+
+function initRightPanel() {
+    document.querySelectorAll(".right-panel-tab").forEach((btn) => {
+        btn.addEventListener("click", () => switchRightPanelTab(btn.dataset.rightTab));
+    });
+    initRightPanelResize();
+    renderRunHistoryList();
+}
+
+function getRightPanelMaxWidth() {
+    const workspace = document.querySelector(".workspace");
+    if (!workspace) return RIGHT_PANEL_MAX_WIDTH;
+    const workspaceWidth = workspace.getBoundingClientRect().width;
+    const cap = Math.floor(workspaceWidth * 0.62);
+    return Math.min(RIGHT_PANEL_MAX_WIDTH, Math.max(RIGHT_PANEL_MIN_WIDTH, cap));
+}
+
+function getRightPanelWidth() {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue("--right-panel-width").trim();
+    const parsed = parseInt(raw, 10);
+    return Number.isFinite(parsed) ? parsed : 380;
+}
+
+function applyRightPanelWidth(px) {
+    const max = getRightPanelMaxWidth();
+    const next = Math.min(max, Math.max(RIGHT_PANEL_MIN_WIDTH, Math.round(px)));
+    document.documentElement.style.setProperty("--right-panel-width", `${next}px`);
+    const resizer = document.getElementById("right-panel-resizer");
+    if (resizer) {
+        resizer.setAttribute("aria-valuenow", String(next));
+        resizer.setAttribute("aria-valuemax", String(max));
+    }
+    try {
+        localStorage.setItem(RIGHT_PANEL_WIDTH_KEY, String(next));
+    } catch (e) {}
+    return next;
+}
+
+function isRightPanelResizeEnabled() {
+    return window.matchMedia("(min-width: 1025px)").matches;
+}
+
+function initRightPanelResize() {
+    const resizer = document.getElementById("right-panel-resizer");
+    if (!resizer) return;
+
+    try {
+        const saved = localStorage.getItem(RIGHT_PANEL_WIDTH_KEY);
+        if (saved) applyRightPanelWidth(Number(saved));
+    } catch (e) {}
+
+    applyRightPanelWidth(getRightPanelWidth());
+
+    let startX = 0;
+    let startWidth = 0;
+    let activePointerId = null;
+
+    const stopDrag = () => {
+        if (activePointerId !== null) {
+            try {
+                resizer.releasePointerCapture(activePointerId);
+            } catch (e) {}
+            activePointerId = null;
+        }
+        resizer.classList.remove("is-dragging");
+        document.body.classList.remove("is-resizing-panel");
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", stopDrag);
+        window.removeEventListener("pointercancel", stopDrag);
+        window.removeEventListener("blur", stopDrag);
+    };
+
+    const onPointerMove = (event) => {
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+        const delta = startX - event.clientX;
+        applyRightPanelWidth(startWidth + delta);
+    };
+
+    resizer.addEventListener("pointerdown", (event) => {
+        if (!isRightPanelResizeEnabled()) return;
+        if (event.pointerType === "mouse" && event.button !== 0) return;
+        event.preventDefault();
+        startX = event.clientX;
+        startWidth = getRightPanelWidth();
+        activePointerId = event.pointerId;
+        resizer.classList.add("is-dragging");
+        document.body.classList.add("is-resizing-panel");
+        try {
+            resizer.setPointerCapture(event.pointerId);
+        } catch (e) {}
+        window.addEventListener("pointermove", onPointerMove);
+        window.addEventListener("pointerup", stopDrag);
+        window.addEventListener("pointercancel", stopDrag);
+        window.addEventListener("blur", stopDrag);
+    });
+
+    resizer.addEventListener("keydown", (event) => {
+        if (!isRightPanelResizeEnabled()) return;
+        const step = event.shiftKey ? 48 : 16;
+        if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            applyRightPanelWidth(getRightPanelWidth() + step);
+        } else if (event.key === "ArrowRight") {
+            event.preventDefault();
+            applyRightPanelWidth(getRightPanelWidth() - step);
+        }
+    });
+
+    window.addEventListener("resize", () => {
+        if (isRightPanelResizeEnabled()) {
+            applyRightPanelWidth(getRightPanelWidth());
+        }
+    });
+}
+
+function switchRightPanelTab(tabId) {
+    if (!tabId) return;
+    document.querySelectorAll(".right-panel-tab").forEach((btn) => {
+        const active = btn.dataset.rightTab === tabId;
+        btn.classList.toggle("active", active);
+        btn.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    document.querySelectorAll(".right-panel-pane").forEach((pane) => {
+        const active = pane.id === `right-panel-${tabId}`;
+        pane.classList.toggle("active", active);
+        if (active) {
+            pane.removeAttribute("hidden");
+        } else {
+            pane.setAttribute("hidden", "");
+        }
+    });
+}
+
+function appendRunLog(text, level = "info") {
+    const el = document.getElementById("right-panel-log-content");
+    if (!el) return;
+    const line = document.createElement("div");
+    line.className = `run-log-line run-log-${level}`;
+    const ts = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+    line.textContent = `[${ts}] ${text}`;
+    el.appendChild(line);
+    while (el.childElementCount > 400) {
+        el.removeChild(el.firstElementChild);
+    }
+    el.scrollTop = el.scrollHeight;
+}
+
+function loadRunHistory() {
+    try {
+        const raw = localStorage.getItem(RUN_HISTORY_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function saveRunHistory(items) {
+    try {
+        localStorage.setItem(RUN_HISTORY_KEY, JSON.stringify(items.slice(0, RUN_HISTORY_LIMIT)));
+    } catch (e) {}
+}
+
+function pushRunHistory(entry) {
+    const items = loadRunHistory();
+    items.unshift(entry);
+    saveRunHistory(items);
+    renderRunHistoryList();
+}
+
+function renderRunHistoryList() {
+    const list = document.getElementById("right-panel-history-list");
+    if (!list) return;
+    const items = loadRunHistory();
+    if (!items.length) {
+        list.innerHTML = '<li class="right-panel-empty">尚無歷史紀錄</li>';
+        return;
+    }
+    list.innerHTML = items
+        .map(
+            (item, idx) => `<li class="run-history-item ${item.success ? "is-success" : "is-fail"}" data-history-idx="${idx}" role="button" tabindex="0">
+                <div class="run-history-meta">${escapeHtml(item.time || "")}${item.scriptName ? " · " + escapeHtml(item.scriptName) : ""}</div>
+                <div class="run-history-title">${escapeHtml(item.message || (item.success ? "成功" : "失敗"))}</div>
+            </li>`
+        )
+        .join("");
+    list.querySelectorAll(".run-history-item").forEach((el) => {
+        el.addEventListener("click", () => {
+            const idx = Number(el.dataset.historyIdx);
+            const item = loadRunHistory()[idx];
+            if (item && item.data) {
+                showResultInRightPanel(item.data, { scriptName: item.scriptName, skipHistory: true });
+            }
+        });
+    });
+}
+
+function buildResultBodyHtml(data) {
+    const isSuccess = !!data.success;
+    const resultType = detectResultType(data);
+    const summaryResultTypes = [
+        "postcard",
+        "manual_single_confirm",
+        "verify_player_info",
+        "verify_player_info_multi",
+        "verify_mobile",
+        "verify_id",
+        "verify_name",
+        "customer_id",
+        "customer_name",
+    ];
+    const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
+    return showSummaryPanel ? renderFormattedResult(data, resultType) : renderFailureResult(data);
+}
+
+function showResultInRightPanel(data, options = {}) {
+    const isSuccess = !!data.success;
+    const resultType = detectResultType(data);
+    const isExcel = resultType === "excel_progress" || options.target === "excel";
+
+    if (isExcel) {
+        const excelBody = document.getElementById("right-panel-excel-body");
+        if (excelBody) {
+            excelBody.innerHTML = buildResultBodyHtml(data);
+            setupResultModalInteractions(excelBody);
+        }
+        switchRightPanelTab("excel");
+    } else {
+        const badge = document.getElementById("right-result-badge");
+        const msg = document.getElementById("right-result-message");
+        const body = document.getElementById("right-panel-result-body");
+        if (badge) {
+            badge.textContent = isSuccess ? "成功" : "失敗";
+            badge.className = `right-result-badge ${isSuccess ? "is-success" : "is-fail"}`;
+        }
+        if (msg) {
+            msg.textContent = data.message || (isSuccess ? "執行成功" : "執行失敗");
+        }
+        if (body) {
+            body.innerHTML = buildResultBodyHtml(data);
+            setupResultModalInteractions(body);
+        }
+        switchRightPanelTab("result");
+    }
+
+    if (!options.skipHistory) {
+        pushRunHistory({
+            time: new Date().toLocaleString("zh-TW", { hour12: false }),
+            scriptName: options.scriptName || "",
+            success: isSuccess,
+            message: data.message || "",
+            data,
+        });
+    }
+}
+
+function showExcelPanelContent(html, message) {
+    const excelBody = document.getElementById("right-panel-excel-body");
+    if (!excelBody) return;
+    const parts = [];
+    if (message) parts.push(`<p class="right-result-message">${escapeHtml(message)}</p>`);
+    if (html) parts.push(html);
+    excelBody.innerHTML = parts.join("") || '<p class="right-panel-empty">無輸出</p>';
+    switchRightPanelTab("excel");
+}
+
+function showResultPopup(data, options = {}) {
+    showResultInRightPanel(data, options);
+
+    if (data.useModal !== true) {
+        return;
+    }
+
     const modal = document.getElementById("result-modal");
+    if (!modal) {
+        return;
+    }
     const contentEl = modal.querySelector(".result-modal-content");
     const eyebrow = document.getElementById("modal-eyebrow");
     const headerTitle = document.getElementById("modal-header-title");
