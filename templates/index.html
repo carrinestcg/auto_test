@@ -191,7 +191,7 @@
                                         <line x1="3" y1="10" x2="21" y2="10"></line>
                                     </svg>
                                 </span>
-                                <span class="workdays-date-panel-title">選擇日期區間</span>
+                                <span class="workdays-date-panel-title">選擇結案日期區間</span>
                             </div>
                             <div class="workdays-date-presets" role="group" aria-label="快速選擇日期區間">
                                 <button type="button" class="workdays-date-preset" data-preset="today">今天</button>
@@ -217,7 +217,7 @@
                         </div>
                         <input type="hidden" id="qa_stats_date_from" value="">
                         <input type="hidden" id="qa_stats_date_to" value="">
-                        <p class="field-helper workdays-date-helper">不選則不限制日期；按「開始測試」時會自動套用上方日期區間</p>
+                        <p class="field-helper workdays-date-helper">依 <strong>ResolvedDate（結案日）</strong> 篩選；有選日期時未結案的單不計入。不選則不限制日期。</p>
                         <p id="workdays-date-applied-hint" class="workdays-date-applied-hint hidden" aria-live="polite"></p>
                     </div>
 
@@ -381,15 +381,15 @@
                     </div>
                     <label>
                         <input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">
-                        查詢玩家資訊
+                        查詢 customer_id
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Customer_name" id="Customer_name" onchange="toggleInput()">
-                        查詢玩家帳號
+                        查詢 customer_account
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Input_User_Info" id="Input_User_Info" onchange="toggleInput()">
-                        填入玩家訊息
+                        填入 customer_info
                     </label>
                 </div>
             </div>

@@ -519,6 +519,54 @@ def input_Facebook_ID(customerId:int, facebook_id:str, platform:str):
         logging.error(f"Facebook ID輸入請求失敗{e}")
         return False
     
+def input_upline(customerId:int, platform:str, newUpline:str):
+    token=get_token()
+    logging.info(f"傳入的newUpline:{newUpline}")
+    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-basic-information-changeUpline"
+    header={
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Authorization": token,
+            "Content-Type": "application/json",
+            "Connection": "keep-alive",
+            "Language": "zh_CN",
+            "Merchant": platform,
+            "MerchantCode": platform,
+            "Origin": "http://sit-admin2.tcg.com",
+            "Referer": "http://sit-admin2.tcg.com/311792",
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+            "environment": "TCG3",
+            "notPending": "true",
+            "platform": "TCG"
+        }
+    params={
+        "customerId": customerId,
+        "newUpline": newUpline,
+        "remark":"d",
+        "cascadeType":"D",
+        "cancelContractFlag":"Y",
+        "dataTransferDate":"2026-08-01"
+    }
+    cookies = {
+            "language": "zh_CN"
+        }
+    try:
+            response=requests.post(API_URL3, cookies=cookies, headers=header, params=params, verify=False)
+            response.raise_for_status()
+
+            response_data=response.json()
+            if response_data.get("success") :
+                response_data.get('value')
+                logging.info("上級代理輸入成功")  
+                return True
+            else:
+                logging.error("上級代理輸入失敗")
+                return False
+        
+    except Exception as e:
+        logging.error(f"上級代理輸入請求失敗{e}")
+        return False
+    
 verify_handler={ 
     3: (gen_string(), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
@@ -533,7 +581,7 @@ verify_handler={
     13: (gen_string(9), input_Facebook_ID),
 }
 
-def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
+def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
         
     customer_id=main(PLAYER_ACCOUNT, platform, 1)
     platform=platform[0]
@@ -547,6 +595,9 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type):
         
     elif verify_type == 2:
         return _verify_id_card(customer_id, platform)
+    
+    elif verify_type == 5:
+            return input_upline(customer_id, platform, newUpline)
         
     gen_value, handler = verify_handler.get(verify_type, (None, None))
     if handler is None:

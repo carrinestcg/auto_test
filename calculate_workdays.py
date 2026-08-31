@@ -16,6 +16,8 @@ JIRA_SSL      = False
 
 JIRA_USERNAME = "carrine.s"
 WORKDAYS_FIELD = "customfield_11701"  # Workdays 欄位
+RESOLVED_DATE_FIELD = "customfield_11606"  # ResolvedDate 欄位
+RESOLVED_DATE_JQL = '"ResolvedDate"'
 SEARCH_PAGE_SIZE = 100
 SEARCH_MAX_PAGES = 10
 # ================================
@@ -45,20 +47,27 @@ def _normalize_tp(value):
     return re.sub(r"[^A-Z0-9]", "", (value or "").upper())
 
 
+def _extract_resolved_date(raw_value):
+    if raw_value is None or raw_value == "":
+        return ""
+    return normalize_date(str(raw_value)[:10])
+
+
 def _append_date_filter(jql, start_date=None, end_date=None):
     clauses = []
     start_date = normalize_date(start_date)
     end_date = normalize_date(end_date)
     if start_date:
-        clauses.append(f'created >= "{start_date}"')
+        clauses.append(f"{RESOLVED_DATE_JQL} >= \"{start_date}\"")
     if end_date:
         # Jira date equality is day-level; use next day with < for inclusive end date.
         end_exclusive = (
             datetime.strptime(end_date, "%Y-%m-%d") + timedelta(days=1)
         ).strftime("%Y-%m-%d")
-        clauses.append(f'created < "{end_exclusive}"')
+        clauses.append(f"{RESOLVED_DATE_JQL} < \"{end_exclusive}\"")
     if not clauses:
         return jql
+    clauses.insert(0, f"{RESOLVED_DATE_JQL} is not EMPTY")
     if "ORDER BY" in jql:
         base, order = jql.rsplit("ORDER BY", 1)
         return f"{base.strip()} AND {' AND '.join(clauses)} ORDER BY{order}"
@@ -66,7 +75,7 @@ def _append_date_filter(jql, start_date=None, end_date=None):
 
 
 def _filter_tasks_by_date_range(tasks, start_date=None, end_date=None):
-    """Python-side guard: enforce created date range even if JQL misses edge cases."""
+    """Python-side guard: enforce ResolvedDate range even if JQL misses edge cases."""
     start_date = normalize_date(start_date)
     end_date = normalize_date(end_date)
     if not start_date and not end_date:
@@ -74,12 +83,12 @@ def _filter_tasks_by_date_range(tasks, start_date=None, end_date=None):
 
     filtered = []
     for task in tasks:
-        created = normalize_date((task.get("created") or "")[:10])
-        if not created:
+        resolved = normalize_date(task.get("resolved_date") or "")
+        if not resolved:
             continue
-        if start_date and created < start_date:
+        if start_date and resolved < start_date:
             continue
-        if end_date and created > end_date:
+        if end_date and resolved > end_date:
             continue
         filtered.append(task)
     return filtered
@@ -132,10 +141,10 @@ def _build_qa_task_jql_queries(assignee, start_date=None, end_date=None, include
     """Try multiple JQL shapes; some Jira setups differ on issuetype naming."""
     user_clause = _build_assignee_clause(assignee, include_reporter=include_reporter)
     base_queries = [
-        f'{user_clause} AND issuetype = "QA Task" ORDER BY created DESC',
-        f'{user_clause} AND summary ~ "\\\\[QA\\\\]" ORDER BY created DESC',
-        f'{user_clause} AND text ~ "QA Task" ORDER BY created DESC',
-        f'{user_clause} AND summary ~ "PED" AND summary ~ "測試" ORDER BY created DESC',
+        f'{user_clause} AND issuetype = "QA Task" ORDER BY {RESOLVED_DATE_JQL} DESC, created DESC',
+        f'{user_clause} AND summary ~ "\\\\[QA\\\\]" ORDER BY {RESOLVED_DATE_JQL} DESC, created DESC',
+        f'{user_clause} AND text ~ "QA Task" ORDER BY {RESOLVED_DATE_JQL} DESC, created DESC',
+        f'{user_clause} AND summary ~ "PED" AND summary ~ "測試" ORDER BY {RESOLVED_DATE_JQL} DESC, created DESC',
     ]
     return [_append_date_filter(q, start_date, end_date) for q in base_queries]
 
@@ -216,12 +225,25 @@ def fetch_qa_tasks_by_assignee(assignee, start_date=None, end_date=None, include
     tasks = list(merged.values())
     tasks = _filter_tasks_for_user(tasks, assignee, include_reporter=include_reporter)
     tasks = _filter_tasks_by_date_range(tasks, start_date, end_date)
-    tasks.sort(key=lambda t: t.get("created", ""), reverse=True)
+    tasks.sort(
+        key=lambda t: (t.get("resolved_date") or "", t.get("created") or ""),
+        reverse=True,
+    )
     return tasks
 
 
 def _search_qa_tasks(jql):
-    fields = ["summary", "status", WORKDAYS_FIELD, "created", "parent", "fixVersions", "assignee", "reporter"]
+    fields = [
+        "summary",
+        "status",
+        WORKDAYS_FIELD,
+        RESOLVED_DATE_FIELD,
+        "created",
+        "parent",
+        "fixVersions",
+        "assignee",
+        "reporter",
+    ]
     results = []
     start_at = 0
 
@@ -263,6 +285,7 @@ def _search_qa_tasks(jql):
                 "status": (f.get("status") or {}).get("name", ""),
                 "workdays": float(workdays) if workdays else 0.0,
                 "created": (f.get("created") or "")[:10],
+                "resolved_date": _extract_resolved_date(f.get(RESOLVED_DATE_FIELD)),
                 "parent": parent.get("key", "") if parent else "",
                 "fix_versions": fix_version_names,
                 "assignee": assignee_name,
@@ -320,7 +343,7 @@ def print_report(report):
     if report.get("date_from") or report.get("date_to"):
         date_from = report.get("date_from") or "—"
         date_to = report.get("date_to") or "—"
-        print(f"日期區間：{date_from} ~ {date_to}")
+        print(f"日期區間（結案日）：{date_from} ~ {date_to}")
     print(f"{'='*60}")
     print(f"總單數：{report['total_count']} 張")
     print(f"總耗時：{report['total_workdays']} workdays\n")
@@ -333,15 +356,16 @@ def print_report(report):
     print("明細：")
     for t in report["tasks"]:
         parent_info = f" (parent: {t['parent']})" if t["parent"] else ""
-        print(f"   {t['key']} | {t['status']:12} | {t['workdays']:5.2f}天 | {t['created']} | {t['summary'][:30]}{parent_info}")
+        resolved = t.get("resolved_date") or "—"
+        print(f"   {t['key']} | {t['status']:12} | {t['workdays']:5.2f}天 | 結案 {resolved} | {t['summary'][:30]}{parent_info}")
 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         tp_key = input("請輸入 TP 單號（留空則查該帳號全部 QA Task）：> ").strip().upper()
         assignee = input(f"請輸入 Jira 帳號（預設 {JIRA_USERNAME}）：> ").strip() or JIRA_USERNAME
-        date_from = input("開始日期 YYYY-MM-DD（選填）：> ").strip()
-        date_to = input("結束日期 YYYY-MM-DD（選填）：> ").strip()
+        date_from = input("開始日期 YYYY-MM-DD（選填，依結案日 ResolvedDate）：> ").strip()
+        date_to = input("結束日期 YYYY-MM-DD（選填，依結案日 ResolvedDate）：> ").strip()
     else:
         tp_key = sys.argv[1].strip().upper()
         assignee = sys.argv[2].strip() if len(sys.argv) > 2 else JIRA_USERNAME

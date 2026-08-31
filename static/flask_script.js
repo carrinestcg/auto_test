@@ -2283,7 +2283,7 @@ function renderWorkdaysReport(report) {
     const summary = renderStatsBar(
         [
             { label: "TP 單號", value: tpLabel },
-            { label: "日期區間", value: formatWorkdaysDateRange(report.date_from, report.date_to) },
+            { label: "結案區間", value: formatWorkdaysDateRange(report.date_from, report.date_to) },
             { label: "共查到", numeric: totalCount, suffix: "筆", dimZero: true },
             { label: "總工作日", numeric: totalWorkdays, dimZero: true },
             { label: "已完成", numeric: doneCount, suffix: "張", dimZero: true },
@@ -2295,8 +2295,8 @@ function renderWorkdaysReport(report) {
     if (!report.tasks || report.tasks.length === 0) {
         const rangeHint = formatWorkdaysDateRange(report.date_from, report.date_to);
         const emptyDesc = report.tp_key
-            ? `TP 單號（${report.tp_key}）在日期區間 ${rangeHint} 內沒有相關 QA Task。`
-            : `Jira 帳號（${report.assignee || "—"}）在日期區間 ${rangeHint} 內沒有指派的 QA Task。`;
+            ? `TP 單號（${report.tp_key}）在結案日區間 ${rangeHint} 內沒有相關 QA Task。`
+            : `Jira 帳號（${report.assignee || "—"}）在結案日區間 ${rangeHint} 內沒有指派的 QA Task。`;
         return `${summary}${renderEmptyState("目前沒有指派的 QA Task", emptyDesc)}`;
     }
 
@@ -2307,6 +2307,9 @@ function renderWorkdaysReport(report) {
                 ? `<span class="result-task-parent">← ${renderIssueKey(task.parent)}</span>`
                 : "";
             const copyText = [task.key, task.parent].filter(Boolean).join(" / ");
+            const resolvedLabel = task.resolved_date
+                ? formatShortDate(task.resolved_date)
+                : "未結案";
             return `
         <article class="result-task-item">
             <div class="result-task-main">
@@ -2322,7 +2325,7 @@ function renderWorkdaysReport(report) {
                 </div>
                 <div class="result-task-side">
                     <span class="result-task-date">
-                        <span class="result-task-date-label">${formatShortDate(task.created)}</span>
+                        <span class="result-task-date-label">${resolvedLabel}</span>
                         <span class="result-task-date-sep" aria-hidden="true">·</span>
                         <span class="result-task-workdays${Number(task.workdays) === 0 ? " is-zero" : ""}">${formatWorkdaysDays(task.workdays)}</span>
                     </span>

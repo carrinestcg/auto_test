@@ -1122,13 +1122,13 @@ def api_calculate_workdays():
         elif tp_key:
             message = (
                 f"查無符合的 QA Task（帳號 {assignee}、TP {tp_key}"
-                f"{f'、日期 {date_from}~{date_to}' if date_from or date_to else ''}）。"
+                f"{f'、結案日 {date_from}~{date_to}' if date_from or date_to else ''}）。"
                 "請確認 Jira 帳號、TP 單號，或先清除日期區間再試。"
             )
         else:
             message = (
                 f"帳號 {assignee} 底下沒有 QA Task"
-                f"{f'（日期 {date_from}~{date_to}）' if date_from or date_to else ''}。"
+                f"{f'（結案日 {date_from}~{date_to}）' if date_from or date_to else ''}。"
                 "請確認 Jira 帳號是否正確，或先清除日期區間再試。"
             )
         return jsonify({"success": True, "message": message, "data": report}), 200
