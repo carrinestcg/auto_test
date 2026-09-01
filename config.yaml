@@ -19,12 +19,12 @@ promtion_ids:
 - "4272092" # 排行榜＋哩程碑
 
 promotion_id: 
-- "4417090" # 新手任務獎勵
-- "4184100" # 快捷充值送-首存
-- "4400089" # 筆筆存送
-- "4383138" # 手動活動紅利
-- "4225095" # 手工報名活動
-- "4402109" # 升級獎勵
+- "4674108" # 新手任務獎勵
+- "4658094" 
+- "4663097"
+- "4654112"
+- "4654112"
+- "4654112"
 
 promtion_id_lodibet:
 - "4294098" # 新手任務獎勵
@@ -86,13 +86,14 @@ promtions_name:
 - "carrine test"  # 新手任務獎勵
 
 ticket_id_gi8viet:
-- "1250018" # cash
-- "1250019" # raffle
-- "1250020" # egg
-- "1250021" # wheel
-- "1250022" # 商品
-- "1250023" # free spin
-- "1204017" # 拼多多
+- "1531014" # cash
+- "1531015" # raffle
+- "1531018" # egg
+- "1531019" # wheel
+- "1531021" # 商品
+- "1533015" # free spin
+- "1531023" # 拼多多
+- "1530019" # 充值折抵
 
 ticket_id_gi8viet_expire:
 - "1250016" # cash
@@ -143,40 +144,68 @@ ticket_id_lodibet:
 
 
 testing_account1:   #暫時換掉
-  - "kok111"
-  - "ttk002"
-  - "ttk003"
   - "bnm111"
   - "bnm222"
-  - "ttk707"
+  - "bnm985"
   - "bnm300"
   - "bnm301"
   - "bnm302"
   - "bnm303"
   - "bnm304"
   - "carrine008"
-  - "carrine006"
-  - "carrine004"
-  - "kdd001"
+  - "ppp111"
+  - "bnm984"
+  - "bdd901"
   - "five001"
   - "five002"
-  - "five004"
-  - "five005"
-  - "five006"
-  - "five007"
-  - "five008"
+  - "mon001"
   - "five009"
   - "feb001"
   - "feb002"
-  - "feb004"
-  - "feb007"
-  - "feb008"
-  - "four001"
-  - "four002"
-  - "four004"
-  - "three399"
-  - "three499"
-  - "three699"
+  - "feb006"
+  - "bnm555"
+  - "bnm888"
+  - "bnm333"
+  - "bnm111"
+  - "bnm222"
+  - "bnm985"
+  - "bnm300"
+  - "bnm301"
+  - "bnm302"
+  - "bnm303"
+  - "bnm304"
+  - "carrine008"
+  - "ppp111"
+  - "bnm984"
+  - "bdd901"
+  - "five001"
+  - "five002"
+  - "mon001"
+  - "five009"
+  - "feb001"
+  - "feb002"
+  - "feb006"
+  - "bnm555"
+  - "bnm888"
+  - "bnm333"
+  - "bnm302"
+  - "bnm303"
+  - "bnm304"
+  - "carrine008"
+  - "ppp111"
+  - "bnm984"
+  - "bdd901"
+  - "five001"
+  - "five002"
+  - "mon001"
+  - "five009"
+  - "feb001"
+  - "feb002"
+  - "feb006"
+  - "bnm555"
+  - "bnm888"
+  - "bnm333"
+  
 
 
 testing_account:
