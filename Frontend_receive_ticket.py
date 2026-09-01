@@ -72,7 +72,7 @@ class Frontend:
             if conn in locals() and conn:
                 conn.close()
     def get_Ticket_transaction_ID(self,merchantCode,username):
-        tickets=[]
+        tickets={}
         '''
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
@@ -100,9 +100,10 @@ class Frontend:
 
             if self.response_value_list:
                 for item in self.response_value_list:
+                    Type=item.get('type')
                     Trans_id=item.get('transactionId') 
                     if Trans_id:
-                        tickets.append(Trans_id)
+                        tickets[Trans_id] = Type
                 logging.info(f"總共可領{len(tickets)}張")
                 return tickets
 
@@ -145,18 +146,55 @@ class Frontend:
             logging.error("領取票卷失敗")
             logging.error(traceback.format_exc())
             return False
+    def approve_to_receive_Slot_ticket(self,trans_id):
+            
+            login_URL="http://10.81.1.20:7001/promo-fe/resources/slot_machine/spin"
+            headers={
+                'Content-Type': 'application/json',
+                'Connection': 'keep-alive',
+                'Language': 'CN',
+                'CustomerId':self.customer_id
+                
+            }
+            payload={
+                    "transactionId": trans_id,
+                    "isApp": "N"
+            }
+    
+            
+            response=self.session.post(login_URL,headers=headers,json=payload)
+            response.raise_for_status()
+            response_json=response.json()
+            print(response_json)
+            if response_json.get('success'):
+                self.response_value_list=response_json.get('value',{})
+                if self.response_value_list:
+                    Type=self.response_value_list.get('type') 
+                    logging.info(f"成功領取票卷 交易ID: {trans_id} 類別{Type}")
+                return True
+                
+            elif not response_json.get('success') and response_json.get('message') == "slot_machine_use_claim_for_final_spin":
+                logging.error("水果機最後一次需打原先領取API")
+                result=self.approve_to_receive_ticket(trans_id)
+                if result:
+                    return True
+            return False
+
     def poccess_all_ticket(self,merchantCode,username,max_workers=10):
         self.merchantCode=merchantCode
         ticket=self.get_Ticket_transaction_ID(merchantCode,username)
-        def claim(trans_id):
+        def claim(trans_id, ticket_type):
+            if ticket_type=="SLOT_MACHINE":
+                return self.approve_to_receive_Slot_ticket(trans_id)
             return self.approve_to_receive_ticket(trans_id)
         result=[]
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures=[executor.submit(claim,tid) for tid in ticket]
+            futures=[executor.submit(claim, tid, ttype) for tid, ttype in ticket.items()]
             for future in as_completed(futures):
                 result.append(future.result())
         logging.info(f"成功 {sum(result)} / {len(result)}")
         return True
+    
 
 def main(username,merchantCode):
     

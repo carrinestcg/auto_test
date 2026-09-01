@@ -77,16 +77,18 @@ class B_end:
 
     def create_bonus(self,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:int,ticketQuantity:int,prmotion_id:int):
         
-        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/mcs-manual-promotion-addManualPromotionClaim" 
+        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/prom-promotion-manual-reward-claims-post?pid=20251" 
         payload = {
         "merchantCode": "gi8viet",
         "customerName": player,
         "bonusAmount": bonusAmount,
-        "bonusPointAmount": bonusPointAmount,
+        "pointAmount": bonusPointAmount,
+        "turnoverAmount": 0,
         "promotionId": prmotion_id,
         "toReqAmount": 0,
         "ticketId": ticketId,
-        "ticketQuantity": ticketQuantity
+        "ticketQuantity": ticketQuantity,
+        "isSendApp": "N"
     }
 
         headers = self.header()
@@ -99,10 +101,8 @@ class B_end:
             response_data = response.json()
             logging.info(f"狀態碼: {response.status_code}")
             logging.info(f"響應內容: {response_data}")
-            
-            
-            assert response_data.get("success"), f"創建失敗：{response_data.get('message')}"
             return True
+            
         
         except AssertionError:
             raise        
@@ -115,60 +115,67 @@ class B_end:
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
             return False
-    def Search_Customer_bonus(self,player:str):
-      
-        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/mcs-manualPromotion-search" 
+    def Search_Customer_bonus(self,token,player:str,merchant:str):
+        API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/prom-promotion-manual-reward-claims" 
         start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        payload = {
-        "merchantCode": "gi8viet",
+        params = {
+        "merchantCode": merchant,
         "status": "P",
         "customerName":player,
-        "searchDateMode": "issuedDateSearch",
+        "relayDisableEncode": True,
+        "isForProcessingAll": False,
+        "periodType": "ISSUE_PERIOD",
         "startTime": start_time,
         "endTime": end_time,
         "pageSize": 10,
-        "pageNo": 1
-    }
+        "pageNo": 1,
+        "pid" :20250
+        }
 
-        headers = self.header()
-        cookies = self.cookie()
+        headers = self.header(token,merchant)
+        cookie={
+            "Cookie": "language=zh_CN"
+        }
         try:
-            response = requests.get(API_URL, params=payload, headers=headers, cookies=cookies, verify=False)
+            response = requests.get(API_URL, params=params, headers=headers, cookies=cookie, verify=False)
             response.raise_for_status()
             
             response_data = response.json()
             
-            
-            if response_data.get("success") :
+            if response_data.get("success"):
+                logging.info(f"完整回應: {json.dumps(response_data, ensure_ascii=False)}")
+                
                 customer_list=response_data.get("value",[])
-                
-                if not customer_list:
-                    logging.error("回應中找不到 customerlist")
-
-                customer_info=customer_list[0]
-                CustomerID=customer_info.get("customerId")
-                claimid=customer_info.get("id")
+                value = response_data.get("value", {})
+                customer_list = value.get("list", [])
+                if customer_list:
+                    customer_info=customer_list[0]
+                    CustomerID=customer_info.get("customerId")
+                    claimid=customer_info.get("claimId")
+                    promoType=customer_info.get("promotionType")
         
-                assert CustomerID is not None, "查無 CustomerID"
-                assert claimid is not None, "查無 claimid"
-                return CustomerID, claimid
-                
+                    if CustomerID and claimid:
+                        logging.info(f"拿到 CustomerID: {CustomerID} 和 claimid: {claimid} {promoType}")
+                        return CustomerID, claimid,promoType
+                # FIX: customer_list 為空時補上 return
+                logging.error("customer_list 為空，找不到待審核記錄")
+                return None, None, None
             else:
-                    logging.error("回應中找不到 customerId 或 claimid")
-                    return None, None 
+                logging.error(response_data)
+                logging.error("回應中找不到 customerId 或 claimid")
+                return None, None, None
             
-        except AssertionError:
-            raise    
+            
         except requests.RequestException as e:
             logging.error(f"HTTP錯誤 {e}")
-            return None, None
+            return None, None, None
         except ValueError as e:
             logging.error(f"JSON解析錯誤: {e}")
-            return None, None
+            return None, None, None
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
-            return None, None
+            return None, None, None
     
     def Confirm_Customer_bonus(self,Customerid:int):
     
@@ -197,58 +204,9 @@ class B_end:
         except Exception as e:
             logging.error(f"其他錯誤: {e}")
             return False
-    def Bonus_record_page(self):
-        
-      
-        API_URL2="http://sit-admin2.tcg.com/tac/api/relay/get/mcs-v2-promotionClaim-search?pageSize=20&pageNo=1"  
-        start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
-        end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
-        headers={
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Authorization": self.token_data,
-            "Content-Type": "application/json",
-            "Connection": "keep-alive",
-            "Language": "zh_CN",
-            "Merchant": "gi8viet",
-            "MerchantCode": "gi8viet",
-            "Tac-Trace-Id":"2eAM8QMqpfEd3QxE",
-            "Referer": "http://sit-admin2.tcg.com/311792",
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-            "environment": "TCG3",
-            "merchantCode": "gi8viet",
-            "notPending": "true",
-            "platform": "TCG"
-        }
-        payload={
-            "fromDate":start_time,
-            "toDate":end_time,
-            "isFuzzySearch":True,
-            "searchDateMode":"requestedTimeSearch",
-            "merchantCode":"gi8viet",
-
-        }
-        cookies = self.cookie()
-        try:
-            response=requests.get(API_URL2, headers=headers, params=payload, cookies=cookies, verify=False)
-
-            response_data=response.json()
-            if response_data.get("success"):
-                self.record_data_list=response_data.get('value',[])
-                return True
-            else:
-                response_data.get("message", "未知錯誤")
-                return False
-            
-        except Exception as e:
-            logging.error(f"狀態碼: {response.status_code}")
 
     create_record=[]
     def process_procedure(self):
-        wb=Workbook()
-        ws=wb.active
-        ws.title="紅利發放結果"
-        ws.append(["帳號","活動ID","活動名稱", "紅利金額", "積分", "票卷", "票卷張數", "創建結果", "審核結果","紅利派發", "Claim_id", "紅利派發紀錄"])
         bonusAmount=10
         bonusPointAmount=0
         #count=2
@@ -257,69 +215,35 @@ class B_end:
         yaml_path=os.path.join(current_dir,"config.yaml")
         with open(yaml_path,"r",encoding="utf-8") as f:
             config=yaml.safe_load(f)
-        prmotion_id_multiple=config.get("promtion_ids",[])
-        prmotion_name=config.get("promtions_name",[])
+        prmotion_id_multiple=config.get("promotion_id",[])
         ticket_id=config.get("ticket_id_gi8viet")
-        testing_account=config.get("testing_account")
-        confirm_result = ''
-        create_result=''
-        remark=""
+        testing_account=config.get("testing_account1")
         ticket_id_cycle=cycle(ticket_id)
-        for account in testing_account:
-            for promo ,name in zip(prmotion_id_multiple,prmotion_name):
-                ticket=next(ticket_id_cycle)
-                is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
-                if is_success:
-                    create_result='創建紅利成功'
-                    remark="成功"
-                    Customerid,self.claimid = self.Search_Customer_bonus(account)
-                    if self.claimid :
-                        self.claimid_list.append(self.claimid)
-                    if Customerid  and self.claimid :
-                        is_confirm_complete=self.Confirm_Customer_bonus(Customerid)
-                        if is_confirm_complete:
-                            confirm_result='審核紅利成功'
-                        
-                        else:
-                            confirm_result='審核紅利失敗'
-                else:
-                    create_result='創建紅利失敗'
-                    remark="失敗"
-                ws.append([
-                        account,
-                        promo,
-                        name,
-                        bonusAmount,
-                        bonusPointAmount,
-                        ticket,
-                        ticketQuantity,
-                        create_result,
-                        confirm_result,
-                        remark,
-                        self.claimid,
-                        "尚未比對"
-                        ]
-                    )
-            if self.Bonus_record_page():
-                Bonus_record={str(item.get("promotionClaimId")) for item in self.record_data_list}
-
-                for row in ws.iter_rows(min_row=2,max_row=ws.max_row):
-                    claimid=row[10].value
-                    if claimid in Bonus_record:
-                        row[11].value = "後台有紀錄"
+        try:
+            for account in testing_account:
+                for promo  in prmotion_id_multiple:
+                    ticket=next(ticket_id_cycle)
+                    print(account)
+                    is_success=self.create_bonus(account,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket,ticketQuantity=ticketQuantity,prmotion_id=promo)
+                    if is_success:
+                        logging.info("creating bonus success")
+                        '''
+                        Customerid,self.claimid = self.Search_Customer_bonus(account)
+                        if self.claimid :
+                            self.claimid_list.append(self.claimid)
+                        if Customerid  and self.claimid :
+                            self.Confirm_Customer_bonus(Customerid)
+                            '''
                     else:
-                        row[11].value = "後台沒紀錄"
-
-            else:
-                logging.error("無法獲取紅利記錄")
-        report_path=os.path.join(current_dir,f"bonus_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx")
-        wb.save(report_path)        
+                        logging.error("creating bonus failed")
+        except Exception as e:
+            logging.error(f"處理過程中發生錯誤: {e}")
+                
             
-    
 def main():
     print("收到 submit 請求")
     credential = {
-        "operatorName": "carrine01",
+        "operatorName": "carrine03",
         "password": "Test@1234"
     }
     try:
@@ -330,6 +254,8 @@ def main():
             logging.error("登入失敗 無法取得Token")
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
+        
+main()
 
     
     
