@@ -4,6 +4,7 @@ import requests
 import logging
 import json
 from datetime import datetime,timedelta
+from DB_connect import DB_connect
 
 logging.basicConfig(
     level=logging.INFO,
@@ -93,6 +94,9 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
             logging.info("手動紅利發放成功 ")
             return True
         else:
+            row = DB_connect(f"SELECT * FROM TCG_MCSDB.MCS_PROMOTION_BLACKLIST WHERE CUSTOMER_NAME='{player}'")
+            if row:
+                logging.error(f"手動紅利發放失敗: 玩家 {player} 在黑名單中，無法發放紅利。")
             error_msg = response_data.get("message", "未知錯誤")
             logging.error(f"手動紅利發放失敗: {error_msg}")
             return False
@@ -153,6 +157,7 @@ def Search_Customer_bonus(token,player:str,merchant:str):
             logging.error("customer_list 為空，找不到待審核記錄")
             return None, None, None
         else:
+            
             logging.error(response_data)
             logging.error("回應中找不到 customerId 或 claimid")
             return None, None, None
