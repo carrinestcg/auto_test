@@ -432,7 +432,7 @@ def input_viber_ID(customerId:int, viber_id:str, platform:str):
         logging.error(f"Viber ID輸入請求失敗{e}")
         return False
 
-def binding_virtual_wallet(customerId:int, cardNumber:str):
+def binding_virtual_wallet(customerId:int, cardNumber:str, platform:str):
     token=get_token()
     logging.info(f"傳入的虛擬錢包 ID:{cardNumber}")
     name=gen_string()()
