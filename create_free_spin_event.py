@@ -117,7 +117,7 @@ def get_event(token,merchantCode):
         "language": "zh_CN"
         }
         
-        response=requests.post(API_URL, params=params,cookies=cookies,verify=False, headers=headers)
+        response=requests.get(API_URL, params=params,cookies=cookies,verify=False, headers=headers)
         response_data = response.json()
 
         if response_data.get('success')==True:
@@ -170,7 +170,7 @@ def create_free_spin_event(token, merchantCode, eventId):
         logging.error(f"狀態碼: {response.status_code}", e)
         return False
 def implement(merchantCode):
-    logging.info("已進入 batch_approve 函數") 
+    
     deposit_Info = None
     try:
         token=get_token()
