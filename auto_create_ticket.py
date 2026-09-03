@@ -710,8 +710,8 @@ def create_ticket_Free_spin(token,localizations,merchantCode):
         }
     ],
     "validityType": "FIXED_TIME",
-    "fixedTimeFrom": 1772726400000,
-    "fixedTimeTo": 1777564799000,
+    "fixedTimeFrom": month_start,
+    "fixedTimeTo": end_time,
     "claimCondition": {
         "bankCardRequired": False,
         "payeeNameRequired": False,
