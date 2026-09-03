@@ -1070,8 +1070,12 @@ def api_manual_single():
 def api_create_free_spin_event():
     data=request.json
     platforms = data.get("platforms") or []
-    create_free_spin_event.implement(platforms)
-    return jsonify({"success": True, "message": "Trigger API Successfully"})
+    result = create_free_spin_event.implement(platforms)
+    if result:
+        return jsonify({"success": True, "message": "Create Free Spin Event Successfully"})
+    else:
+        return jsonify({"success": False, "message": "Create Free Spin Event Failed"}), 500
+
 
 @python_flask.route('/api/create_qa_task', methods=['POST'])
 def api_create_qa_task():
