@@ -135,8 +135,9 @@ def get_event(token,merchantCode):
 
 def create_free_spin_event(token, merchantCode, eventId):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/vis-free-spin-v2-createFreeSpinEventMerchant"
+    
     payload = {
-    "eventId": eventId,
+    "eventId": str(eventId),
     "merchantList": [
         {
             "merchantCode": merchantCode,
