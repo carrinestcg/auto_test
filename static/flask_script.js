@@ -422,6 +422,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 14, label: "上級代理", icon: "upline" },
             { value: 7, label: "地址", icon: "address" },
             { value: 11, label: "虛擬錢包", icon: "wallet" },
+            { value: 16, label: "生日", icon: "birthday" },
         ],
     },
     {
@@ -458,7 +459,8 @@ const PLAYER_INFO_VALUE_FIELDS = {
     12: ["whatsappID", "WhatsAppId"],
     13: ["facebookID", "Facebook ID"],
     14: ["upline", "Upline"],
-    15: ["zaloID", "Zalo ID"]
+    15: ["zaloID", "Zalo ID"],
+    16: ["birthday", "生日"]
 };
 
 const PLAYER_INFO_CHECK_SVG =
@@ -492,8 +494,10 @@ function getPlayerInfoIcon(iconName) {
         zalo:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M15.5 9h-7v6h7v-6z"/></svg>',
         upline:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M12 7v5l4.3 2.6"/></svg>',
+        birthday:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M12 7v5l4.3 2.6"/></svg>'
-    };
+        };
     return icons[iconName] || icons.user;
 }
 
