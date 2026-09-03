@@ -683,7 +683,7 @@ def get_free_spin_event_id(token,merchantCode):
                 return None
         else:
             for item in value:
-                return item[0]
+                return item
             
 def create_ticket_Free_spin(token,localizations,merchantCode):
     current_time=datetime.now()
