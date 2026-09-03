@@ -689,6 +689,8 @@ def create_ticket_Free_spin(token,localizations,merchantCode):
     current_time=datetime.now()
     month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
+    fixed_time_from = int(month_start.timestamp() * 1000)
+    fixed_time_to = int(end_time.timestamp() * 1000)
     eventID= get_free_spin_event_id(token,merchantCode)
     API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/FREE_SPIN"
     payload = {
@@ -710,8 +712,8 @@ def create_ticket_Free_spin(token,localizations,merchantCode):
         }
     ],
     "validityType": "FIXED_TIME",
-    "fixedTimeFrom": month_start,
-    "fixedTimeTo": end_time,
+    "fixedTimeFrom": fixed_time_from,
+    "fixedTimeTo": fixed_time_to,
     "claimCondition": {
         "bankCardRequired": False,
         "payeeNameRequired": False,
