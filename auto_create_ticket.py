@@ -674,7 +674,7 @@ def get_free_spin_event_id(token,merchantCode):
     if response_data.get('success'):
         value=response_data.get("value",[])
         if value.isempty()==True:
-            result = create_free_spin_event.create_free_spin_event(token,merchantCode)
+            result = create_free_spin_event.implement(token,merchantCode)
             if result:
                 logging.info("創建免費旋轉活動成功")
                 return get_free_spin_event_id(token,merchantCode)
