@@ -45,6 +45,7 @@ from Verify_Info import verify_info
 from version_util import load_version_info
 import SameTimeReceiveTicket
 import Backend_Deposit
+import create_free_spin_event
 
 
 logging.basicConfig(
@@ -1065,6 +1066,12 @@ def api_manual_single():
     MANUAL_SINGLE.main()
     return jsonify({"success": True, "message": "Trigger API Successfully"})
 
+@python_flask.route("/api/Create_FreeSpin_Event", methods=["POST"])
+def api_create_free_spin_event():
+    data=request.json
+    platforms = data.get("platforms") or []
+    create_free_spin_event.implement(platforms)
+    return jsonify({"success": True, "message": "Trigger API Successfully"})
 
 @python_flask.route('/api/create_qa_task', methods=['POST'])
 def api_create_qa_task():
