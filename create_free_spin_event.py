@@ -158,7 +158,7 @@ def create_free_spin_event(token, merchantCode, eventId):
         response.raise_for_status()
         
         response_data = response.json()
-        
+        logging.info(response_data)
         if response_data.get('success') == True:
             logging.info(f"創建kyc方案成功: ")
             return True
