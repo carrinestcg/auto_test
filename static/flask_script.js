@@ -664,7 +664,6 @@ const SCRIPTS_NEED_USERNAME = [
     "Change_password",
     "Customer_name",
     "Input_User_Info",
-    "auto_create_ticket",
     "Single_Manual_create",
     "test_Extra_bonus",
     "MANUAL_SINGLE",
