@@ -57,7 +57,8 @@ def get_token():
 def KYC(token):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/post/vis-free-spin-v2-createFreeSpinEvent" 
     start_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
-    end_time = datetime.now().strftime("%Y-%m-%d 23:59:59")
+    end_time = datetime.now() + timedelta(days=30)
+    end_time = end_time.strftime("%Y-%m-%d 23:59:59")
     payload={
     "vendorCode": "JL",
     "tcgCurrency": "THB",
