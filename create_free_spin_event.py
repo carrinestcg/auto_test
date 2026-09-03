@@ -176,7 +176,7 @@ def create_free_spin_event(token, merchantCode, eventId):
         logging.error(f"狀態碼: {response.status_code}", e)
         return False
 def implement(merchantCode):
-    
+    merchantCode=merchantCode[0]
     deposit_Info = None
     try:
         token=get_token()
