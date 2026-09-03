@@ -123,7 +123,7 @@ def get_event(token,merchantCode):
         if response_data.get('success')==True:
             value = response_data.get('value', [])
             for item in value:
-                eventId= item[0]
+                eventId= item[0].get('eventId')
                 logging.info(f"成功拿到ID: {eventId}")
                 return eventId
         else:
