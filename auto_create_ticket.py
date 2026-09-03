@@ -3,6 +3,7 @@ import time,random
 import requests,logging,json
 from datetime import datetime,timedelta
 from dateutil.relativedelta import relativedelta
+import create_free_spin_event
 
 logging.basicConfig(
     level=logging.INFO,
@@ -62,7 +63,7 @@ def get_token():
     return token_data.get("token")
 
 def create_ticket_cash(token,localizations,merchantCode):
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/CASH_VOUCHER" 
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/CASH_VOUCHER" 
     payload = {
     "merchantCode": "gi8viet",
     "type": "CASH_VOUCHER",
@@ -163,7 +164,7 @@ def create_ticket_cash(token,localizations,merchantCode):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_raffle(token,localizations,merchantCode):
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/RAFFLE" 
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/RAFFLE" 
     payload = {
     "merchantCode": "gi8viet",
     "type": "RAFFLE",
@@ -263,7 +264,7 @@ def create_ticket_raffle(token,localizations,merchantCode):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Egg(token,localizations,merchantCode):
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/GOLDEN_EGG" 
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/GOLDEN_EGG" 
     payload = {
     "merchantCode": "gi8viet",
     "type": "GOLDEN_EGG",
@@ -397,7 +398,7 @@ def create_ticket_Egg(token,localizations,merchantCode):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Wheel(token,localizations,merchantCode):
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/PRIZE_WHEEL"
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/PRIZE_WHEEL"
     payload = {
         "merchantCode": "gi8viet",
         "type": "PRIZE_WHEEL",
@@ -563,7 +564,7 @@ def create_ticket_Wheel(token,localizations,merchantCode):
         logging.error(f"其他錯誤: {e}")
         return False
 def create_ticket_Gift(token,localizations,merchantCode):
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/GIFT_CODE"
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/GIFT_CODE"
     payload = {
     "merchantCode": "gi8viet",
     "type": "GIFT_CODE",
@@ -660,11 +661,36 @@ def create_ticket_Gift(token,localizations,merchantCode):
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
         return False
+    
+def get_free_spin_event_id(token,merchantCode):
+    API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/vis-free-spin-v2-getAvailableFreeSpinEventsByMerchant-get"
+    headers =header(token,merchantCode)
+    params={
+        "merchantCode": merchantCode,
+        "pid":260018
+    }
+    response=requests.get(API_URL,headers=headers,params=params, verify=False)
+    response_data=response.json()
+    if response_data.get('success'):
+        value=response_data.get("value",[])
+        if value.isempty()==True:
+            result = create_free_spin_event.create_free_spin_event(token,merchantCode)
+            if result:
+                logging.info("創建免費旋轉活動成功")
+                return get_free_spin_event_id(token,merchantCode)
+            else:
+                logging.error("創建免費旋轉活動失敗")
+                return None
+        else:
+            for item in value:
+                return item[0]
+            
 def create_ticket_Free_spin(token,localizations,merchantCode):
     current_time=datetime.now()
     month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/ticket/FREE_SPIN"
+    eventID= get_free_spin_event_id(token,merchantCode)
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/ticket/FREE_SPIN"
     payload = {
     "merchantCode": "gi8viet",
     "status": "ISSUING",
@@ -678,8 +704,8 @@ def create_ticket_Free_spin(token,localizations,merchantCode):
     "configs": [
         {
             "type": "FREE_GAME",
-            "planId": 3624,
-            "freeSpinCount": 5,
+            "planId": eventID,
+            "freeSpinCount": 3,
             "vendorCode": "JL"
         }
     ],
@@ -740,7 +766,7 @@ def create_ticket_Free_spin(token,localizations,merchantCode):
         logging.error(f"其他錯誤: {e}")
         return False
 def get_temu_score(token,merchantCode):
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/temu_score"
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/temu_score"
     headers ={
     "Accept": "*/*",
     "Accept-Encoding": "gzip, deflate, br",
@@ -763,7 +789,7 @@ def create_ticket_temu(token,localizations,temu_score,merchantCode):
     current_time=datetime.now()
     month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
-    API_URL = "http://10.80.1.20:7001/promo-be/resources/temu_ticket"
+    API_URL = "http://10.81.1.20:7001/promo-be/resources/temu_ticket"
     payload = {
   "defaultLanguage": "CN",
   "localizations": localizations,
