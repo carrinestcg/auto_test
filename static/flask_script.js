@@ -679,7 +679,8 @@ const SCRIPTS_HIDE_USERNAME = [
     "DEPOSIT_API",
     "create_qa_task",
     "calculate_workdays",
-    "Create_FreeSpin_Event"
+    "Create_FreeSpin_Event",
+    "auto_create_ticket"
 ];
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
