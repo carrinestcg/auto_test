@@ -8,16 +8,19 @@ logging.basicConfig(
 def header(token):
     return{
         
-    "Accept": "application/json, text/plain, */*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Authorization": token,
-    "Connection": "keep-alive",
-    "Language": "zh_CN",
-    "Origin": "http://sit-admin2.tcg.com",
-    "Referer": "http://sit-admin2.tcg.com/20000",
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-    "environment": "TCG3",
-    "platform": "TCG"
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Authorization": token,
+        "Connection": "keep-alive",
+        "Language": "zh_CN",
+        "Origin": "http://sit-admin2.tcg.com",
+        "Referer": "http://sit-admin2.tcg.com/20000",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+        "environment": "TCG3",
+        "platform": "TCG",
+        "Tac-Trace-Id": "gl%_LDTbHM&uOiEw",
+        "Tac-Ui-Version": "20260713-0903_1258-may.w-7580a06e",
+        "customTimezone": "Etc/GMT-8",
     
     }
 def get_token():
@@ -158,7 +161,9 @@ def create_free_spin_event(token, merchantCode, eventId):
         response.raise_for_status()
         
         response_data = response.json()
-        logging.info(response_data)
+        logging.info(f"URL: {response.request.url}")
+        logging.info(f"Headers: {response.request.headers}")
+        logging.info(f"Body: {response.request.body}")
         if response_data.get('success') == True:
             logging.info(f"創建kyc方案成功: ")
             return True
