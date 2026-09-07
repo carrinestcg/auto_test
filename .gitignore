@@ -13,3 +13,4 @@ tcg-sheet-integration*.json
 *.json
 tcg-sheet-integration-*.json
 credentials*.json
+.venv/
