@@ -539,7 +539,7 @@ def api_input_user_info():
         13: "Facebook ID",
         14: "Upline",
         15: "Zalo ID",
-        16: "birthday"
+        16: "生日"
     }
     value_fields = {
         1: "mobileNumber",

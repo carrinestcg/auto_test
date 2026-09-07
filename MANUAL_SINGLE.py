@@ -255,7 +255,6 @@ def main():
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
         
-main()
 
     
     

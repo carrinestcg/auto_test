@@ -66,6 +66,13 @@ def gen_number(a, b):
 def gen_string(k=8):
     return lambda: ''.join(random.choices(string.ascii_uppercase, k=k))
 
+def gen_birthday():
+    return lambda: (
+        f"{random.randint(1990, 2005):04d}-"
+        f"{random.randint(1, 12):02d}-"
+        f"{random.randint(1, 28):02d}"
+    )
+
 def input_mobile_number(customerId:int,number:int,platform:str):
     token=get_token()
     logging.info(f"傳入的手機號:{number}")
@@ -591,6 +598,35 @@ def input_zalo_ID(customerId:int, zalo_id:str, platform:str):
     except Exception as e:
         logging.error(f"Zalo ID輸入請求失敗{e}")
         return False
+    
+def input_birthday(customerId: int, birthday: str, platform: str):
+    token = get_token()
+    logging.info(f"傳入的生日:{birthday}")
+    API_URL3 = (
+        "http://sit-admin2.tcg.com/tac/api/relay/post/"
+        f"mcs-player-security-information-changeBirthday?"
+        f"customerId={customerId}&merchantCode={platform}&remark=d&birthday={birthday}"
+    )
+    headers = header(token)
+    cookies = {
+        "language": "zh_CN"
+    }
+    try:
+        response = requests.post(API_URL3, cookies=cookies, headers=headers, verify=False)
+        response.raise_for_status()
+
+        response_data = response.json()
+        if response_data.get("success"):
+            logging.info("生日輸入成功")
+            return True
+        else:
+            logging.error("生日輸入失敗: %s", response_data.get("message"))
+            return False
+
+    except Exception as e:
+        logging.error(f"生日輸入請求失敗{e}")
+        return False
+
 verify_handler={ 
     3: (gen_string(), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
@@ -604,6 +640,7 @@ verify_handler={
     12: (gen_string(10), input_whatsapp_ID),
     13: (gen_string(9), input_Facebook_ID),
     15: (gen_string(9), input_zalo_ID),
+    16: (gen_birthday(), input_birthday),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):

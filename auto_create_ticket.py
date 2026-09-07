@@ -780,17 +780,21 @@ def get_temu_score(token,merchantCode):
     response_data=response.json()
     if response_data.get('success'):
         value_list=response_data.get("value",[])
-        if value_list:
-            temu_score=value_list[0].get("id")
-            return temu_score
+        for item in value_list:
+            if item.get("status")=="ISSUING":
+                temu_score=item.get("id")
+                return temu_score
         else:
             logging.error("沒有拿到list")    
             return None
 
 def create_ticket_temu(token,localizations,temu_score,merchantCode):
     current_time=datetime.now()
+    current_time=datetime.now()
     month_start = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     end_time = current_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)+relativedelta(months=1)-timedelta(milliseconds=1)
+    fixed_time_from = int(month_start.timestamp() * 1000)
+    fixed_time_to = int(end_time.timestamp() * 1000)
     API_URL = "http://10.81.1.20:7001/promo-be/resources/temu_ticket"
     payload = {
   "defaultLanguage": "CN",
@@ -860,8 +864,8 @@ def create_ticket_temu(token,localizations,temu_score,merchantCode):
   ],
   "ticketValidity": {
     "validityType": "FIXED_TIME",
-    "fixedTimeFrom": month_start,
-    "fixedTimeTo": end_time,
+    "fixedTimeFrom": fixed_time_from,
+    "fixedTimeTo": fixed_time_to,
     "effectType": "IMMEDIATE",
     "dayValidity": 15,
     "hourValidity": 10,
