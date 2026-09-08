@@ -704,6 +704,13 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
             logging.info(f"驗證類型 14 成功，值: {new_upline}")
             return True, new_upline
         return False, None
+    elif verify_type == 17:
+         if input_personal_name(customer_id, gen_string()(), platform):
+            value = gen_number(1000000000000, 2000000000000)()
+            if input_bankCard(customer_id, value, platform):
+                logging.info(f"驗證類型 17 成功，值: {value}")
+                return True, value
+            
         
     gen_value, handler = verify_handler.get(verify_type, (None, None))
     if handler is None:
