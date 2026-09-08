@@ -677,7 +677,6 @@ verify_handler={
     13: (gen_string(9), input_Facebook_ID),
     15: (gen_string(9), input_zalo_ID),
     16: (gen_birthday(), input_birthday),
-    17: (gen_number(1000000000000, 2000000000000), input_bankCard),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
@@ -705,13 +704,17 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
             return True, new_upline
         return False, None
     elif verify_type == 17:
-         if input_personal_name(customer_id, gen_string()(), platform):
-            value = gen_number(1000000000000, 2000000000000)()
-            if input_bankCard(customer_id, value, platform):
-                logging.info(f"驗證類型 17 成功，值: {value}")
-                return True, value
-            
-        
+        payee_name = gen_string()()
+        if not input_personal_name(customer_id, payee_name, platform):
+            logging.error("驗證類型 17 失敗：先填收款人姓名失敗")
+            return False, None
+        value = gen_number(1000000000000, 2000000000000)()
+        if input_bankCard(customer_id, value, platform):
+            logging.info(f"驗證類型 17 成功，值: {value}")
+            return True, value
+        logging.error("驗證類型 17 失敗：銀行卡輸入失敗")
+        return False, None
+
     gen_value, handler = verify_handler.get(verify_type, (None, None))
     if handler is None:
         logging.error(f"未知的驗證類型: {verify_type}")

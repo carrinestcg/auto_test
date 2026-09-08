@@ -559,7 +559,7 @@ def api_input_user_info():
         14: "upline",
         15: "zaloID",
         16: "birthday",
-        17: "bankCard"
+        17: "bankCardNumber"
     }
 
     results = []
