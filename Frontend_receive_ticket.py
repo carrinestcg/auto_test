@@ -109,6 +109,7 @@ class Frontend:
 
         else:
             logging.error("交易ID查詢失敗")
+            return None
             
         
         
@@ -186,6 +187,8 @@ class Frontend:
         def claim(trans_id, ticket_type):
             if ticket_type=="SLOT_MACHINE":
                 return self.approve_to_receive_Slot_ticket(trans_id)
+            elif ticket_type=="FREE_SPIN":
+                return self.approve_to_receive_free_spin(trans_id)
             return self.approve_to_receive_ticket(trans_id)
         result=[]
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
@@ -194,7 +197,37 @@ class Frontend:
                 result.append(future.result())
         logging.info(f"成功 {sum(result)} / {len(result)}")
         return True
+    def approve_to_receive_free_spin(self,trans_id):
+            
+            login_URL="http://10.81.1.20:7001/promo-fe/resources/ticket/claim_free_spin/v2"
+            headers={
+                'Content-Type': 'application/json',
+                'Merchant': self.merchantCode,
+                'Connection': 'keep-alive',
+                'Language': 'CN',
+                'CustomerId':self.customer_id
+            }
+            payload={
+                    "transactionId": trans_id,
+                    "isApp": "N"
+            }
     
+            
+            response=self.session.post(login_URL,headers=headers,json=payload)
+            response.raise_for_status()
+            response_json=response.json()
+            print(response_json)
+            if response_json.get('success'):
+                self.response_value_list=response_json.get('value',{})
+                if self.response_value_list:
+                    Type=self.response_value_list.get('type') 
+                    logging.info(f"成功領取票卷 交易ID: {trans_id} 類別{Type}")
+                return True
+                
+            else:
+                logging.error("領取票卷失敗")
+                logging.error(traceback.format_exc())
+                return False
 
 def main(username,merchantCode):
     
@@ -203,13 +236,15 @@ def main(username,merchantCode):
         return False
     
     print(merchantCode)
-    try:    
+
+    try: 
+       
         frontend = Frontend()
         if frontend.poccess_all_ticket(merchantCode,username):
             return True
         else:
             return False
-        
+       
     except Exception as e:
             logging.error(f"啟動時發生錯誤: {e}")
             logging.error(traceback.format_exc())

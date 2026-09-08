@@ -627,6 +627,42 @@ def input_birthday(customerId: int, birthday: str, platform: str):
         logging.error(f"生日輸入請求失敗{e}")
         return False
 
+def input_bankCard(customerId: int, bankCard: str, platform: str):
+    token = get_token()
+    logging.info(f"傳入的銀行卡號:{bankCard}")
+    API_URL3 = (
+        "http://sit-admin2.tcg.com/tac/api/relay/post/"
+        f"mcs-player-security-information-createBankCard-BC?"
+    )
+    payload={
+        "bankCode": "2732",
+        "cardNumber": bankCard,
+        "customerId": customerId,
+        "bankName": "ธนาคาร ไทยพาณิชย์ (SCB)",
+        "merchantCode": "gi8viet",
+        "customFields": [],
+        "type": "BC"
+    }
+    headers = header(token)
+    cookies = {
+        "language": "zh_CN"
+    }
+    try:
+        response = requests.post(API_URL3, json=payload, cookies=cookies, headers=headers, verify=False)
+        response.raise_for_status()
+
+        response_data = response.json()
+        if response_data.get("success"):
+            logging.info("銀行卡輸入成功")
+            return True
+        else:
+            logging.error("銀行卡輸入失敗: %s", response_data.get("message"))
+            return False
+
+    except Exception as e:
+        logging.error(f"銀行卡輸入請求失敗{e}")
+        return False
+
 verify_handler={ 
     3: (gen_string(), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
@@ -641,6 +677,7 @@ verify_handler={
     13: (gen_string(9), input_Facebook_ID),
     15: (gen_string(9), input_zalo_ID),
     16: (gen_birthday(), input_birthday),
+    17: (gen_number(1000000000000, 2000000000000), input_bankCard),
 }
 
 def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):

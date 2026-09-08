@@ -539,7 +539,8 @@ def api_input_user_info():
         13: "Facebook ID",
         14: "Upline",
         15: "Zalo ID",
-        16: "生日"
+        16: "生日",
+        17: "銀行卡號"
     }
     value_fields = {
         1: "mobileNumber",
@@ -557,7 +558,8 @@ def api_input_user_info():
         13: "facebookID",
         14: "upline",
         15: "zaloID",
-        16: "birthday"
+        16: "birthday",
+        17: "bankCard"
     }
 
     results = []
@@ -583,7 +585,7 @@ def api_input_user_info():
             continue
 
         result, value = verify_info(username, platforms, require_type, newUpline)
-        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16):
+        if value is not None and require_type in (1, 2, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17):
             value = str(value)
         elif value is not None:
             value = str(value)

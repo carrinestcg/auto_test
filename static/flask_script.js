@@ -423,6 +423,7 @@ const PLAYER_INFO_GROUPS = [
             { value: 7, label: "地址", icon: "address" },
             { value: 11, label: "虛擬錢包", icon: "wallet" },
             { value: 16, label: "生日", icon: "birthday" },
+            { value: 17, label: "銀行卡號", icon: "bankCard" }
         ],
     },
     {
@@ -460,7 +461,9 @@ const PLAYER_INFO_VALUE_FIELDS = {
     13: ["facebookID", "Facebook ID"],
     14: ["upline", "Upline"],
     15: ["zaloID", "Zalo ID"],
-    16: ["birthday", "生日"]
+    16: ["birthday", "生日"],
+    17: ["bankCardNumber", "銀行卡號"]
+    
 };
 
 const PLAYER_INFO_CHECK_SVG =
@@ -496,7 +499,9 @@ function getPlayerInfoIcon(iconName) {
         upline:
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M12 7v5l4.3 2.6"/></svg>',
         birthday:
-            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M12 7v5l4.3 2.6"/></svg>'
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8c4.4 0 8 3.6 8 8s-3.6 8-8 8z"/><path d="M12 7v5l4.3 2.6"/></svg>',
+        bankCard:
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>'
         };
     return icons[iconName] || icons.user;
 }
