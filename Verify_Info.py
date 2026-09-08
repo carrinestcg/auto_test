@@ -239,10 +239,15 @@ def _verify_id_card(customerId:int, platform:str):
         return False, None
     
     return True, ID_number    
-def input_personal_name(customerId:int, new_Name:str, platform:str):
+def input_personal_name(customerId:int, new_Name:str, platform:str, update_card:bool=True):
     token=get_token()
     logging.info(f"傳入的名字:{new_Name}")
-    API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changePayeeName?customerId={customerId}&merchantCode={platform}&newPayeeName={new_Name}&remark=e&updateCard=true"
+    update_card_flag = "true" if update_card else "false"
+    API_URL3=(
+        "http://sit-admin2.tcg.com/tac/api/relay/post/"
+        f"mcs-player-security-information-changePayeeName?customerId={customerId}"
+        f"&merchantCode={platform}&newPayeeName={new_Name}&remark=e&updateCard={update_card_flag}"
+    )
     headers=header(token)
     cookies = {
             "language": "zh_CN"
@@ -257,14 +262,14 @@ def input_personal_name(customerId:int, new_Name:str, platform:str):
                 logging.info("名字輸入成功")  
                 return True
             else:
-                logging.error("名字輸入失敗")
+                logging.error("名字輸入失敗: %s", response_data.get("message") or response_data)
                 return False
         
     except Exception as e:
         logging.error(f"名字輸入請求失敗{e}")
         return False
     
-def input_wechat_ID(customerId:int, wechat_id:str, platform):
+def input_wechat_ID(customerId:int, wechat_id:str, platform:str):
     token=get_token()
     logging.info(f"傳入的WeChat ID:{wechat_id}")
     API_URL3=f"http://sit-admin2.tcg.com/tac/api/relay/post/mcs-player-security-information-changeWechat?customerId={customerId}&merchantCode={platform}&remark=ff&wechat={wechat_id}"
@@ -632,14 +637,14 @@ def input_bankCard(customerId: int, bankCard: str, platform: str):
     logging.info(f"傳入的銀行卡號:{bankCard}")
     API_URL3 = (
         "http://sit-admin2.tcg.com/tac/api/relay/post/"
-        f"mcs-player-security-information-createBankCard-BC?"
+        "mcs-player-security-information-createBankCard-BC"
     )
     payload={
         "bankCode": "2732",
-        "cardNumber": bankCard,
+        "cardNumber": str(bankCard),
         "customerId": customerId,
         "bankName": "ธนาคาร ไทยพาณิชย์ (SCB)",
-        "merchantCode": "gi8viet",
+        "merchantCode": platform,
         "customFields": [],
         "type": "BC"
     }
@@ -656,7 +661,7 @@ def input_bankCard(customerId: int, bankCard: str, platform: str):
             logging.info("銀行卡輸入成功")
             return True
         else:
-            logging.error("銀行卡輸入失敗: %s", response_data.get("message"))
+            logging.error("銀行卡輸入失敗: %s", response_data.get("message") or response_data)
             return False
 
     except Exception as e:
@@ -705,7 +710,7 @@ def verify_info(PLAYER_ACCOUNT, platform ,verify_type, newUpline):
         return False, None
     elif verify_type == 17:
         payee_name = gen_string()()
-        if not input_personal_name(customer_id, payee_name, platform):
+        if not input_personal_name(customer_id, payee_name, platform, update_card=False):
             logging.error("驗證類型 17 失敗：先填收款人姓名失敗")
             return False, None
         value = gen_number(1000000000000, 2000000000000)()
