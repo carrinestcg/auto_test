@@ -669,7 +669,7 @@ def input_bankCard(customerId: int, bankCard: str, platform: str):
         return False
 
 verify_handler={ 
-    3: (gen_string(), input_personal_name),
+    3: (gen_number(1000000000000, 2000000000000), input_personal_name),
     4: (gen_string(9), input_wechat_ID),
     5: (gen_string(9), input_line_ID),
     6: (gen_string(9), input_apple_ID),
