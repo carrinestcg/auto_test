@@ -38,15 +38,23 @@ class Frontend:
             
             requests_data=self.session.post(login_url,json=login_data,headers=headers)
             print(requests_data.text)
-            self.username = requests_data.json()['value']['userName']
-            self.userid = requests_data.json()['value']['id']
-            self.token=requests_data.json()['value']['token']
+            body = requests_data.json()
+            if not body.get("success"):
+                logging.error("前台登入失敗: %s", body.get("message") or body)
+                return None
+            value = body.get("value") or {}
+            self.username = value.get("userName") or value.get("username") or username
+            self.userid = value.get("id")
+            self.token = value.get("token")
+            if not self.token:
+                logging.error("前台登入回應缺少 token: %s", body)
+                return None
 
             self.token_expire=datetime.now()+timedelta(minutes=25)
             return self.token
         
-        except requests.RequestException as e:
-            logging.error(f"請求失敗{e}")
+        except Exception as e:
+            logging.error(f"登入請求失敗{e}")
             return None
     def is_token_valid(self):
         
@@ -165,7 +173,7 @@ class Frontend:
         else:
             return False
 def implement(username,amount):
-        
+            issuccess = False
             try:    
                 credential = {
                     "username": username,
@@ -181,16 +189,13 @@ def implement(username,amount):
                             logging.info(f"成功投注彩票{amount}")
                             time.sleep(1)
                             print(issuccess)
-                            return issuccess
                         else:
                             logging.error("投注彩票失敗")
-                            return issuccess
                     else:
                         logging.error("沒有拿到numero")
-                        return issuccess
                 else:
                     logging.error("登入失敗 無法取得Token")
-                    return issuccess
+                return issuccess
             
             except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
