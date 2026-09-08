@@ -239,7 +239,7 @@ def _verify_id_card(customerId:int, platform:str):
         return False, None
     
     return True, ID_number    
-def input_personal_name(customerId:int, new_Name:str, platform:str, update_card:bool=True):
+def input_personal_name(customerId:int, new_Name:int, platform:str, update_card:bool=True):
     token=get_token()
     logging.info(f"傳入的名字:{new_Name}")
     update_card_flag = "true" if update_card else "false"
