@@ -2,35 +2,70 @@ import requests,logging,schedule,time
 from datetime import datetime,timedelta
 import threading
 import concurrent.futures
+from Customer_id import main as get_customer_id
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+def _result(username, success, message, **extra):
+    row = {
+        "username": username,
+        "success": bool(success),
+        "message": message or "",
+        "ticket_type": extra.get("ticket_type") or "",
+        "trans_id": extra.get("trans_id") or "",
+    }
+    return row
+
+
 def run_operator(credential, delay=0, barrier=None):
     thread_name=threading.current_thread().name
+    username = credential.get("username") or ""
     if delay:
-        logging.info(f"[{thread_name}] 帳號 {credential['username']} 將延遲 {delay:.2f} 秒後登入")
+        logging.info(f"[{thread_name}] 帳號 {username} 將延遲 {delay:.2f} 秒後登入")
         time.sleep(delay)
  
-    logging.info(f"[{thread_name}] 開始處理帳號 {credential['username']}")
+    logging.info(f"[{thread_name}] 開始處理帳號 {username}")
     try:    
         frontend = Frontend(credential)
-        if frontend.token:
-            frontend.get_Ticket_transaction_ID()
-            logging.info(f"[{thread_name}] 等待所有帳號都拿到交易ID...")
-            barrier.wait(timeout=5) 
-
-            logging.info(f"[{thread_name}] 開始同時領取")
-            frontend.approve_to_receive_ticket()
-        else:
+        if not frontend.token:
             logging.error("登入失敗 無法取得Token")
+            return _result(username, False, "登入失敗，無法取得 Token")
+        ticket = frontend.get_Ticket_transaction_ID(credential['merchantCode'], credential['username'])
+        logging.info(f"[{thread_name}] 等待所有帳號都拿到交易ID...")
+        if barrier is not None:
+            barrier.wait(timeout=5)
+
+        logging.info(f"[{thread_name}] 開始同時領取")
+        logging.info(f"[{thread_name}] DEBUG trans_id={frontend.trans_id!r}, ticket={ticket!r}")
+        if not ticket or not frontend.trans_id:
+            return _result(username, False, "找不到可領取票券（無 transactionId）")
+        ticket_type = ticket.get(frontend.trans_id) or ""
+        if ticket_type == "SLOT_MACHINE":
+            claim_out = frontend.approve_to_receive_Slot_ticket(frontend.trans_id)
+        else:
+            claim_out = frontend.approve_to_receive_ticket(frontend.trans_id)
+        if isinstance(claim_out, tuple):
+            ok = bool(claim_out[0])
+            detail = claim_out[1] if len(claim_out) > 1 else ""
+        else:
+            ok, detail = bool(claim_out), ""
+        return _result(
+            username,
+            ok,
+            detail or ("領取成功" if ok else "領取失敗"),
+            ticket_type=ticket_type,
+            trans_id=frontend.trans_id,
+        )
             
     except threading.BrokenBarrierError as e:
         logging.error(f"[{thread_name}] barrier 逾時或中斷: {e}")
+        return _result(username, False, f"barrier 逾時或中斷: {e}")
     except Exception as e:
         logging.error(f"啟動時發生錯誤: {e}")
+        return _result(username, False, f"執行錯誤: {e}")
     
         
 class Frontend:
@@ -38,6 +73,7 @@ class Frontend:
         self.session=requests.Session()
         self.username=''
         self.userid=''
+        self.customer_id = None 
         self.credential=credential
         self.token=None
         self.token_expire=None
@@ -49,7 +85,7 @@ class Frontend:
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
                 return self.token
             
-            login_url='http://www.sit-gi8viet.com/wps/session/login/unsecure'
+            login_url='http://sit14.sit-gi8viet.com/wps/session/login/unsecure'
             
             headers = {
                 'Content-Type': 'application/json',
@@ -80,7 +116,8 @@ class Frontend:
                 self.token_expire is not None and 
                 datetime.now() < self.token_expire)
     
-    def get_Ticket_transaction_ID(self):
+    def get_Ticket_transaction_ID(self, merchantCode, username):
+        ticket={}
         if not self.is_token_valid():
             logging.info("token 過期, 重新登入")
             self.get_token_login(self.credential['username'],self.credential['password'])
@@ -88,42 +125,43 @@ class Frontend:
             return
         current_time=datetime.now()
         unit_time=str(int(current_time.timestamp()*1000))
-        login_URL=f"http://www.sit-gi8viet.com/wps/relay/PROMOFE_getClaimTicketList?isApp=N&status=AVAILABLE&_={unit_time}"
-
+        login_URL=f"http://10.81.1.20:7001/promo-fe/resources/ticket/list"
+        self.customer_id=get_customer_id(username, merchantCode, 1)
+        self.customer_id=str(self.customer_id)
         headers={
             'Content-Type': 'application/json',
-            'Merchant': 'gi8viet',
-            "Authorization":self.token
+            'Language': 'CN',
+            "CustomerId":self.customer_id
         }
-        
-        cookies={
-            '_ga': 'GA1.1.343769134.1743155195',
-            'SHELL_deviceId': '9248aea2-32ed-4b1a-afa9-d039ed6d1b95',
-            '_ga_ABCD123456789': 'GS1.1.1743402506.3.1.1743402698.0.0.0'
-        }
-        
-        response=self.session.get(login_URL,headers=headers,cookies=cookies)
+        response=self.session.get(login_URL,headers=headers)
         response.raise_for_status()
         response_json=response.json()
         
         if response_json.get('success')==True:
             self.response_value_list=response_json.get('value',[])
             if self.response_value_list:
-                self.response_value_info=self.response_value_list[0]
-                self.trans_id=self.response_value_info.get('transactionId')
-                logging.info(f"成功拿到交易ID{self.trans_id}")
-            return self.trans_id
+                for item in self.response_value_list:
+                    Type=item.get('type')
+                    if Type=="SLOT_MACHINE" or Type=="PRIZE_WHEEL":
+                        Trans_id=item.get('transactionId')
+                        if Trans_id:
+                            Type=item.get('type')
+                            ticket[Trans_id] = Type
+                            if not self.trans_id:          # 只記錄第一筆
+                                self.trans_id = Trans_id
+                logging.info(f"成功拿到交易ID{list(ticket.keys())}")
+            return ticket
         else:
             logging.error(f"交易ID查詢失敗")
             return None
         
-    def approve_to_receive_ticket(self):
+    def approve_to_receive_ticket(self, trans_id):
         if not self.is_token_valid():
             logging.info("token 過期, 重新登入")
             self.get_token_login(self.credential['username'],self.credential['password'])
         if self.token is None:
-            return
-        login_URL=f"http://www.sit-gi8viet.com/wps/relay/PROMOFE_claimTicket"
+            return False, "Token 無效，無法領取"
+        login_URL=f"http://sit14.sit-gi8viet.com/wps/relay/PROMOFE_claimTicket"
 
         headers={
             'Content-Type': 'application/json',
@@ -131,12 +169,12 @@ class Frontend:
             "Authorization":self.token,
             'Connection': 'keep-alive',
             'Language': 'VI',
-            'Origin': 'http://www.sit-gi8viet.com',
-            'Referer': 'http://www.sit-gi8viet.com/',
+            'Origin': 'http://sit14.sit-gi8viet.com',
+            'Referer': 'http://sit14.sit-gi8viet.com/',
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36',
         }
         payload={
-             "transactionId": self.trans_id,
+             "transactionId": trans_id,
              "isApp": "N"
         }
         cookies={
@@ -146,30 +184,98 @@ class Frontend:
         }
         
         response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies)
-        response.raise_for_status()
+        if response.status_code != 200:
+            logging.error(f"領取票卷 HTTP {response.status_code}, trans_id={trans_id}, body={response.text}")
+            return False, f"HTTP {response.status_code}"
+        
         response_json=response.json()
         
         if response_json.get('success')==True:
-            logging.info(f"成功領取票卷 交易ID: {self.trans_id}")
-            
-        else:
-            logging.error(f"領取票卷失敗")
+            logging.info(f"成功領取票卷 交易ID: {trans_id}")
+            return True, "領取成功"
+        err = response_json.get("message") or "領取失敗"
+        logging.error(f"領取票卷失敗: {err}")
+        return False, err
+
+    def approve_to_receive_Slot_ticket(self,trans_id):
+                #http://sit14.sit-gi8viet.com/wps/relay/PROMOFE_spinSlotMachine
+                login_URL="http://10.81.1.20:7001/promo-fe/resources/slot_machine/spin"
+                headers={
+                    'Content-Type': 'application/json',
+                    'Connection': 'keep-alive',
+                    'Language': 'CN',
+                    'CustomerId':self.customer_id
+                    
+                }
+                payload={
+                        "transactionId": trans_id,
+                        "isApp": "N"
+                }
+        
                 
+                response=self.session.post(login_URL,headers=headers,json=payload)
+                if response.status_code != 200:
+                    logging.error(f"領取票卷 HTTP {response.status_code}, trans_id={trans_id}, body={response.text}")
+                    return False, f"HTTP {response.status_code}"
+                response_json=response.json()
+                print(response_json)
+                if response_json.get('success'):
+                    self.response_value_list=response_json.get('value',{})
+                    Type = ""
+                    if self.response_value_list:
+                        Type=self.response_value_list.get('type') 
+                        logging.info(f"成功領取票卷 交易ID: {trans_id} 類別{Type}")
+                    return True, f"水果機 spin 成功{(' 類別 ' + str(Type)) if Type else ''}"
+                    
+                elif not response_json.get('success') and response_json.get('message') == "slot_machine_use_claim_for_final_spin":
+                    logging.error("水果機最後一次需打原先領取API")
+                    ok, detail = self.approve_to_receive_ticket(trans_id)
+                    if ok:
+                        return True, "最後一轉改 CLAIM 成功"
+                    return False, detail or "最後一轉 CLAIM 失敗"
+                err = response_json.get("message") or "水果機領取失敗"
+                return False, err
+
 def main(user1, user2):
     credentials = [
-        {"username": user1, "password": "123qwe"},
-        {"username": user2, "password": "123qwe"}
+        {"username": user1, "password": "123qwe", "merchantCode": "gi8viet"},
+        {"username": user2, "password": "123qwe", "merchantCode": "gi8viet"}
     ]
     barrier=threading.Barrier(len(credentials))
+    results = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=len(credentials)) as executor:
         futures = []
         for i, credential in enumerate(credentials):
             futures.append(executor.submit(run_operator, credential, i * 1.0, barrier)) 
         for f in concurrent.futures.as_completed(futures):
             try:
-                f.result()
+                row = f.result()
+                if row:
+                    results.append(row)
             except Exception as e:
                 logging.error(f"執行緒發生未預期例外: {e}", exc_info=True)
+                results.append(_result("", False, f"執行緒例外: {e}"))
     logging.info("所有玩家處理完畢")
+    success_count = sum(1 for r in results if r.get("success"))
+    fail_count = len(results) - success_count
+    overall_ok = len(results) > 0 and fail_count < len(results)
+    if success_count == 1 and fail_count == 1:
+        verdict = "符合同時領取預期（一人成功、一人失敗）"
+        overall_ok = True
+    elif success_count >= 2:
+        verdict = "兩人皆領取成功（請確認是否為同一庫存／同一張券）"
+    elif success_count == 0:
+        verdict = "兩人皆領取失敗"
+        overall_ok = False
+    else:
+        verdict = f"成功 {success_count}、失敗 {fail_count}"
+    return {
+        "kind": "same_time_receive_ticket",
+        "success": overall_ok,
+        "message": verdict,
+        "success_count": success_count,
+        "fail_count": fail_count,
+        "results": results,
+    }
 
    

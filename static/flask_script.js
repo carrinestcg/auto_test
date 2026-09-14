@@ -2221,6 +2221,7 @@ function buildResultBodyHtml(data) {
         "verify_name",
         "customer_id",
         "customer_name",
+        "same_time_receive_ticket",
     ];
     const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
     return showSummaryPanel ? renderFormattedResult(data, resultType) : renderFailureResult(data);
@@ -2327,6 +2328,7 @@ function showResultPopup(data, options = {}) {
         "verify_name",
         "customer_id",
         "customer_name",
+        "same_time_receive_ticket",
     ];
     const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
 
@@ -2447,6 +2449,9 @@ function getPromoTypeFromResult(data) {
 }
 
 function detectResultType(data) {
+    if (data.kind === "same_time_receive_ticket") {
+        return "same_time_receive_ticket";
+    }
     if ("postcardCode" in data) {
         return "postcard";
     }
@@ -2566,7 +2571,8 @@ function getStatusModifier(status) {
     const normalized = String(status || "").toLowerCase();
     if (normalized.includes("open")) return "open";
     if (normalized.includes("progress")) return "in-progress";
-    if (normalized.includes("fail")) return "fail";
+    if (normalized.includes("fail") || normalized.includes("失敗")) return "fail";
+    if (normalized.includes("成功") || normalized.includes("success")) return "closed";
     return "default";
 }
 
@@ -2811,6 +2817,52 @@ function renderVerifyPlayerInfoResult(data) {
     ]);
 }
 
+function renderSameTimeReceiveTicketResult(data) {
+    const results = Array.isArray(data.results) ? data.results : [];
+    const successCount = Number(data.success_count ?? results.filter((item) => item.success).length);
+    const failCount = Number(data.fail_count ?? results.length - successCount);
+    const summary = renderStatsBar(
+        [
+            { label: "判定", value: data.message || "同時領取完成" },
+            { label: "成功", numeric: successCount, suffix: "人" },
+            { label: "失敗", numeric: failCount, suffix: "人", dimZero: true },
+        ],
+        { columns: 3 }
+    );
+
+    const items = results
+        .map((item) => {
+            const ticketType = item.ticket_type || "—";
+            const transId = item.trans_id || "";
+            const detail = item.message || "";
+            const copyText = [item.username, transId, detail].filter(Boolean).join(" / ");
+            return `
+        <article class="result-task-item">
+            <div class="result-task-main">
+                <div class="result-task-content">
+                    <div class="result-task-row-top">
+                        <div class="result-task-ids">
+                            ${renderIssueKey(item.username || "未知帳號", { plain: true })}
+                        </div>
+                        ${renderStatusBadge(item.success ? "成功" : "失敗")}
+                    </div>
+                    <p class="result-task-summary">${escapeHtml(detail || (item.success ? "領取成功" : "領取失敗"))}</p>
+                    <p class="result-task-summary">票種 ${escapeHtml(ticketType)}${transId ? ` · transId ${escapeHtml(transId)}` : ""}</p>
+                </div>
+            </div>
+            <div class="result-task-actions">
+                ${renderCopyButton(copyText)}
+            </div>
+        </article>`;
+        })
+        .join("");
+
+    if (!items) {
+        return `${summary}${renderEmptyState("沒有領取結果", "請確認兩個帳號皆已填寫，且帳號下有可領取票券。")}`;
+    }
+    return `${summary}<div class="result-task-list">${items}</div>`;
+}
+
 function renderVerifyPlayerInfoMultiResult(data) {
     const results = Array.isArray(data.results) ? data.results : [];
     const successCount = results.filter((item) => item.success).length;
@@ -2907,6 +2959,9 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "verify_player_info_multi") {
         return renderVerifyPlayerInfoMultiResult(data);
+    }
+    if (resultType === "same_time_receive_ticket") {
+        return renderSameTimeReceiveTicketResult(data);
     }
     if (resultType === "customer_id") {
         return renderCustomerIdResult(data);

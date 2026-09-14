@@ -830,17 +830,27 @@ def api_auto_create_7_ticket():
     
 @python_flask.route('/api/SameTime_ReceiveTicket',methods=['POST']) #同時領取同張票券API
 def SameTimeReceiveTicket_api():
-    data=request.json
-    username1=data["username"]
-    username2=data["username2"] 
-    SameTimeReceiveTicket.main(username1,username2)
-    
-    return jsonify(
-        {
-            "success": True,
-            "message": "Trigger API Successfully"
-            }
-        )
+    data = request.get_json(silent=True) or {}
+    username1 = data.get("username")
+    username2 = data.get("username2")
+    if not username1 or not username2:
+        return jsonify({
+            "success": False,
+            "message": "請填寫兩個玩家帳號",
+        })
+    try:
+        payload = SameTimeReceiveTicket.main(username1, username2)
+        if not payload:
+            return jsonify({
+                "success": False,
+                "message": "同時領取沒有回傳結果",
+            })
+        return jsonify(payload)
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "message": str(e),
+        }), 500
     
 @python_flask.route('/api/MANUAL_CREATE_SINGLE_CONFIRM',methods=['POST']) #手動紅利派發API
 def api_manual_create_bonus():
