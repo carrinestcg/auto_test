@@ -80,23 +80,22 @@ class Frontend:
         self.token=self.get_token_login(credential['username'],credential['password'])
         self.trans_id=''
     def get_token_login(self, username, password):
+        
+        if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
+            return self.token
+        
+        login_url='http://sit14.sit-gi8viet.com/wps/session/login/unsecure'
+        
+        headers = {
+            'Content-Type': 'application/json',
+            'Merchant': 'gi8viet',
+            
+        }
+        login_data={
+            'username':username,
+            'password':password
+        } 
         try:
-
-            if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
-                return self.token
-            
-            login_url='http://sit14.sit-gi8viet.com/wps/session/login/unsecure'
-            
-            headers = {
-                'Content-Type': 'application/json',
-                'Merchant': 'gi8viet',
-                
-            }
-            login_data={
-                'username':username,
-                'password':password
-            } 
-            
             requests_data=self.session.post(login_url,json=login_data,headers=headers)
             print(requests_data.text)
             self.username = requests_data.json()['value']['userName']
@@ -106,10 +105,14 @@ class Frontend:
             self.token_expire=datetime.now()+timedelta(minutes=25)
             logging.info(f"token 將在{self.token_expire}過期 ")
             return self.token
-        
         except requests.RequestException as e:
             logging.error(f"請求失敗{e}")
             return None
+        except (KeyError, ValueError) as e:
+            logging.error(f"登入回應解析失敗 帳號={username}: {e}")
+            return None
+    
+        
     def is_token_valid(self):
         
         return (self.token is not None and 
@@ -145,7 +148,6 @@ class Frontend:
                     if Type=="SLOT_MACHINE" or Type=="PRIZE_WHEEL":
                         Trans_id=item.get('transactionId')
                         if Trans_id:
-                            Type=item.get('type')
                             ticket[Trans_id] = Type
                             if not self.trans_id:          # 只記錄第一筆
                                 self.trans_id = Trans_id
@@ -185,56 +187,57 @@ class Frontend:
         
         response=self.session.post(login_URL,headers=headers,json=payload,cookies=cookies)
         if response.status_code != 200:
-            logging.error(f"領取票卷 HTTP {response.status_code}, trans_id={trans_id}, body={response.text}")
+            logging.error(f"[{self.credential.get('username')}] 領取票卷 HTTP {response.status_code}, trans_id={trans_id}, body={response.text}")
             return False, f"HTTP {response.status_code}"
         
         response_json=response.json()
         
         if response_json.get('success')==True:
-            logging.info(f"成功領取票卷 交易ID: {trans_id}")
+            logging.info(f"[{self.credential.get('username')}] 成功領取票卷 交易ID: {trans_id} ")
             return True, "領取成功"
         err = response_json.get("message") or "領取失敗"
-        logging.error(f"領取票卷失敗: {err}")
+        logging.error(f"[{self.credential.get('username')}] 領取票卷失敗: {err}")
         return False, err
 
     def approve_to_receive_Slot_ticket(self,trans_id):
-                #http://sit14.sit-gi8viet.com/wps/relay/PROMOFE_spinSlotMachine
-                login_URL="http://10.81.1.20:7001/promo-fe/resources/slot_machine/spin"
-                headers={
-                    'Content-Type': 'application/json',
-                    'Connection': 'keep-alive',
-                    'Language': 'CN',
-                    'CustomerId':self.customer_id
-                    
-                }
-                payload={
-                        "transactionId": trans_id,
-                        "isApp": "N"
-                }
+        #http://sit14.sit-gi8viet.com/wps/relay/PROMOFE_spinSlotMachine
+        login_URL="http://10.81.1.20:7001/promo-fe/resources/slot_machine/spin"
+        headers={
+            'Content-Type': 'application/json',
+            'Connection': 'keep-alive',
+            'Language': 'CN',
+            'CustomerId':self.customer_id
+            
+        }
+        payload={
+                "transactionId": trans_id,
+                "isApp": "N"
+        }
+
         
-                
-                response=self.session.post(login_URL,headers=headers,json=payload)
-                if response.status_code != 200:
-                    logging.error(f"領取票卷 HTTP {response.status_code}, trans_id={trans_id}, body={response.text}")
-                    return False, f"HTTP {response.status_code}"
-                response_json=response.json()
-                print(response_json)
-                if response_json.get('success'):
-                    self.response_value_list=response_json.get('value',{})
-                    Type = ""
-                    if self.response_value_list:
-                        Type=self.response_value_list.get('type') 
-                        logging.info(f"成功領取票卷 交易ID: {trans_id} 類別{Type}")
-                    return True, f"水果機 spin 成功{(' 類別 ' + str(Type)) if Type else ''}"
-                    
-                elif not response_json.get('success') and response_json.get('message') == "slot_machine_use_claim_for_final_spin":
-                    logging.error("水果機最後一次需打原先領取API")
-                    ok, detail = self.approve_to_receive_ticket(trans_id)
-                    if ok:
-                        return True, "最後一轉改 CLAIM 成功"
-                    return False, detail or "最後一轉 CLAIM 失敗"
-                err = response_json.get("message") or "水果機領取失敗"
-                return False, err
+        response=self.session.post(login_URL,headers=headers,json=payload)
+        if response.status_code != 200:
+            logging.error(f"[{self.credential.get('username')}] 領取票卷 HTTP {response.status_code}, trans_id={trans_id}, body={response.text}")
+            return False, f"HTTP {response.status_code}"
+        response_json=response.json()
+        logging.info(f"[{self.credential.get('username')}] response={response_json}") 
+        if response_json.get('success'):
+            self.response_value_list=response_json.get('value',{})
+            Type = ""
+            if self.response_value_list:
+                Type=self.response_value_list.get('rewardType') 
+                logging.info(f"[{self.credential.get('username')}] 成功領取票卷 交易ID: {trans_id} 類別{Type}")
+            return True, f"水果機 spin 成功{(' 類別 ' + str(Type)) if Type else ''}"
+            
+        elif not response_json.get('success') and response_json.get('message') == "slot_machine_use_claim_for_final_spin":
+            logging.error("水果機最後一次需打原先領取API")
+            ok, detail = self.approve_to_receive_ticket(trans_id)
+            if ok:
+                return True, "最後一轉改 CLAIM 成功"
+            return False, detail or "最後一轉 CLAIM 失敗"
+        err = response_json.get("message") or "水果機領取失敗"
+        logging.error(f"[{self.credential.get('username')}] 領取票卷失敗: {err}")
+        return False, err
 
 def main(user1, user2):
     credentials = [
