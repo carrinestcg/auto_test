@@ -108,13 +108,17 @@ def bump_version(
 def load_version_info() -> dict:
     data = _read_version_json()
     git_version = get_git_tag_version()
-    if git_version:
+    file_version = normalize_version(data.get("version"))
+    git_parts = parse_version(git_version)
+    file_parts = parse_version(file_version)
+
+    if git_parts and (not file_parts or git_parts >= file_parts):
         data["version"] = git_version
         tag_date = get_tag_release_date(git_version)
         if tag_date:
             data["released_at"] = tag_date
     else:
-        data["version"] = resolve_current_version()
+        data["version"] = file_version or git_version or "0.0.0"
     return data
 
 

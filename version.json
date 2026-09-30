@@ -1,7 +1,18 @@
 {
-  "version": "1.4.1",
-  "released_at": "2026-08-03",
+  "version": "1.5.0",
+  "released_at": "2026-09-30",
   "changelog": [
+    {
+      "version": "1.5.0",
+      "date": "2026-09-30",
+      "items": [
+        "新增「建立 Bug 單」：Jira 下拉搜尋 Fix Version/s、Component/s；關聯單可搜尋挑選，建立後以 Relates 連回",
+        "Bug 表單加寬並統一欄寬；Fix Version 與 Component、預期／實際結果改並排，重現步驟可拉高，必填提示貼近欄位",
+        "右側新增測試筆記：一鍵帶入帳號／充值金額，僅在相關欄位出現時顯示",
+        "修正 verify_info 類型 17：先改收款人姓名再建銀行卡，payload 對齊 Postman",
+        "修正樂透投注登入解析失敗導致的 userName KeyError"
+      ]
+    },
     {
       "version": "1.4.1",
       "date": "2026-08-03",
