@@ -40,6 +40,7 @@ import test_Extra_bonus
 import Acheivement_bonus
 import schedule_manual
 import create_qa_task
+import create_bug
 import calculate_workdays
 from Verify_Info import verify_info
 from version_util import load_version_info
@@ -1126,6 +1127,96 @@ def api_create_qa_task():
         return jsonify({"success": True, "message": "建立成功", "data": results}), 200
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+
+@python_flask.route('/api/create_bug', methods=['POST'])
+def api_create_bug():
+    data = request.get_json(silent=True) or {}
+    summary = str(data.get("summary") or "").strip()
+    description = str(data.get("description") or "").strip()
+    expected = str(data.get("expected") or "").strip()
+    actual = str(data.get("actual") or "").strip()
+    fix_version = data.get("fix_version") or data.get("fixVersions") or ""
+    component = data.get("component") or data.get("components") or ""
+    related_key = str(data.get("related_key") or data.get("tcg_key") or "").strip()
+    environment = str(data.get("environment") or create_bug.DEFAULT_ENVIRONMENT).strip()
+    device = str(data.get("device") or create_bug.DEFAULT_DEVICE).strip()
+    priority = str(data.get("priority") or create_bug.DEFAULT_PRIORITY).strip()
+
+    if not summary:
+        return jsonify({"success": False, "message": "請提供 Bug 標題"}), 400
+    if not str(fix_version).strip():
+        return jsonify({"success": False, "message": "請提供 Fix Version/s"}), 400
+    if not str(component).strip():
+        return jsonify({"success": False, "message": "請提供 Component/s"}), 400
+
+    try:
+        new_key, error = create_bug.create_bug(
+            summary,
+            description,
+            fix_version,
+            component,
+            environment=environment,
+            device=device,
+            priority=priority,
+            expected=expected,
+            actual=actual,
+            related_key=related_key,
+        )
+        item = {
+            "new_key": new_key,
+            "summary": summary,
+            "related_key": related_key.upper() if related_key else "",
+            "url": f"{create_bug.JIRA_BASE_URL}/browse/{new_key}" if new_key else None,
+        }
+        if new_key is None:
+            item["error"] = error or "無法建立 Bug，請檢查 Fix Version / Component 名稱是否正確"
+            return jsonify({
+                "success": False,
+                "kind": "create_bug",
+                "message": item["error"],
+                "data": [item],
+            }), 400
+        if error:
+            item["error"] = error
+        return jsonify({
+            "success": True,
+            "kind": "create_bug",
+            "message": error or "建立 Bug 成功",
+            "data": [item],
+        }), 200
+    except Exception as e:
+        return jsonify({"success": False, "kind": "create_bug", "message": str(e)}), 500
+
+
+@python_flask.route("/api/jira_fix_versions", methods=["GET"])
+def api_jira_fix_versions():
+    query = request.args.get("q", "")
+    try:
+        return jsonify({"success": True, "data": create_bug.search_fix_versions(query)})
+    except Exception as e:
+        logging.error("搜尋 Fix Version 失敗: %s", e)
+        return jsonify({"success": False, "message": str(e), "data": []}), 500
+
+
+@python_flask.route("/api/jira_components", methods=["GET"])
+def api_jira_components():
+    query = request.args.get("q", "")
+    try:
+        return jsonify({"success": True, "data": create_bug.search_components(query)})
+    except Exception as e:
+        logging.error("搜尋 Component 失敗: %s", e)
+        return jsonify({"success": False, "message": str(e), "data": []}), 500
+
+
+@python_flask.route("/api/jira_issues", methods=["GET"])
+def api_jira_issues():
+    query = request.args.get("q", "")
+    try:
+        return jsonify({"success": True, "data": create_bug.search_issues(query)})
+    except Exception as e:
+        logging.error("搜尋關聯單失敗: %s", e)
+        return jsonify({"success": False, "message": str(e), "data": []}), 500
 
 
 @python_flask.route('/api/calculate_workdays', methods=['POST'])

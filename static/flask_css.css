@@ -994,6 +994,75 @@ input[type="text"].account-line-input {
     align-self: start;
 }
 
+.account-config > .test-notes-group {
+    grid-column: 1 / -1;
+    max-width: 520px;
+    width: 100%;
+    align-self: start;
+}
+
+.test-notes-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.test-notes-status {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.test-notes-textarea {
+    width: 100%;
+    min-height: 110px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-family: inherit;
+    line-height: 1.55;
+    resize: vertical;
+    background: var(--bg-input);
+    color: var(--text);
+}
+
+.test-notes-textarea-panel {
+    flex: 1;
+    min-height: 180px;
+    resize: none;
+}
+
+.test-notes-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.test-notes-chip {
+    border: 1px solid var(--border-strong);
+    background: var(--bg-card, #fff);
+    color: var(--text-secondary);
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+
+.test-notes-chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.test-notes-chip.is-muted {
+    color: var(--text-muted);
+}
+
+#right-panel-notes {
+    gap: 8px;
+}
+
 .account-run-row {
     grid-column: 1 / -1;
     display: flex;
@@ -1005,6 +1074,29 @@ input[type="text"].account-line-input {
     min-width: 0;
     margin-top: 0;
     align-self: start;
+}
+
+.account-run-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-notes-capture {
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card, #fff);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+.btn-notes-capture:hover {
+    border-color: var(--accent);
+    color: var(--accent);
 }
 
 .platform-select-hidden {
@@ -1095,6 +1187,137 @@ input[type="text"].account-line-input {
     width: 100%;
     max-width: 320px;
     min-width: 0;
+}
+
+#bug-input-div {
+    grid-column: 1 / -1;
+    width: 100%;
+    max-width: 760px;
+    min-width: 0;
+    gap: 12px;
+}
+
+.account-config > #bug-input-div {
+    width: 100%;
+    max-width: 760px;
+}
+
+.bug-field-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px 16px;
+    width: 100%;
+}
+
+.bug-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.bug-field-full {
+    width: 100%;
+}
+
+.bug-textarea,
+.bug-textarea-sm {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-family: inherit;
+    resize: vertical;
+    line-height: 1.6;
+    background: var(--bg-input);
+}
+
+.bug-textarea {
+    min-height: 148px;
+}
+
+.bug-textarea-sm {
+    min-height: 76px;
+}
+
+@media (max-width: 720px) {
+    .bug-field-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.jira-suggest {
+    position: relative;
+    width: 100%;
+}
+
+.jira-suggest-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    max-height: 240px;
+    overflow: auto;
+    background: var(--bg-input, #fff);
+    border: 1px solid var(--border-strong, #c0c4cc);
+    border-radius: var(--radius-sm, 6px);
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.jira-suggest-group {
+    padding: 8px 10px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6b7280;
+    letter-spacing: 0.02em;
+}
+
+.jira-suggest-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+}
+
+.jira-suggest-item.is-issue {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.jira-suggest-item-key {
+    font-weight: 600;
+    color: var(--text, #1f2937);
+}
+
+.jira-suggest-item-summary {
+    font-size: 0.8125rem;
+    color: #6b7280;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.jira-suggest-item:hover,
+.jira-suggest-item.is-active {
+    background: #deebff;
+}
+
+.jira-suggest-empty {
+    padding: 10px;
+    color: #6b7280;
+    font-size: 0.8125rem;
 }
 
 #workdays-input-div {

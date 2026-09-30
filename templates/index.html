@@ -179,6 +179,52 @@
                             class="qa-task-textarea"></textarea>
                     </div>
 
+                    <div id="bug-input-div" class="input-group bug-form hidden">
+                        <div class="bug-field bug-field-full">
+                            <label for="bug_summary" class="field-label">Summary *</label>
+                            <input type="text" id="bug_summary" class="account-line-input" placeholder="例：派發獎勵視窗票券類型顯示英文">
+                        </div>
+                        <div class="bug-field-row">
+                            <div class="bug-field">
+                                <label for="bug_fix_version" class="field-label">Fix Version/s *</label>
+                                <div class="jira-suggest">
+                                    <input type="text" id="bug_fix_version" class="account-line-input" autocomplete="off" placeholder="輸入 TP-3946 即可搜尋">
+                                    <div id="bug_fix_version_menu" class="jira-suggest-menu hidden" role="listbox"></div>
+                                </div>
+                                <small id="bug_fix_version_hint" class="field-hint">填寫 Fix Version/s</small>
+                            </div>
+                            <div class="bug-field">
+                                <label for="bug_component" class="field-label">Component/s *</label>
+                                <div class="jira-suggest">
+                                    <input type="text" id="bug_component" class="account-line-input" autocomplete="off" placeholder="輸入 PCD 即可搜尋">
+                                    <div id="bug_component_menu" class="jira-suggest-menu hidden" role="listbox"></div>
+                                </div>
+                                <small id="bug_component_hint" class="field-hint">填寫 Component/s</small>
+                            </div>
+                        </div>
+                        <div class="bug-field bug-field-full">
+                            <label for="bug_related_key" class="field-label">關聯單（選填）</label>
+                            <div class="jira-suggest">
+                                <input type="text" id="bug_related_key" class="account-line-input" autocomplete="off" placeholder="輸入 TCG 即可搜尋，留空則不關聯">
+                                <div id="bug_related_key_menu" class="jira-suggest-menu hidden" role="listbox"></div>
+                            </div>
+                        </div>
+                        <div class="bug-field bug-field-full">
+                            <label for="bug_description" class="field-label">重現步驟</label>
+                            <textarea id="bug_description" rows="7" class="bug-textarea" placeholder="1. 進入手工報名活動&#10;2. 點擊派發獎勵&#10;3. 票券類型顯示英文 Type"></textarea>
+                        </div>
+                        <div class="bug-field-row">
+                            <div class="bug-field">
+                                <label for="bug_expected" class="field-label">預期結果（選填）</label>
+                                <textarea id="bug_expected" rows="3" class="bug-textarea-sm"></textarea>
+                            </div>
+                            <div class="bug-field">
+                                <label for="bug_actual" class="field-label">實際結果（選填）</label>
+                                <textarea id="bug_actual" rows="3" class="bug-textarea-sm"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="workdays-input-div" class="input-group hidden">
                         <label for="qa_stats_tp_key" class="field-label">TP 單號（選填）</label>
                         <input type="text" id="qa_stats_tp_key" placeholder="TP-5229，留空則查該帳號全部 QA Task" class="account-line-input">
@@ -276,12 +322,15 @@
                     </div>
 
                     <div class="button-group account-run-row">
+                        <div class="account-run-actions">
                         <button type="button" id="run-test-btn" class="btn-primary" onclick="runSelectScript()" disabled aria-busy="false">
                             <span class="btn-icon btn-play-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="8 5 19 12 8 19"/></svg></span>
                             <span class="btn-spinner" aria-hidden="true"></span>
                             <span class="btn-text-default">開始測試</span>
                             <span class="btn-text-loading" aria-hidden="true">執行中…</span>
                         </button>
+                        <button type="button" id="test-notes-capture" class="btn-notes-capture hidden">一鍵帶入筆記</button>
+                        </div>
                         <p id="run-test-hint" class="run-test-hint" role="status"></p>
                     </div>
                 </div>
@@ -532,6 +581,10 @@
                         建立QA_Task
                     </label>
                     <label>
+                        <input type="checkbox" name="script" value="create_bug" id="create_bug" onchange="toggleInput(); toggleBugInput()">
+                        建立 Bug 單
+                    </label>
+                    <label>
                         <input type="checkbox" name="script" value="calculate_workdays" id="calculate_workdays" onchange="toggleInput(); toggleWorkdaysInput()">
                         計算workdays
                     </label>
@@ -681,6 +734,7 @@
             <button type="button" class="right-panel-tab" data-right-tab="log" role="tab" aria-selected="false">執行紀錄</button>
             <button type="button" class="right-panel-tab active" data-right-tab="result" role="tab" aria-selected="true">執行結果</button>
             <button type="button" class="right-panel-tab" data-right-tab="excel" role="tab" aria-selected="false">Excel</button>
+            <button type="button" class="right-panel-tab" data-right-tab="notes" role="tab" aria-selected="false">筆記</button>
             <button type="button" class="right-panel-tab" data-right-tab="history" role="tab" aria-selected="false">歷史</button>
         </div>
         <div class="right-panel-body">
@@ -697,6 +751,16 @@
             <div id="right-panel-excel" class="right-panel-pane" role="tabpanel" hidden>
                 <div id="right-panel-excel-body" class="right-result-body">
                     <p class="right-panel-empty">Excel 比對或 TCG 進度查詢結果會顯示於此。</p>
+                </div>
+            </div>
+            <div id="right-panel-notes" class="right-panel-pane" role="tabpanel" hidden>
+                <div class="test-notes-head">
+                    <label for="right-panel-notes-input">測試筆記</label>
+                    <span class="test-notes-status" id="right-panel-notes-status">自動儲存於本機</span>
+                </div>
+                <textarea id="right-panel-notes-input" class="test-notes-textarea test-notes-textarea-panel" placeholder="帳號：kkk123&#10;充值：1000"></textarea>
+                <div class="test-notes-actions">
+                    <button type="button" class="test-notes-chip is-muted" id="right-panel-notes-clear">清空</button>
                 </div>
             </div>
             <div id="right-panel-history" class="right-panel-pane" role="tabpanel" hidden>

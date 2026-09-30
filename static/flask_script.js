@@ -118,6 +118,14 @@ const TEST_SCENARIOS = [
         followUp: "填 TCG 單號（可多筆，逗號分隔）後執行。",
     },
     {
+        id: "create_bug",
+        title: "建立 Bug 單",
+        summary: "Bug",
+        tab: "SanityTooLTab",
+        scripts: ["create_bug"],
+        followUp: "填標題、Fix Version/s、Component/s 後執行。",
+    },
+    {
         id: "change_password",
         title: "變更玩家密碼",
         summary: "重設為 123qwe",
@@ -642,7 +650,9 @@ function toggleInput() {
     updateRunButtonState();
     toggleSecondUsername();
     toggleQATaskInput();
+    toggleBugInput();
     toggleWorkdaysInput();
+    toggleNotesCapture();
     syncScenarioPanelWithSelection();
 }
 /** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
@@ -687,6 +697,7 @@ const SCRIPTS_HIDE_USERNAME = [
     "Schedule_manual_bonus",
     "DEPOSIT_API",
     "create_qa_task",
+    "create_bug",
     "calculate_workdays",
     "Create_FreeSpin_Event",
     "auto_create_ticket"
@@ -726,6 +737,206 @@ function toggleQATaskInput() {
     const div = document.getElementById("qa-task-input-div");
     if (!div) return;
     div.classList.toggle("hidden", !isChecked("create_qa_task"));
+}
+
+function toggleBugInput() {
+    const div = document.getElementById("bug-input-div");
+    if (!div) return;
+    div.classList.toggle("hidden", !isChecked("create_bug"));
+    updateRunButtonState();
+}
+
+function initBugFieldSuggest() {
+    bindJiraSuggest({
+        inputId: "bug_fix_version",
+        menuId: "bug_fix_version_menu",
+        endpoint: "/api/jira_fix_versions",
+        minChars: 2,
+        groupByReleased: true,
+    });
+    bindJiraSuggest({
+        inputId: "bug_component",
+        menuId: "bug_component_menu",
+        endpoint: "/api/jira_components",
+        minChars: 0,
+        groupByReleased: false,
+    });
+    bindJiraSuggest({
+        inputId: "bug_related_key",
+        menuId: "bug_related_key_menu",
+        endpoint: "/api/jira_issues",
+        minChars: 2,
+        groupByReleased: false,
+        showSummary: true,
+    });
+    const summaryEl = document.getElementById("bug_summary");
+    if (summaryEl) {
+        summaryEl.addEventListener("input", updateRunButtonState);
+    }
+}
+
+function setBugFieldHint(id, show) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle("is-visible", show);
+}
+
+function updateBugFieldHints() {
+    const on = isChecked("create_bug");
+    const summary = document.getElementById("bug_summary")?.value.trim();
+    const fixVersion = document.getElementById("bug_fix_version")?.value.trim();
+    const component = document.getElementById("bug_component")?.value.trim();
+    setBugFieldHint("bug_summary_hint", on && !summary);
+    setBugFieldHint("bug_fix_version_hint", on && !fixVersion);
+    setBugFieldHint("bug_component_hint", on && !component);
+}
+
+function renderJiraSuggestItem(item, showSummary) {
+    const value = item.name || item.key || "";
+    const summary = item.summary || "";
+    const label = showSummary && summary
+        ? `<span class="jira-suggest-item-key">${escapeHtml(value)}</span><span class="jira-suggest-item-summary">${escapeHtml(summary)}</span>`
+        : escapeHtml(value);
+    return `<button type="button" class="jira-suggest-item${showSummary ? " is-issue" : ""}" data-name="${escapeHtml(value)}">${label}</button>`;
+}
+
+function bindJiraSuggest({ inputId, menuId, endpoint, minChars, groupByReleased, showSummary }) {
+    const input = document.getElementById(inputId);
+    const menu = document.getElementById(menuId);
+    if (!input || !menu) return;
+
+    let timer = null;
+    let items = [];
+    let activeIndex = -1;
+    let requestSeq = 0;
+
+    const hideMenu = () => {
+        menu.classList.add("hidden");
+        menu.innerHTML = "";
+        activeIndex = -1;
+    };
+
+    const setActive = (index) => {
+        const buttons = Array.from(menu.querySelectorAll(".jira-suggest-item"));
+        if (!buttons.length) return;
+        activeIndex = (index + buttons.length) % buttons.length;
+        buttons.forEach((btn, i) => btn.classList.toggle("is-active", i === activeIndex));
+        buttons[activeIndex]?.scrollIntoView({ block: "nearest" });
+    };
+
+    const choose = (name) => {
+        input.value = name;
+        hideMenu();
+        updateRunButtonState();
+        input.focus();
+    };
+
+    const renderMenu = (list) => {
+        items = list || [];
+        if (!items.length) {
+            menu.innerHTML = `<div class="jira-suggest-empty">沒有符合的選項</div>`;
+            menu.classList.remove("hidden");
+            return;
+        }
+
+        const parts = [];
+        if (groupByReleased) {
+            const unreleased = items.filter((item) => !item.released);
+            const released = items.filter((item) => item.released);
+            const appendGroup = (title, group) => {
+                if (!group.length) return;
+                parts.push(`<div class="jira-suggest-group">${escapeHtml(title)}</div>`);
+                group.forEach((item) => {
+                    parts.push(renderJiraSuggestItem(item, showSummary));
+                });
+            };
+            appendGroup("Unreleased Versions", unreleased);
+            appendGroup("Released Versions", released);
+        } else if (items.some((item) => item.group)) {
+            const groups = [];
+            items.forEach((item) => {
+                const title = item.group || "Matching issues";
+                if (!groups.length || groups[groups.length - 1].title !== title) {
+                    groups.push({ title, items: [item] });
+                } else {
+                    groups[groups.length - 1].items.push(item);
+                }
+            });
+            groups.forEach((group) => {
+                parts.push(`<div class="jira-suggest-group">${escapeHtml(group.title)}</div>`);
+                group.items.forEach((item) => {
+                    parts.push(renderJiraSuggestItem(item, showSummary));
+                });
+            });
+        } else {
+            items.forEach((item) => {
+                parts.push(renderJiraSuggestItem(item, showSummary));
+            });
+        }
+        menu.innerHTML = parts.join("");
+        menu.classList.remove("hidden");
+        menu.querySelectorAll(".jira-suggest-item").forEach((btn) => {
+            btn.addEventListener("mousedown", (event) => {
+                event.preventDefault();
+                choose(btn.dataset.name);
+            });
+        });
+    };
+
+    const fetchItems = async (query) => {
+        const seq = ++requestSeq;
+        try {
+            const res = await fetch(`${endpoint}?q=${encodeURIComponent(query)}`);
+            const data = await res.json();
+            if (seq !== requestSeq) return;
+            renderMenu(Array.isArray(data.data) ? data.data : []);
+        } catch (err) {
+            if (seq !== requestSeq) return;
+            menu.innerHTML = `<div class="jira-suggest-empty">搜尋失敗</div>`;
+            menu.classList.remove("hidden");
+        }
+    };
+
+    input.addEventListener("input", () => {
+        updateRunButtonState();
+        const query = input.value.trim();
+        clearTimeout(timer);
+        if (query.length < minChars) {
+            hideMenu();
+            return;
+        }
+        timer = window.setTimeout(() => fetchItems(query), 220);
+    });
+
+    input.addEventListener("focus", () => {
+        const query = input.value.trim();
+        if (query.length >= minChars) {
+            fetchItems(query);
+        }
+    });
+
+    input.addEventListener("keydown", (event) => {
+        if (menu.classList.contains("hidden")) return;
+        if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setActive(activeIndex + 1);
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            setActive(activeIndex - 1);
+        } else if (event.key === "Enter" && activeIndex >= 0) {
+            const btn = menu.querySelectorAll(".jira-suggest-item")[activeIndex];
+            if (btn) {
+                event.preventDefault();
+                choose(btn.dataset.name);
+            }
+        } else if (event.key === "Escape") {
+            hideMenu();
+        }
+    });
+
+    input.addEventListener("blur", () => {
+        window.setTimeout(hideMenu, 120);
+    });
 }
 
 function toggleWorkdaysInput() {
@@ -901,6 +1112,20 @@ function initWorkdaysDatePicker() {
     });
 }
 
+function isVisibleInputGroup(id) {
+    const el = document.getElementById(id);
+    return !!(el && !el.classList.contains("hidden"));
+}
+
+function toggleNotesCapture() {
+    const btn = document.getElementById("test-notes-capture");
+    if (!btn) return;
+    const need =
+        isUsernameFieldRequired() ||
+        isVisibleInputGroup("deposit-amount-input-div");
+    btn.classList.toggle("hidden", !need);
+}
+
 function toggleAmount(){
     const amountInputDiv = document.getElementById("amount-input-div");
     const depositAmountDiv = document.getElementById("deposit-amount-input-div");
@@ -977,7 +1202,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","calculate_workdays","SameTime_ReceiveTicket"];  /*不需要選平台*/
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","create_bug","calculate_workdays","SameTime_ReceiveTicket"];  /*不需要選平台*/
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -1050,6 +1275,20 @@ function getRunBlockReason() {
             }
         }
     }
+    if (isChecked("create_bug")) {
+        const summary = document.getElementById("bug_summary")?.value.trim();
+        const fixVersion = document.getElementById("bug_fix_version")?.value.trim();
+        const component = document.getElementById("bug_component")?.value.trim();
+        if (!summary) {
+            return "請填寫 Bug 標題";
+        }
+        if (!fixVersion) {
+            return "請填寫 Fix Version/s";
+        }
+        if (!component) {
+            return "請填寫 Component/s";
+        }
+    }
     return null;
 }
 
@@ -1062,8 +1301,10 @@ function updateRunButtonState() {
     const blocked = !!reason;
     btn.disabled = blocked;
     btn.dataset.blocked = blocked ? "true" : "false";
+    updateBugFieldHints();
+    const bugFieldReasons = new Set(["請填寫 Bug 標題", "請填寫 Fix Version/s", "請填寫 Component/s"]);
     if (hint) {
-        hint.textContent = reason || "";
+        hint.textContent = (reason && !bugFieldReasons.has(reason)) ? reason : "";
     }
 }
 
@@ -1178,6 +1419,24 @@ function validateFormBeforeSubmit() {
         }
     }
 
+    if (isChecked("create_bug")) {
+        const summary = document.getElementById("bug_summary")?.value.trim();
+        const fixVersion = document.getElementById("bug_fix_version")?.value.trim();
+        const component = document.getElementById("bug_component")?.value.trim();
+        if (!summary) {
+            alert("請填寫 Bug 標題");
+            return false;
+        }
+        if (!fixVersion) {
+            alert("請填寫 Fix Version/s");
+            return false;
+        }
+        if (!component) {
+            alert("請填寫 Component/s");
+            return false;
+        }
+    }
+
     if (isChecked("calculate_workdays")) {
         const effective = getWorkdaysEffectiveDates({ autoApply: true });
         if (!validateWorkdaysDateRange(effective.from, effective.to)) {
@@ -1275,9 +1534,71 @@ document.addEventListener("DOMContentLoaded", function () {
     initWorkdaysDatePicker();
     initScenarioPanel();
     initPlatformChipPicker();
+    initBugFieldSuggest();
+    initTestNotes();
     syncPlatformChipsFromSelect();
     syncPromotionIdForPlatformSelection();
 });
+
+const TEST_NOTES_STORAGE_KEY = "auto_test_scratch_notes";
+
+function initTestNotes() {
+    const field = document.getElementById("right-panel-notes-input");
+    const status = document.getElementById("right-panel-notes-status");
+    const captureBtn = document.getElementById("test-notes-capture");
+    const clearBtn = document.getElementById("right-panel-notes-clear");
+    if (!field) return;
+
+    let saved = "";
+    try {
+        saved = localStorage.getItem(TEST_NOTES_STORAGE_KEY) || "";
+    } catch (e) {}
+    field.value = saved;
+
+    const setStatus = (text) => {
+        if (status) status.textContent = text;
+    };
+
+    const persist = () => {
+        try {
+            localStorage.setItem(TEST_NOTES_STORAGE_KEY, field.value);
+        } catch (e) {}
+        const now = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+        setStatus(`已儲存 ${now}`);
+    };
+
+    const captureCurrent = () => {
+        const needUsername = isUsernameFieldRequired();
+        const needDeposit = isVisibleInputGroup("deposit-amount-input-div");
+        const username = document.getElementById("username")?.value.trim() || "";
+        const username2 = document.getElementById("username2")?.value.trim() || "";
+        const deposit = document.getElementById("deposit_amount")?.value.trim() || "";
+        const stamp = new Date().toLocaleTimeString("zh-TW", { hour12: false });
+        const block = [`--- ${stamp} ---`];
+        if (needUsername) {
+            const accounts = [username, username2].filter(Boolean).join("、") || "（尚未填帳號）";
+            block.push(`帳號：${accounts}`);
+        }
+        if (needDeposit) {
+            block.push(`充值：${deposit || "（尚未填充值金額）"}`);
+        }
+        if (block.length === 1) return;
+        const current = field.value.trimEnd();
+        field.value = current ? `${current}\n${block.join("\n")}` : block.join("\n");
+        persist();
+        switchRightPanelTab("notes");
+        field.focus();
+        field.setSelectionRange(field.value.length, field.value.length);
+    };
+
+    field.addEventListener("input", persist);
+    captureBtn?.addEventListener("click", captureCurrent);
+    clearBtn?.addEventListener("click", () => {
+        field.value = "";
+        persist();
+        setStatus("已清空");
+    });
+}
 
 function initFileUploadZones() {
     document.querySelectorAll(".file-upload-zone").forEach((zone) => {
@@ -1872,6 +2193,19 @@ function runSelectScript(){
             requestPayload = { ...extraData };
             break;
 
+        case "create_bug":
+            extraData = {
+                summary: document.getElementById("bug_summary").value.trim(),
+                fix_version: document.getElementById("bug_fix_version").value.trim(),
+                component: document.getElementById("bug_component").value.trim(),
+                related_key: document.getElementById("bug_related_key").value.trim(),
+                description: document.getElementById("bug_description").value.trim(),
+                expected: document.getElementById("bug_expected").value.trim(),
+                actual: document.getElementById("bug_actual").value.trim(),
+            };
+            requestPayload = { ...extraData };
+            break;
+
         case "calculate_workdays": {
             const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
             const tpKeys = tpRaw.split(/[\s,;]+/).filter(Boolean);
@@ -2452,6 +2786,9 @@ function detectResultType(data) {
     if (data.kind === "same_time_receive_ticket") {
         return "same_time_receive_ticket";
     }
+    if (data.kind === "create_bug") {
+        return "create_qa_task";
+    }
     if ("postcardCode" in data) {
         return "postcard";
     }
@@ -2710,8 +3047,9 @@ function renderCreateQaTaskResults(items) {
                 ? `<a class="result-task-key" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer" title="在 Jira 開啟">${escapeHtml(item.new_key)}</a>`
                 : `<span class="result-task-key is-fail">建立失敗</span>`;
             const status = item.error ? "Failed" : "Created";
-            const parent = item.tcg_key
-                ? `<span class="result-task-parent">← ${renderIssueKey(item.tcg_key)}</span>`
+            const related = item.tcg_key || item.related_key;
+            const parent = related
+                ? `<span class="result-task-parent">← ${renderIssueKey(related)}</span>`
                 : "";
             const detail = item.error
                 ? `<p class="result-task-note text-fail">${escapeHtml(item.error)}</p>`

@@ -32,14 +32,14 @@ class Frontend:
         self.response_value_list = []
         self.other_prizes_log = []  
         self.rewards = {
-        "a": {"id": "1619043", "rate": 80, "min": 3, "max": 10},
-        "b": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
-        "c": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
-        "d": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
-        "e": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
-        "f": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
-        "g": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
-        "h": {"id": "1620040", "rate": 20, "min": 20, "max": 30},
+        "a": {"slotNo": "1", "rate": 5.00},
+        "b": {"slotNo": "2", "rate": 12.00},
+        "c": {"slotNo": "3", "rate": 8.00},
+        "d": {"slotNo": "4", "rate": 7.00},
+        "e": {"slotNo": "5", "rate": 23.00},
+        "f": {"slotNo": "6", "rate": 14.00},
+        "g": {"slotNo": "7", "rate": 1.00},
+        "h": {"slotNo": "8", "rate": 30.00},
 
         }
         
