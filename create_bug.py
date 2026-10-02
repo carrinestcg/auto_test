@@ -186,14 +186,7 @@ def create_bug(
     if not components:
         raise ValueError("請提供 Component/s")
 
-    env_key = (environment or DEFAULT_ENVIRONMENT).strip().upper()
-    env_id = ENVIRONMENT_OPTIONS.get(env_key)
-    if not env_id:
-        raise ValueError(f"不支援的 Environment：{environment}，可用 {sorted(ENVIRONMENT_OPTIONS)}")
-
-    device_key = (device or DEFAULT_DEVICE).strip()
-    device_id = DEVICE_OPTIONS.get(device_key) or DEVICE_OPTIONS[DEFAULT_DEVICE]
-
+    # Bug 的 Create／Edit 畫面沒有 Environment、Device，帶 customfield_10700／10701 會 400。
     fields = {
         "project": {"key": "TCG"},
         "issuetype": {"name": "Bug"},
@@ -203,8 +196,6 @@ def create_bug(
         "priority": {"name": priority or DEFAULT_PRIORITY},
         "fixVersions": fix_versions,
         "components": components,
-        "customfield_10700": {"id": env_id},
-        "customfield_10701": [{"id": device_id}],
     }
 
     resp = requests.post(
