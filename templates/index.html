@@ -223,6 +223,19 @@
                                 <textarea id="bug_actual" rows="3" class="bug-textarea-sm"></textarea>
                             </div>
                         </div>
+                        <div class="bug-field bug-field-full">
+                            <label for="bug_attachments" class="field-label">截圖（選填，可多張）</label>
+                            <div class="file-upload-zone bug-attach-zone" data-input="bug_attachments">
+                                <input type="file" id="bug_attachments" name="attachments" class="file-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple>
+                                <label for="bug_attachments" class="file-upload-label">
+                                    <span class="file-upload-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                    </span>
+                                    <span class="file-upload-title">拖曳、點選或在此表單貼上截圖</span>
+                                    <span class="file-upload-name">尚未選擇檔案</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="workdays-input-div" class="input-group hidden">

@@ -1608,13 +1608,38 @@ function initFileUploadZones() {
         if (!input || !nameEl || !label) return;
 
         const syncName = () => {
-            if (input.files && input.files.length > 0) {
-                nameEl.textContent = input.files[0].name;
+            const files = Array.from(input.files || []);
+            if (files.length > 0) {
+                nameEl.textContent = files.length === 1
+                    ? files[0].name
+                    : `${files.length} 張：${files.map((file) => file.name).join("、")}`;
                 zone.classList.add("has-file");
             } else {
                 nameEl.textContent = "尚未選擇檔案";
                 zone.classList.remove("has-file");
             }
+        };
+
+        const addFiles = (fileList) => {
+            const incoming = Array.from(fileList || []).filter((file) => {
+                if (input.accept && input.accept.includes("image/") && !file.type.startsWith("image/")) {
+                    return false;
+                }
+                return true;
+            });
+            if (!incoming.length) return;
+            if (!input.multiple) {
+                const dt = new DataTransfer();
+                dt.items.add(incoming[0]);
+                input.files = dt.files;
+                syncName();
+                return;
+            }
+            const dt = new DataTransfer();
+            Array.from(input.files || []).forEach((file) => dt.items.add(file));
+            incoming.forEach((file) => dt.items.add(file));
+            input.files = dt.files;
+            syncName();
         };
 
         input.addEventListener("change", syncName);
@@ -1634,12 +1659,37 @@ function initFileUploadZones() {
         });
 
         label.addEventListener("drop", (e) => {
-            const files = e.dataTransfer?.files;
-            if (!files || !files.length) return;
-            input.files = files;
-            syncName();
+            addFiles(e.dataTransfer?.files);
         });
     });
+
+    const bugForm = document.getElementById("bug-input-div");
+    const bugInput = document.getElementById("bug_attachments");
+    if (bugForm && bugInput) {
+        bugForm.addEventListener("paste", (event) => {
+            const items = event.clipboardData?.items;
+            if (!items) return;
+            const images = [];
+            Array.from(items).forEach((item) => {
+                if (item.kind === "file" && item.type.startsWith("image/")) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        const name = file.name && file.name !== "image.png"
+                            ? file.name
+                            : `paste-${Date.now()}-${images.length + 1}.png`;
+                        images.push(new File([file], name, { type: file.type || "image/png" }));
+                    }
+                }
+            });
+            if (!images.length) return;
+            event.preventDefault();
+            const dt = new DataTransfer();
+            Array.from(bugInput.files || []).forEach((file) => dt.items.add(file));
+            images.forEach((file) => dt.items.add(file));
+            bugInput.files = dt.files;
+            bugInput.dispatchEvent(new Event("change"));
+        });
+    }
 }
 
 const VERSION_STORAGE_KEY = "auto_test_last_seen_version";
@@ -2193,7 +2243,7 @@ function runSelectScript(){
             requestPayload = { ...extraData };
             break;
 
-        case "create_bug":
+        case "create_bug": {
             extraData = {
                 summary: document.getElementById("bug_summary").value.trim(),
                 fix_version: document.getElementById("bug_fix_version").value.trim(),
@@ -2203,8 +2253,17 @@ function runSelectScript(){
                 expected: document.getElementById("bug_expected").value.trim(),
                 actual: document.getElementById("bug_actual").value.trim(),
             };
-            requestPayload = { ...extraData };
+            const files = document.getElementById("bug_attachments")?.files;
+            if (files && files.length) {
+                const formData = new FormData();
+                Object.entries(extraData).forEach(([key, value]) => formData.append(key, value));
+                Array.from(files).forEach((file) => formData.append("attachments", file));
+                requestPayload = formData;
+            } else {
+                requestPayload = { ...extraData };
+            }
             break;
+        }
 
         case "calculate_workdays": {
             const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
@@ -2316,10 +2375,11 @@ async function runScriptApi(scriptName, payload) {
     trackRunRequestStart();
     appendRunLog(`▶ ${scriptName} 開始…`);
     try {
+        const isFormData = typeof FormData !== "undefined" && payload instanceof FormData;
         const res = await fetch(`/api/${scriptName}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            headers: isFormData ? undefined : { "Content-Type": "application/json" },
+            body: isFormData ? payload : JSON.stringify(payload),
         });
         const data = await res.json();
         console.log(scriptName, data);

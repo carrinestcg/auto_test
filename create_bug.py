@@ -124,15 +124,47 @@ def _split_names(value):
     return [item.strip() for item in items if str(item).strip()]
 
 
-def build_description(description, expected="", actual=""):
-    text = (description or "").strip()
-    if text and not text.lower().startswith("issue"):
-        text = f"issue:\n\n{text}"
-    if expected.strip():
-        text = f"{text}\n\n預期結果：\n{expected.strip()}"
-    if actual.strip():
-        text = f"{text}\n\n實際結果：\n{actual.strip()}"
+def _strip_leading_label(text, labels):
+    text = (text or "").strip()
+    if not text:
+        return ""
+    first_line, _, rest = text.partition("\n")
+    heading = first_line.strip().strip("*").rstrip("：:").strip().lower()
+    if heading in labels:
+        return rest.strip()
+    lowered = text.lower()
+    for label in labels:
+        if lowered.startswith(label):
+            return text[len(label):].lstrip("：:* \t\n")
     return text
+
+
+def build_description(description, expected="", actual=""):
+    steps = _strip_leading_label(description, ("issue", "step"))
+    parts = []
+    if steps:
+        parts.append(f"*step:*\n\n{steps}")
+    if expected.strip():
+        parts.append(f"*預期結果：*\n{expected.strip()}")
+    if actual.strip():
+        parts.append(f"*實際結果：*\n{actual.strip()}")
+    return "\n\n".join(parts)
+
+
+ASSIGNEE_BY_COMPONENT = (
+    ("pcd promotion", "wei.l"),
+    ("tac ui", "silver.c"),
+)
+
+
+def resolve_assignee(components, assignee=None):
+    if assignee and str(assignee).strip():
+        return str(assignee).strip()
+    names = [str(name).lower() for name in (components or [])]
+    for needle, username in ASSIGNEE_BY_COMPONENT:
+        if any(needle in name for name in names):
+            return username
+    return ASSIGNEE
 
 
 def _split_issue_keys(value):
@@ -163,6 +195,27 @@ def link_related_issues(new_key, related_keys, link_type="Relates"):
     return errors
 
 
+def attach_files(issue_key, uploads):
+    errors = []
+    headers = {
+        "Authorization": HEADERS.get("Authorization", ""),
+        "X-Atlassian-Token": "no-check",
+    }
+    for filename, content, content_type in uploads or []:
+        if not filename or content is None:
+            continue
+        resp = requests.post(
+            f"{JIRA_BASE_URL}/rest/api/2/issue/{issue_key}/attachments",
+            headers=headers,
+            files={"file": (filename, content, content_type or "application/octet-stream")},
+            verify=JIRA_SSL,
+            timeout=60,
+        )
+        if resp.status_code not in (200, 201):
+            errors.append(f"{filename}: {resp.status_code} {resp.text[:240]}")
+    return errors
+
+
 def create_bug(
     summary,
     description,
@@ -175,6 +228,7 @@ def create_bug(
     actual="",
     related_key="",
     assignee=None,
+    attachments=None,
 ):
     summary = (summary or "").strip()
     fix_versions = [{"name": name} for name in _split_names(fix_version)]
@@ -192,7 +246,7 @@ def create_bug(
         "issuetype": {"name": "Bug"},
         "summary": summary,
         "description": build_description(description, expected, actual),
-        "assignee": {"name": (assignee or ASSIGNEE).strip()},
+        "assignee": {"name": resolve_assignee(components, assignee)},
         "priority": {"name": priority or DEFAULT_PRIORITY},
         "fixVersions": fix_versions,
         "components": components,
@@ -210,11 +264,18 @@ def create_bug(
         return None, resp.text
 
     new_key = resp.json().get("key")
+    errors = []
     related_keys = _split_issue_keys(related_key)
     if new_key and related_keys:
         link_errors = link_related_issues(new_key, related_keys)
         if link_errors:
-            return new_key, "建立成功，但關聯失敗：" + "；".join(link_errors)
+            errors.append("關聯失敗：" + "；".join(link_errors))
+    if new_key and attachments:
+        attach_errors = attach_files(new_key, attachments)
+        if attach_errors:
+            errors.append("附圖失敗：" + "；".join(attach_errors))
+    if errors:
+        return new_key, "建立成功，但" + "；".join(errors)
     return new_key, None
 
 

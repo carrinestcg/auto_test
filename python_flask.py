@@ -1129,9 +1129,34 @@ def api_create_qa_task():
         return jsonify({"success": False, "message": str(e)}), 500
 
 
+BUG_IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"}
+BUG_IMAGE_MAX_BYTES = 10 * 1024 * 1024
+
+
+def _bug_attachment_uploads(file_storages):
+    uploads = []
+    for storage in file_storages or []:
+        filename = (getattr(storage, "filename", None) or "").strip()
+        if not filename:
+            continue
+        ext = Path(filename).suffix.lower()
+        if ext not in BUG_IMAGE_EXTS:
+            continue
+        content = storage.read()
+        if not content or len(content) > BUG_IMAGE_MAX_BYTES:
+            continue
+        uploads.append((filename, content, storage.mimetype or "application/octet-stream"))
+    return uploads
+
+
 @python_flask.route('/api/create_bug', methods=['POST'])
 def api_create_bug():
-    data = request.get_json(silent=True) or {}
+    attachments = []
+    if request.content_type and "multipart/form-data" in request.content_type:
+        data = request.form
+        attachments = _bug_attachment_uploads(request.files.getlist("attachments"))
+    else:
+        data = request.get_json(silent=True) or {}
     summary = str(data.get("summary") or "").strip()
     description = str(data.get("description") or "").strip()
     expected = str(data.get("expected") or "").strip()
@@ -1162,11 +1187,13 @@ def api_create_bug():
             expected=expected,
             actual=actual,
             related_key=related_key,
+            attachments=attachments,
         )
         item = {
             "new_key": new_key,
             "summary": summary,
             "related_key": related_key.upper() if related_key else "",
+            "attachments": len(attachments),
             "url": f"{create_bug.JIRA_BASE_URL}/browse/{new_key}" if new_key else None,
         }
         if new_key is None:
