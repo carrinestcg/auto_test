@@ -173,10 +173,21 @@
                     </div>
 
                     <div id="qa-task-input-div" class="input-group hidden">
-                        <label for="tcg_keys_input" class="field-label">TCG 單號</label>
-                        <textarea id="tcg_keys_input" rows="3"
-                            placeholder="TCG-148954, TCG-148947"
-                            class="qa-task-textarea"></textarea>
+                        <div class="qa-task-field-row">
+                            <div class="bug-field">
+                                <label for="tcg_keys_input" class="field-label">TCG 單號 *</label>
+                                <textarea id="tcg_keys_input" rows="3"
+                                    placeholder="TCG-148954, TCG-148947"
+                                    class="qa-task-textarea"></textarea>
+                            </div>
+                            <div class="bug-field">
+                                <label for="qa_task_assignee" class="field-label">Assignee（選填）</label>
+                                <div class="jira-suggest">
+                                    <input type="text" id="qa_task_assignee" class="account-line-input" autocomplete="off"">
+                                    <div id="qa_task_assignee_menu" class="jira-suggest-menu hidden" role="listbox"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="bug-input-div" class="input-group bug-form hidden">

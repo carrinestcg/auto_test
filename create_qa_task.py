@@ -34,16 +34,62 @@ def get_issue(issue_key):
     reporter    = fields.get("reporter", {}).get("name", ASSIGNEE)
     return summary, fix_versions, reporter
 
-def create_qa_task(tcg_key, summary, fix_versions, reporter):
+def search_users(query, limit=15):
+    """Jira 使用者 typeahead，回傳格式與 Component 相同（name = username）。"""
+    needle = (query or "").strip()
+    resp = requests.get(
+        f"{JIRA_BASE_URL}/rest/api/2/user/picker",
+        headers=HEADERS,
+        params={"query": needle, "maxResults": limit},
+        verify=JIRA_SSL,
+        timeout=20,
+    )
+    resp.raise_for_status()
+    matches = []
+    for user in (resp.json() or {}).get("users") or []:
+        name = (user.get("name") or user.get("key") or "").strip()
+        if not name:
+            continue
+        matches.append({
+            "name": name,
+            "summary": user.get("displayName") or name,
+        })
+        if len(matches) >= limit:
+            break
+    return matches
+
+
+def resolve_assignee_name(query, fallback=""):
+    raw = (query or "").strip()
+    if not raw:
+        return (fallback or ASSIGNEE).strip()
+    try:
+        users = search_users(raw, limit=15)
+    except Exception:
+        users = []
+    lowered = raw.lower()
+    for user in users:
+        if user["name"].lower() == lowered:
+            return user["name"]
+    for user in users:
+        if (user.get("summary") or "").lower() == lowered:
+            return user["name"]
+    if len(users) == 1:
+        return users[0]["name"]
+    return raw
+
+
+def create_qa_task(tcg_key, summary, fix_versions, reporter, assignee=None):
     """在 TCG 單底下建立 QA Task subtask，建立後轉為 In Progress"""
     new_summary = f"[QA][PED] 測試 {summary}"
+    assignee_name = resolve_assignee_name(assignee, fallback=ASSIGNEE)
 
     fields = {
             "project": {"key": "TCG"},
             "parent": {"key": tcg_key},
             "summary": new_summary,
             "issuetype": {"name": "QA Task"},
-            "assignee": {"name": reporter},
+            "assignee": {"name": assignee_name},
             "fixVersions": fix_versions,
             "customfield_10000": {"value": "TCG"},
             "components": [{"id": "13316"}],

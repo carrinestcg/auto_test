@@ -829,7 +829,9 @@ body.is-resizing-panel * {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, var(--account-field-width)));
     gap: 12px 16px;
-    align-items: end;
+    align-items: start;
+    align-content: start;
+    grid-auto-rows: min-content;
     margin-bottom: 0;
 }
 
@@ -1160,14 +1162,22 @@ input[type="text"].account-line-input {
     display: none !important;
     flex: 0 !important;
     width: 0 !important;
+    height: 0 !important;
+    max-height: 0 !important;
     min-width: 0 !important;
+    min-height: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
+    border: 0 !important;
+    overflow: hidden !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
 }
 
 .qa-task-textarea {
-    width: 260px;
+    width: 100%;
     max-width: 100%;
+    box-sizing: border-box;
     padding: 8px 10px;
     border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
@@ -1185,8 +1195,22 @@ input[type="text"].account-line-input {
 #qa-task-input-div {
     grid-column: 1 / -1;
     width: 100%;
-    max-width: 320px;
+    max-width: 640px;
     min-width: 0;
+}
+
+.qa-task-field-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px 16px;
+    width: 100%;
+    align-items: start;
+}
+
+@media (max-width: 720px) {
+    .qa-task-field-row {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }
 
 #bug-input-div {
@@ -1194,6 +1218,7 @@ input[type="text"].account-line-input {
     width: 100%;
     max-width: 760px;
     min-width: 0;
+    height: max-content;
     gap: 8px;
     align-self: start;
 }
@@ -1242,6 +1267,11 @@ input[type="text"].account-line-input {
 
 .bug-textarea-sm {
     min-height: 56px;
+}
+
+.bug-attach-zone.file-upload-zone {
+    flex: 0 0 auto;
+    min-width: 0;
 }
 
 .bug-attach-zone .file-upload-label {

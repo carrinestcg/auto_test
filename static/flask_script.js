@@ -769,6 +769,14 @@ function initBugFieldSuggest() {
         groupByReleased: false,
         showSummary: true,
     });
+    bindJiraSuggest({
+        inputId: "qa_task_assignee",
+        menuId: "qa_task_assignee_menu",
+        endpoint: "/api/jira_users",
+        minChars: 1,
+        groupByReleased: false,
+        showSummary: true,
+    });
     const summaryEl = document.getElementById("bug_summary");
     if (summaryEl) {
         summaryEl.addEventListener("input", updateRunButtonState);
@@ -2239,6 +2247,7 @@ function runSelectScript(){
                 tcg_keys: document.getElementById("tcg_keys_input").value
                     .split(/[\s,;]+/)
                     .filter(Boolean),
+                assignee: document.getElementById("qa_task_assignee").value.trim(),
             };
             requestPayload = { ...extraData };
             break;

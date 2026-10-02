@@ -1102,13 +1102,16 @@ def api_create_qa_task():
     else:
         tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).replace(",", " ").split() if k.strip()]
 
+    assignee = str(data.get("assignee") or "").strip()
     if not tcg_keys:
         return jsonify({"success": False, "message": "請提供 TCG 單號"}), 400
     try:
         results = []
         for tcg_key in tcg_keys:
             summary, fix_versions, reporter = create_qa_task.get_issue(tcg_key)
-            new_key = create_qa_task.create_qa_task(tcg_key, summary, fix_versions, reporter)
+            new_key = create_qa_task.create_qa_task(
+                tcg_key, summary, fix_versions, reporter, assignee=assignee
+            )
             if new_key is not None:
                 results.append({
                     "tcg_key": tcg_key,
@@ -1233,6 +1236,16 @@ def api_jira_components():
         return jsonify({"success": True, "data": create_bug.search_components(query)})
     except Exception as e:
         logging.error("搜尋 Component 失敗: %s", e)
+        return jsonify({"success": False, "message": str(e), "data": []}), 500
+
+
+@python_flask.route("/api/jira_users", methods=["GET"])
+def api_jira_users():
+    query = request.args.get("q", "")
+    try:
+        return jsonify({"success": True, "data": create_qa_task.search_users(query)})
+    except Exception as e:
+        logging.error("搜尋 Jira 使用者失敗: %s", e)
         return jsonify({"success": False, "message": str(e), "data": []}), 500
 
 
