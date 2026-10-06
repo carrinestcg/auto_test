@@ -92,4 +92,64 @@ def DB_execute(SQL):
             cursor.close()
         if conn:
             conn.close()
+
+def ODSDB_execute(SQL):
+    host = "10.81.1.11"
+    port = 1521
+    service_name = "tcgsit"
+    username = "TCG_ODSDB"
+    password = "3JAqs3RpSnsw99SF"
+    dsn = f"{host}:{port}/{service_name}"
+
+    conn = None
+    cursor = None
+    try:
+        conn = oracledb.connect(user=username, password=password, dsn=dsn)
+        cursor = conn.cursor()
+        cursor.execute(SQL)
+        conn.commit()
+        logging.info("✅ 執行成功")
+        return True
+
+    except oracledb.DatabaseError as e:
+        logging.error(f"❌ 資料庫錯誤: {e}")
+        return False
+    except Exception as e:
+        logging.error(f"❌ 未預期的錯誤: {str(e)}")
+        return False
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+def PROMODB_execute(SQL):
+    host = "10.81.1.11"
+    port = 1521
+    service_name = "tcgsit"
+    username = "TCG_PROMDB"
+    password = "Ae2Lr8Gv1Tl5"
+    dsn = f"{host}:{port}/{service_name}"
+
+    conn = None
+    cursor = None
+    try:
+        conn = oracledb.connect(user=username, password=password, dsn=dsn)
+        cursor = conn.cursor()
+        cursor.execute(SQL)
+        conn.commit()
+        logging.info("✅ 執行成功")
+        return True
+
+    except oracledb.DatabaseError as e:
+        logging.error(f"❌ 資料庫錯誤: {e}")
+        return False
+    except Exception as e:
+        logging.error(f"❌ 未預期的錯誤: {str(e)}")
+        return False
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
         

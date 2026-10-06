@@ -72,7 +72,8 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
     "ticketQuantity": amount,
     "isSendApp": "Y",
     "appTitle": "title",
-    "appMessage": "恭喜您成功领取 {promotionName} 活动获得 金额 {bonus} 票卷 {ticket}"
+    "appMessage": "恭喜您成功领取 {promotionName} 活动获得 金额 {bonus} 票卷 {ticket}",
+    "scheduleTime":1791212400000
     
 }
     param={
@@ -220,7 +221,6 @@ def main(username,promotionid,platform,amount, ticket_id=None):
     
     bonusAmount=1000
     bonusPointAmount=20
-    
     create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,amount=amount,prmotion_id=promotionid,merchant=platform)
     
     
@@ -233,5 +233,6 @@ def main(username,promotionid,platform,amount, ticket_id=None):
     else:
         logging.error("沒有拿到ID")
         return False, promoType
+        
      
      

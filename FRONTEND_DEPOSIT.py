@@ -87,7 +87,7 @@ class Frontend:
             }
         
     def get_mcssite_manualtransfer_channel(self):
-        url = 'http://sit3.sit-gi8viet.com/wps/relay/MCSFE_getDepositPaymentChannels?webSupported=Y&mobileSupported=N&groupMTByChannelName=Y'
+        url = 'http://www.sit-gi8viet.com/wps/relay/MCSFE_getDepositPaymentChannels?webSupported=Y&mobileSupported=N&groupMTByChannelName=Y'
         headers = self.header()
         response = self.session.get(url, headers=headers)
         print(response.json())
@@ -95,7 +95,7 @@ class Frontend:
         channel_info=[]
         if response_json.get("success"):
             value = response_json.get("value", {})
-            wechat = value.get("MWQR", {}) 
+            wechat = value.get("WCFQR", {}) 
             channels = wechat.get("channels", [])
             for channel in channels:
                 channel_info.append({
@@ -112,7 +112,7 @@ class Frontend:
             logging.error(f"錯誤{response}")
             return []
     def get_DiscountTicketList(self):
-        url = 'http://sit3.sit-gi8viet.com/wps/relay/PROMOFE_getDiscountTicketList?status=AVAILABLE'
+        url = 'http://www.sit-gi8viet.com/wps/relay/PROMOFE_getDiscountTicketList?status=AVAILABLE'
         headers = self.header()
         response = self.session.get(url, headers=headers)
         print(response.json())
@@ -135,7 +135,7 @@ class Frontend:
             logging.error(f"錯誤{response}")
             return []
     def get_mcssite_fixed_amount_channel(self):
-        URL="http://sit3.sit-gi8viet.com/wps/relay/PROMOFE_getFixedAmtDepositList"
+        URL="http://www.sit-gi8viet.com/wps/relay/PROMOFE_getFixedAmtDepositList"
         headers=self.header()
         response = self.session.get(URL, headers=headers)
         print(response.json())
@@ -167,7 +167,7 @@ class Frontend:
                 self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
                 return
-            login_URL="http://sit3.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
+            login_URL="http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
 
             headers=self.header()
             payload={
@@ -179,7 +179,7 @@ class Frontend:
                 "nickname":"c",
                 "vendorId":vendorId,
                 "mcsBankCode":mcsBankCode,
-                "deviceId": "cc688917-11c4-34c5-aeb6-bbf37742f679",
+                "deviceId": "f8e9b459-e1d5-47a5-8dca-157fe35e6b42",
                 "token":self.token
             }
             cookies={
