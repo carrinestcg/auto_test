@@ -93,7 +93,7 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
         
         if response_data.get("success") :
             logging.info("手動紅利發放成功 ")
-            return True
+            return True, "OK", "發放成功"
         else:
             row = DB_connect(f"SELECT * FROM TCG_MCSDB.MCS_PROMOTION_BLACKLIST WHERE CUSTOMER_NAME='{player}'")
             if row:
@@ -106,13 +106,11 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
             
     except requests.RequestException as e:
         logging.error(f"HTTP錯誤 {e}")
-        return False, "HTTP_ERROR", str(e)
+        return False, "JSON_ERROR", str(e)
     except ValueError as e:
-        logging.error(f"JSON解析錯誤: {e}")
-        return False, "HTTP_ERROR", str(e)
+        return False, "JSON_ERROR", str(e)
     except Exception as e:
-        logging.error(f"其他錯誤: {e}")
-        return False, "HTTP_ERROR", str(e)
+        return False, "UNKNOWN_ERROR", str(e)
 def Search_Customer_bonus(token,player:str,merchant:str):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/prom-promotion-manual-reward-claims" 
     start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
@@ -198,11 +196,11 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str,promoTy
         
         if response_data.get("success") :
             logging.info("審核活動紅利成功 ")
-            return True
+            return True, "OK", "審核成功"
         else:
             error_msg = response_data.get("value" )
             logging.error(f"未審核成功 value: {error_msg}{response_data}")
-            return False
+            return False, "APPROVE_FAILED", "審核失敗"
             
     except requests.RequestException as e:
         logging.error(f"HTTP錯誤 {e}")
@@ -239,7 +237,7 @@ def main(username,promotionid,platform,amount, ticket_id=None):
             "message": "審核失敗", "promoType": promoType}
     else:
         logging.error("沒有拿到ID")
-        return {"success": False, "code": "SEARCH_FAILED", "message": "未找到客戶或申報ID", "promoType": None}
+        return {"success": False, "code": "CLAIM_NOT_FOUND", "message": "未找到客戶或申報ID", "promoType": None}
         
      
      
