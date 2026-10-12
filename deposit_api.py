@@ -70,7 +70,7 @@ def deposit(token,merchantCode):
         "dateFrom":start_time,
         "dateTo":end_time,
         "tcpBankCode":"",
-        "merchantCode":"gi8viet",
+        "merchantCode":merchantCode,
         "pageNo":1,
         "pageSize":1000
 

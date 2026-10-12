@@ -97,20 +97,22 @@ def create_bonus(token,player:str,bonusAmount:int,bonusPointAmount:int,ticketId:
         else:
             row = DB_connect(f"SELECT * FROM TCG_MCSDB.MCS_PROMOTION_BLACKLIST WHERE CUSTOMER_NAME='{player}'")
             if row:
-                logging.error(f"手動紅利發放失敗: 玩家 {player} 在黑名單中，無法發放紅利。")
+                msg = f"玩家 {player} 在黑名單中，無法發放紅利"
+                logging.error(f"手動紅利發放失敗: {msg}")
+                return False, "PLAYER_BLACKLISTED", msg
             error_msg = response_data.get("message", "未知錯誤")
             logging.error(f"手動紅利發放失敗: {error_msg}")
-            return False
+            return False, "CREATE_BONUS_FAILED", error_msg
             
     except requests.RequestException as e:
         logging.error(f"HTTP錯誤 {e}")
-        return False
+        return False, "HTTP_ERROR", str(e)
     except ValueError as e:
         logging.error(f"JSON解析錯誤: {e}")
-        return False
+        return False, "HTTP_ERROR", str(e)
     except Exception as e:
         logging.error(f"其他錯誤: {e}")
-        return False
+        return False, "HTTP_ERROR", str(e)
 def Search_Customer_bonus(token,player:str,merchant:str):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/prom-promotion-manual-reward-claims" 
     start_time = datetime.now().strftime("%Y-%m-%d 00:00:00")
@@ -217,22 +219,27 @@ def main(username,promotionid,platform,amount, ticket_id=None):
         token = get_token(platform)
     except Exception as e:
         print("啟動時取得 token 發生錯誤:", e)
-        return  False, None # FIX: 原本沒有 return，取得 token 失敗仍會繼續執行
+        return  {"success": False, "code": "TOKEN_ERROR", "message": "取得 token 失敗", "promoType": None} # FIX: 原本沒有 return，取得 token 失敗仍會繼續執行
     
     bonusAmount=1000
     bonusPointAmount=20
-    create_bonus(token,username,bonusAmount=bonusAmount,bonusPointAmount=bonusPointAmount,ticketId=ticket_id,amount=amount,prmotion_id=promotionid,merchant=platform)
-    
+
+    ok, code, msg = create_bonus(
+        token, username, bonusAmount=1000, bonusPointAmount=20,
+        ticketId=ticket_id, amount=amount, prmotion_id=promotionid, merchant=platform
+    )
+    if not ok: 
+        return {"success": False, "code": code, "message": msg, "promoType": None}
     
     Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
     if Customerid is not None and claimid is not None:
         if Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid):
-            return True, promoType 
-        else:
-            return False, promoType
+            return {"success": True, "code": "OK", "message": "發放並審核成功", "promoType": promoType}
+        return {"success": False, "code": "APPROVE_FAILED",
+            "message": "審核失敗", "promoType": promoType}
     else:
         logging.error("沒有拿到ID")
-        return False, promoType
+        return {"success": False, "code": "SEARCH_FAILED", "message": "未找到客戶或申報ID", "promoType": None}
         
      
      

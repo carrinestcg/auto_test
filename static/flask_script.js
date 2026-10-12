@@ -1186,7 +1186,7 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").checked ||document.getElementById('frontend-checkbox_7_Ticket').checked||document.getElementById('Extra_Reward_api').checked||document.getElementById('Achievement_bonus').checked||document.getElementById('MANUAL_SIGN').checked||document.getElementById('QUEST_bonus').checked||document.getElementById('Activity_bonus').checked||document.getElementById('Schedule_manual_bonus').checked || isDiscountCouponDepositMode();
+    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").isChecked() ||document.getElementById('frontend-checkbox_7_Ticket').isChecked()||document.getElementById('Extra_Reward_api').isChecked()||document.getElementById('Achievement_bonus').isChecked()||document.getElementById('MANUAL_SIGN').isChecked()||document.getElementById('QUEST_bonus').isChecked()||document.getElementById('Activity_bonus').isChecked()||document.getElementById('Schedule_manual_bonus').isChecked() || isDiscountCouponDepositMode();
     
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 
@@ -2626,7 +2626,7 @@ function buildResultBodyHtml(data) {
         "customer_name",
         "same_time_receive_ticket",
     ];
-    const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
+    const showSummaryPanel = isSuccess || (summaryResultTypes.includes(resultType) && !data.code);
     return showSummaryPanel ? renderFormattedResult(data, resultType) : renderFailureResult(data);
 }
 
@@ -2899,8 +2899,40 @@ function detectResultType(data) {
     }
     return "generic";
 }
+const FAILURE_GUIDANCE_BY_CODE = {
+    PLAYER_BLACKLISTED: {
+        cause: "該玩家在活動黑名單中",
+        next: "此玩家無法領取紅利，請確認是否為預期結果，或先將玩家移出黑名單。",
+    },
+    TOKEN_ERROR: {
+        cause: "後台登入失敗",
+        next: "請確認後台測試帳號密碼與環境是否正常。",
+    },
+    CLAIM_NOT_FOUND: {
+        cause: "找不到待審核的紅利單",
+        next: "請確認玩家帳號、活動 ID 與今日是否已有派發紀錄。",
+    },
+    APPROVE_FAILED: {
+        cause: "審核紅利失敗",
+        next: "請查看後台審核紀錄或 server log。",
+    },
+    PLATFORM_NOT_SUPPORTED: {
+        cause: "選擇的平台不支援",
+        next: "請改選 gi8viet、huamei 等支援平台。",
+    },
+};
 
+function getFailureGuidance(data) {
+    if (data?.code && FAILURE_GUIDANCE_BY_CODE[data.code]) {
+        return FAILURE_GUIDANCE_BY_CODE[data.code];
+    }
+    const msg = String(data?.message || "").toLowerCase();
+    // ...下面原本的 message 比對邏輯不變...
+}
 function getFailureGuidance(message) {
+    if (data?.code && FAILURE_GUIDANCE_BY_CODE[data.code]) {
+        return FAILURE_GUIDANCE_BY_CODE[data.code];
+    }
     const msg = String(message || "").toLowerCase();
     if (msg.includes("帳號") || msg.includes("密碼") || msg.includes("password") || msg.includes("401")) {
         return {
@@ -2927,7 +2959,7 @@ function getFailureGuidance(message) {
 }
 
 function renderFailureResult(data) {
-    const guidance = getFailureGuidance(data.message);
+    const guidance = getFailureGuidance(data);
     return `
         <div class="result-error-panel">
             <p class="result-error-message">${escapeHtml(data.message || "未知錯誤")}</p>

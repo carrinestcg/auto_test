@@ -123,9 +123,8 @@ def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
-                result, promoType = Manual_create_single_with_confirm.main(username,promotion,platform,amount, ticket_id)
-                return result, promoType
-        return False, None
+                return Manual_create_single_with_confirm.main(username, promotion, platform, amount, ticket_id)
+        return {"success": False, "code": "PLATFORM_NOT_SUPPORTED", "message": "不支援的平台", "promoType": None}
 
 def manual_create_7_type_tcket(username,promotion,platform_type):
         print(platform_type)
@@ -855,29 +854,33 @@ def SameTimeReceiveTicket_api():
     
 @python_flask.route('/api/MANUAL_CREATE_SINGLE_CONFIRM',methods=['POST']) #手動紅利派發API
 def api_manual_create_bonus():
-    data=request.json
+    data = request.get_json(silent=True) or {}
     promotion_id=data["promotion_id"]
-    username=data["username"]
-    platforms=data["platforms"]  
+    username = (data.get("username") or "").strip()
+    if not username:
+        return jsonify({"success": False, "code": "INVALID_PARAM", "message": "請填寫玩家帳號"}), 400
+    platforms = data.get("platforms") or ["gi8viet"] 
     amount=data["amount"]
-    promotion_id=data["promotion_id"]
     ticket_id=data["ticket_id"]
-    result, promoType = manual_create_bonus(username, platforms, promotion_id, ticket_id, amount)
-    if result:
-        return jsonify(
-            {
-                "success": True,
-                "message": "Trigger API Successfully",
-                "promoType": promoType,
-            }
-        )
-    return jsonify(
-        {
-            "success": False,
-            "message": "Failed to create bonus",
-            "promoType": promoType,
-        }
-    )
+    result = manual_create_bonus(username, platforms, promotion_id, ticket_id, amount)
+    if not isinstance(result, dict):
+        logging.error("manual_create_bonus 回傳格式異常: %s", result)
+        return jsonify({"success": False, "code": "UNKNOWN_ERROR",
+                        "message": "內部回傳格式異常", "promoType": None}), 500
+    if result["success"]:
+        return jsonify({
+            "success": True,
+            "code": "OK",
+            "message": "Trigger API Successfully",
+            "promoType": result.get("promoType"),
+        }), 200
+        
+    return jsonify({
+        "success": False,
+        "code": result["code"],
+        "message": result["message"],
+        "promoType": result.get("promoType"),
+    }), 400
         
         
 @python_flask.route('/api/MANUAL_BATCH',methods=['POST']) #手動紅利派發API
