@@ -115,7 +115,7 @@ def deposit(token,merchantCode):
         return []
 def approve_deposit(token,deposit_Info, requestType=None):
     try:
-        API_URL="http://10.81.1.17:7001/mcs-console/internal/v3/deposit/processAndApprove"
+        API_URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-v3-deposit-processAndApprove"
         if deposit_Info.get("requestAmount") is None:
             logging.error(f"充值ID: {deposit_Info['depositId']} 缺少存款金額，無法處理")
             return False
