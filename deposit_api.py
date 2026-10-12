@@ -169,7 +169,7 @@ def batch_approve(merchantCode, requestType=None):
 
         for index, deposit_Info in enumerate(deposit_list,1):
             logging.info(f"正在處理第{index}/{total_count}的充值list,金額{deposit_Info['requestAmount']}")
-            if approve_deposit(token,deposit_Info,merchantCode, requestType):
+            if approve_deposit(token,deposit_Info, requestType):
                 success_count+=1
             else:
                 fail_count+=1
