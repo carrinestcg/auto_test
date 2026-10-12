@@ -204,7 +204,7 @@ def Confirm_Customer_bonus(token,Customerid:int,claimid:int,merchant:str,promoTy
             
     except requests.RequestException as e:
         logging.error(f"HTTP錯誤 {e}")
-        return False
+        return False, "HTTP_ERROR", str(e)
     except ValueError as e:
         logging.error(f"JSON解析錯誤: {e}")
         return False

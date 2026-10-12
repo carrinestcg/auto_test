@@ -22,6 +22,7 @@ def header(token,merchantCode):
     "platform": "TCG"
     
     }
+
 def get_token():
     login_url="http://sit-admin2.tcg.com/tac/api/login/password"
     payload={
@@ -52,7 +53,16 @@ def get_token():
     token_data=requests_data.json()
     return token_data.get("token")
 
-
+def header_backend(token):
+    return{
+    "Accept": "application/json",
+    "operatorId": "2113085",
+    "operatorName": "carrine01",
+    "operatorIp": "1.1.1.1",
+    "language": "CN",
+    "authorization":token,
+    "merchantCode": "gi8viet"
+    }
 def deposit(token,merchantCode):
     API_URL = "http://sit-admin2.tcg.com/tac/api/relay/get/mcs-player-deposit-search" 
     start_time = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d 00:00:00")
@@ -103,9 +113,9 @@ def deposit(token,merchantCode):
     except Exception as e:
         logging.error(f"狀態碼: {response.status_code}",e)
         return []
-def approve_deposit(token,deposit_Info,merchantCode, requestType=None):
+def approve_deposit(token,deposit_Info, requestType=None):
     try:
-        API_URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-v3-deposit-processAndApprove"
+        API_URL="http://10.81.1.17:7001/mcs-console/internal/v3/deposit/processAndApprove"
         if deposit_Info.get("requestAmount") is None:
             logging.error(f"充值ID: {deposit_Info['depositId']} 缺少存款金額，無法處理")
             return False
@@ -123,7 +133,7 @@ def approve_deposit(token,deposit_Info,merchantCode, requestType=None):
         "merchantCode": "gi8viet",
         "isProcessAndApprove": True
         }
-        headers = header(token,merchantCode)
+        headers = header_backend(token)
         cookies = {
         "language": "zh_CN"
         }
@@ -137,7 +147,7 @@ def approve_deposit(token,deposit_Info,merchantCode, requestType=None):
             logging.info(f"成功批准ID: {deposit_Info['depositId']} , 金額: {deposit_Info['requestAmount']}")
             return True
         else:
-            logging.info(f"未成功批准ID: {deposit_Info['depositId']}")
+            logging.error(f"未成功批准ID: {deposit_Info['depositId']} , 金額: {deposit_Info['requestAmount']} , 回應: {response_data}")
             return False
     except Exception as e:
         logging.error(f"處理充值 ID: {deposit_Info['depositId']} 時發生錯誤: {e}")
