@@ -113,7 +113,7 @@ def deposit(token,merchantCode):
     except Exception as e:
         logging.error(f"狀態碼: {response.status_code}",e)
         return []
-def approve_deposit(token,deposit_Info, requestType=None):
+def approve_deposit(token,deposit_Info, merchantCode,requestType=None):
     try:
         API_URL="http://sit-admin2.tcg.com/tac/api/relay/post/mcs-v3-deposit-processAndApprove"
         if deposit_Info.get("requestAmount") is None:
@@ -130,7 +130,7 @@ def approve_deposit(token,deposit_Info, requestType=None):
         "operatorRemark": None,
         "internalRemark": None,
         "version": 1,
-        "merchantCode": "gi8viet",
+        "merchantCode": merchantCode,
         "isProcessAndApprove": True
         }
         headers = header_backend(token)
@@ -169,7 +169,7 @@ def batch_approve(merchantCode, requestType=None):
 
         for index, deposit_Info in enumerate(deposit_list,1):
             logging.info(f"正在處理第{index}/{total_count}的充值list,金額{deposit_Info['requestAmount']}")
-            if approve_deposit(token,deposit_Info, requestType):
+            if approve_deposit(token,deposit_Info, merchantCode, requestType):
                 success_count+=1
             else:
                 fail_count+=1
