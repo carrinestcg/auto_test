@@ -1186,10 +1186,20 @@ function toggleTicket() {
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
-    const requirePromotion_id = document.getElementById("frontend-checkbox_manual").isChecked() ||document.getElementById('frontend-checkbox_7_Ticket').isChecked()||document.getElementById('Extra_Reward_api').isChecked()||document.getElementById('Achievement_bonus').isChecked()||document.getElementById('MANUAL_SIGN').isChecked()||document.getElementById('QUEST_bonus').isChecked()||document.getElementById('Activity_bonus').isChecked()||document.getElementById('Schedule_manual_bonus').isChecked() || isDiscountCouponDepositMode();
-    
-    promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
+    if (!promotion_id_Input) return;
 
+    const requirePromotion_id =
+        isChecked("frontend-checkbox_manual") ||
+        isChecked("frontend-checkbox_7_Ticket") ||
+        isChecked("Extra_Reward_api") ||
+        isChecked("Achievement_bonus") ||
+        isChecked("MANUAL_SIGN") ||
+        isChecked("QUEST_bonus") ||
+        isChecked("Activity_bonus") ||
+        isChecked("Schedule_manual_bonus") ||
+        isDiscountCouponDepositMode();
+
+    promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
 }
 function toggleRoundID(){
     const Compensation=document.getElementById("Compensation_api");
@@ -2721,23 +2731,8 @@ function showResultPopup(data, options = {}) {
         tabBar.classList.toggle("hidden", !isSuccess);
     }
 
-    const summaryResultTypes = [
-        "postcard",
-        "manual_single_confirm",
-        "verify_player_info",
-        "verify_player_info_multi",
-        "verify_mobile",
-        "verify_id",
-        "verify_name",
-        "customer_id",
-        "customer_name",
-        "same_time_receive_ticket",
-    ];
-    const showSummaryPanel = isSuccess || summaryResultTypes.includes(resultType);
 
-    body.innerHTML = showSummaryPanel
-        ? renderFormattedResult(data, resultType)
-        : renderFailureResult(data);
+    body.innerHTML = buildResultBodyHtml(data);
 
     setupResultModalInteractions(body);
 
@@ -2922,18 +2917,12 @@ const FAILURE_GUIDANCE_BY_CODE = {
     },
 };
 
+
 function getFailureGuidance(data) {
     if (data?.code && FAILURE_GUIDANCE_BY_CODE[data.code]) {
         return FAILURE_GUIDANCE_BY_CODE[data.code];
     }
     const msg = String(data?.message || "").toLowerCase();
-    // ...下面原本的 message 比對邏輯不變...
-}
-function getFailureGuidance(message) {
-    if (data?.code && FAILURE_GUIDANCE_BY_CODE[data.code]) {
-        return FAILURE_GUIDANCE_BY_CODE[data.code];
-    }
-    const msg = String(message || "").toLowerCase();
     if (msg.includes("帳號") || msg.includes("密碼") || msg.includes("password") || msg.includes("401")) {
         return {
             cause: "帳號或密碼可能有誤",

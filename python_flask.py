@@ -742,7 +742,7 @@ def api_Deposit():
         return jsonify({"success": False, "message": f"Unknown type: {verify_type}"}), 400
 
     return jsonify({
-        "success": True,
+        "success": bool(result),
         "message": f"Trigger {label} {'Successfully' if result else 'Failed'}",
     })
 
