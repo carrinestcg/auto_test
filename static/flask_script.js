@@ -2100,9 +2100,13 @@ function runSelectScript(){
             break;
 
         case "MANUAL_CREATE_SINGLE_CONFIRM":
+            const rawTickets = document.getElementById("ticket_id")?.value.trim() || "";
+            const ticket_id_list = rawTickets
+                ? rawTickets.split(/[\s,]+/).filter(Boolean)
+                : [];
             extraData = {
                 promotion_id: getFormPromotionIdValue(),
-                ticket_id: document.getElementById("ticket_id").value,
+                ticket_id_list,
                 amount: getFormAmountValue(),
             };
             break;

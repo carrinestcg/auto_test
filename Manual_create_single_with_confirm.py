@@ -221,23 +221,35 @@ def main(username,promotionid,platform,amount, ticket_id=None):
     
     bonusAmount=1000
     bonusPointAmount=20
-
-    ok, code, msg = create_bonus(
-        token, username, bonusAmount=1000, bonusPointAmount=20,
-        ticketId=ticket_id, amount=amount, prmotion_id=promotionid, merchant=platform
-    )
-    if not ok: 
-        return {"success": False, "code": code, "message": msg, "promoType": None}
-    
-    Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
-    if Customerid is not None and claimid is not None:
-        if Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid):
-            return {"success": True, "code": "OK", "message": "發放並審核成功", "promoType": promoType}
-        return {"success": False, "code": "APPROVE_FAILED",
-            "message": "審核失敗", "promoType": promoType}
+    last_result = None  
+    if ticket_id is None:
+        ticket_list = [None]
+    elif isinstance(ticket_id, (list, tuple)):
+        ticket_list = list(ticket_id) or [None]
     else:
-        logging.error("沒有拿到ID")
-        return {"success": False, "code": "CLAIM_NOT_FOUND", "message": "未找到客戶或申報ID", "promoType": None}
+        ticket_list = [ticket_id]
+    
+    for ticket in ticket_list:
+        
+        ok, code, msg = create_bonus(
+            token, username, bonusAmount=1000, bonusPointAmount=20,
+            ticketId=ticket, amount=amount, prmotion_id=promotionid, merchant=platform
+        )
+        if not ok: 
+            return {"success": False, "code": code, "message": msg, "promoType": None}
+    
+        Customerid,claimid,promoType = Search_Customer_bonus(token,username,platform)
+        
+        if Customerid is not None and claimid is not None:
+            if Confirm_Customer_bonus(token,Customerid,claimid,platform,promoType,promotionid):
+                last_result = {"success": True, "code": "OK", "message": "發放並審核成功", "promoType": promoType}   # 改：不 return
+                continue 
+            return {"success": False, "code": "APPROVE_FAILED",
+                "message": "審核失敗", "promoType": promoType}
+        else:
+            logging.error("沒有拿到ID")
+            return {"success": False, "code": "CLAIM_NOT_FOUND", "message": "未找到客戶或申報ID", "promoType": None}
+    return last_result
         
      
      

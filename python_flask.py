@@ -861,7 +861,7 @@ def api_manual_create_bonus():
         return jsonify({"success": False, "code": "INVALID_PARAM", "message": "請填寫玩家帳號"}), 400
     platforms = data.get("platforms") or ["gi8viet"] 
     amount=data["amount"]
-    ticket_id=data["ticket_id"]
+    ticket_id=data["ticket_id_list"] #改成list
     result = manual_create_bonus(username, platforms, promotion_id, ticket_id, amount)
     if not isinstance(result, dict):
         logging.error("manual_create_bonus 回傳格式異常: %s", result)
