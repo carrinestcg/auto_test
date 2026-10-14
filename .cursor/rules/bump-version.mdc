@@ -1,0 +1,18 @@
+---
+description: 改完產品程式後要升 patch 版號與更新紀錄
+alwaysApply: true
+---
+
+# 改完程式要升版
+
+改到產品程式（腳本、頁面、樣式、API）後，同一輪用 `bump_version.py` 升 **patch**。只回答問題、沒改程式時不升版。
+
+版號取 **git tag 與 `version.json` 較高者** 再加一。`resolve_current_version()` 只看 git tag，tag 落後時必須用 `--version`，不要從舊 tag 往下蓋。
+
+變更還沒 commit 時加 `--no-tag`。tag 會指到目前 HEAD，畫面上的發行日也會被舊 commit 蓋掉。使用者明確要求發版或 commit 後，才建立 git tag。不要為了升版自行 commit。
+
+```bash
+python3 bump_version.py --no-tag --version 1.5.1 "歷史紀錄最多保留 20 筆、7 天，並可一鍵清空"
+```
+
+更新紀錄用一句中文寫這次改了什麼。`--minor`、`--major` 只在使用者指定時使用。

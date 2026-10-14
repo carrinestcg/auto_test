@@ -418,13 +418,35 @@ body.is-resizing-panel * {
     padding: 14px 16px;
 }
 
+#right-panel-history {
+    overflow: hidden;
+    gap: 0.75rem;
+}
+
+.run-history-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.run-history-hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
 .run-history-list {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
+    flex: 1;
+    min-height: 0;
     flex-direction: column;
     gap: 0.5rem;
+    overflow-y: auto;
 }
 
 .run-history-item {

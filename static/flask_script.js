@@ -2427,7 +2427,8 @@ async function runScriptApi(scriptName, payload) {
 }
 
 const RUN_HISTORY_KEY = "auto_test_run_history";
-const RUN_HISTORY_LIMIT = 40;
+const RUN_HISTORY_LIMIT = 20;
+const RUN_HISTORY_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const RIGHT_PANEL_WIDTH_KEY = "auto_test_right_panel_width";
 const RIGHT_PANEL_MIN_WIDTH = 280;
 const RIGHT_PANEL_MAX_WIDTH = 720;
@@ -2436,6 +2437,7 @@ function initRightPanel() {
     document.querySelectorAll(".right-panel-tab").forEach((btn) => {
         btn.addEventListener("click", () => switchRightPanelTab(btn.dataset.rightTab));
     });
+    document.getElementById("right-panel-history-clear")?.addEventListener("click", clearRunHistory);
     initRightPanelResize();
     renderRunHistoryList();
 }
@@ -2578,10 +2580,43 @@ function appendRunLog(text, level = "info") {
     el.scrollTop = el.scrollHeight;
 }
 
+function normalizeRunHistory(items) {
+    const cutoff = Date.now() - RUN_HISTORY_MAX_AGE_MS;
+    const kept = [];
+    let changed = !Array.isArray(items);
+    const source = Array.isArray(items) ? items : [];
+
+    for (const item of source) {
+        if (!item || typeof item !== "object") {
+            changed = true;
+            continue;
+        }
+        let savedAt = item.savedAt;
+        if (!Number.isFinite(savedAt)) {
+            const parsed = Date.parse(item.time || "");
+            savedAt = Number.isFinite(parsed) ? parsed : Date.now();
+            changed = true;
+        }
+        if (savedAt < cutoff) {
+            changed = true;
+            continue;
+        }
+        kept.push(savedAt === item.savedAt ? item : { ...item, savedAt });
+        if (kept.length === RUN_HISTORY_LIMIT) break;
+    }
+    if (source.length !== kept.length) changed = true;
+    return { items: kept, changed };
+}
+
 function loadRunHistory() {
     try {
         const raw = localStorage.getItem(RUN_HISTORY_KEY);
-        return raw ? JSON.parse(raw) : [];
+        const parsed = raw ? JSON.parse(raw) : [];
+        const { items, changed } = normalizeRunHistory(parsed);
+        if (changed) {
+            localStorage.setItem(RUN_HISTORY_KEY, JSON.stringify(items));
+        }
+        return items;
     } catch (e) {
         return [];
     }
@@ -2589,14 +2624,22 @@ function loadRunHistory() {
 
 function saveRunHistory(items) {
     try {
-        localStorage.setItem(RUN_HISTORY_KEY, JSON.stringify(items.slice(0, RUN_HISTORY_LIMIT)));
+        const { items: kept } = normalizeRunHistory(items);
+        localStorage.setItem(RUN_HISTORY_KEY, JSON.stringify(kept));
     } catch (e) {}
 }
 
 function pushRunHistory(entry) {
     const items = loadRunHistory();
-    items.unshift(entry);
+    items.unshift({ ...entry, savedAt: Date.now() });
     saveRunHistory(items);
+    renderRunHistoryList();
+}
+
+function clearRunHistory() {
+    try {
+        localStorage.removeItem(RUN_HISTORY_KEY);
+    } catch (e) {}
     renderRunHistoryList();
 }
 
