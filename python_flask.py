@@ -67,7 +67,7 @@ def api_version():
     return jsonify(load_version_info())
 def auto_create_member_player(platform_type,username,amount):
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 try:
                     result =asyncio.run(async_create_main(platform,username,amount))
                     if isinstance(result, tuple) and len(result) == 2:
@@ -80,7 +80,7 @@ def auto_create_member_player(platform_type,username,amount):
         return 0, None
 def auto_create_player(platform_type,username_list):
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 try:
                     result = NEW_REGISTER_API.main(platform, username_list)
                     if isinstance(result, dict):
@@ -116,25 +116,25 @@ def auto_create_player(platform_type,username_list):
 
 def batch_approve_func(deposit_platform_type, requestType=None):
         for platform in deposit_platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 batch_approve(platform, requestType=requestType)
 
 def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 return Manual_create_single_with_confirm.main(username, promotion, platform, amount, ticket_id)
         return {"success": False, "code": "PLATFORM_NOT_SUPPORTED", "message": "不支援的平台", "promoType": None}
 
 def manual_create_7_type_tcket(username,promotion,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 SIGLE_PROMO_7_TICKET.main(username,promotion,platform)
 
 def auto_create_ticket_func(ticket_type,ticket_input,platform_type):
     for platform in platform_type:
-        if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+        if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
             for ticket in ticket_type:
                 if ticket in ['CASH','FREE_SPIN','TEMU']:
 
@@ -167,20 +167,20 @@ def auto_create_ticket_func(ticket_type,ticket_input,platform_type):
 def frontend_receive_reward(username,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 Frontend_receive_reward.main(username,platform)
 
 def frontend_receive_ticket(username,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 result = Frontend_receive_ticket.main(username,platform)
                 return result
 
 def get_customer_data(username,platform_type, Type):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 customer_detail=Customer_id.main(username,platform, Type)
                 return customer_detail
         return None,None,None
@@ -188,14 +188,14 @@ def get_customer_data(username,platform_type, Type):
 def trigger_APP_download_API(platform_type,username):
         print(platform_type)
         for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 result=App_download_API.app_download_main(platform,username)
                 return result
 isSuccess = False
 def trigger_change_password_API(username,platform_type):
         print(platform_type)
         for platform in platform_type:
-            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1'):
+            if platform in ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 isSuccess=Change_password.main(username,platform)
         return isSuccess
  

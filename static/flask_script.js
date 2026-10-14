@@ -25,8 +25,8 @@ const PLATFORM_DEFAULT_PROMOTION_ID = {
 function getSelectedPlatforms() {
     const select = document.getElementById("frontend-checkbox_manual_platform");
     if (!select) return ["gi8viet"];
-    const platforms = Array.from(select.selectedOptions).map((opt) => opt.value);
-    return platforms.length ? platforms : ["gi8viet"];
+    const selected = Array.from(select.selectedOptions).map((opt) => opt.value);
+    return [selected[0] || "gi8viet"];
 }
 
 function getDefaultPromotionIdForPlatform(platform) {
@@ -206,7 +206,7 @@ function syncPlatformChipsFromSelect() {
         const option = Array.from(select.options).find((opt) => opt.value === value);
         const selected = !!option?.selected;
         chip.classList.toggle("is-selected", selected);
-        chip.setAttribute("aria-pressed", selected ? "true" : "false");
+        chip.setAttribute("aria-checked", selected ? "true" : "false");
     });
 }
 
@@ -224,28 +224,33 @@ function initPlatformChipPicker() {
         chip.className = "platform-chip";
         chip.dataset.value = option.value;
         chip.textContent = option.textContent.trim() || option.value;
-        chip.setAttribute("aria-pressed", option.selected ? "true" : "false");
+        chip.setAttribute("role", "radio");
+        chip.setAttribute("aria-checked", option.selected ? "true" : "false");
         if (option.selected) {
             chip.classList.add("is-selected");
         }
         chip.addEventListener("click", () => {
-            option.selected = !option.selected;
-            syncPlatformChipsFromSelect();
-            syncPromotionIdForPlatformSelection();
+            if (option.selected) return;
+            selectSinglePlatform(option.value);
             toggleInput();
         });
         picker.appendChild(chip);
     });
 }
 
-function setPlatformSelection(platforms) {
+function selectSinglePlatform(value) {
     const select = document.getElementById("frontend-checkbox_manual_platform");
-    if (!select || !platforms?.length) return;
-    Array.from(select.options).forEach((option) => {
-        option.selected = platforms.includes(option.value);
-    });
+    if (!select || !value) return;
+    const chosen = Array.from(select.options).find((option) => option.value === value)
+        || select.querySelector('option[value="gi8viet"]');
+    if (chosen) chosen.selected = true;
     syncPlatformChipsFromSelect();
     syncPromotionIdForPlatformSelection();
+}
+
+function setPlatformSelection(platforms) {
+    if (!platforms?.length) return;
+    selectSinglePlatform(platforms[0]);
 }
 
 function fillScenarioPastDateTime() {
@@ -2066,17 +2071,13 @@ function runSelectScript(){
     }
     
     const username=document.getElementById("username").value;
-    const platformSelect=document.getElementById("frontend-checkbox_manual_platform")
-    let platforms=Array.from(platformSelect.selectedOptions).map(opt=>opt.value)
+    const platforms = getSelectedPlatforms();
     const checkSelectScript=Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el=>el.value);
     let ticket_select = document.getElementById("frontend-checkbox_select");
     let ticket_types=Array.from(ticket_select.selectedOptions).map(opt=>opt.value)
     console.log("checkSelectScript:", checkSelectScript);
     console.log("ticket_types:", ticket_types);
     console.log("platforms:", platforms);
-    if (platforms.length==0){
-        platforms=["gi8viet"];
-    }
 
     (async () => {
     if (checkSelectScript.length) {
