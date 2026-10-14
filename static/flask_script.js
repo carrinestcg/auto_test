@@ -15,6 +15,9 @@ const DEFAULT_FORM_AMOUNT = "1";
 const DEFAULT_PROMOTION_ID = "4023101";
 const PLATFORM_DEFAULT_PROMOTION_ID = {
     jkscus1: "4616092",
+    huamei: "4695104",
+    tcgdemov3: "4699138",
+    rollbet: "4683092",
 };
 
 function getSelectedPlatforms() {
