@@ -18,6 +18,8 @@ const PLATFORM_DEFAULT_PROMOTION_ID = {
     huamei: "4695104",
     tcgdemov3: "4699138",
     rollbet: "4683092",
+    lodibet: "4601095",
+    meilin: "4470091",
 };
 
 function getSelectedPlatforms() {
