@@ -13,7 +13,6 @@ import Customer_id
 import auto_create_ticket
 import Manual_create_single_with_confirm
 import SameTimeLogin_manager
-import SIGLE_PROMO_7_TICKET
 import PLAYER_RANK
 import Condition_create_bonus
 import ALL_deposit_promotion
@@ -125,12 +124,6 @@ def manual_create_bonus(username,platform_type,promotion,ticket_id,amount):
             if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
                 return Manual_create_single_with_confirm.main(username, promotion, platform, amount, ticket_id)
         return {"success": False, "code": "PLATFORM_NOT_SUPPORTED", "message": "不支援的平台", "promoType": None}
-
-def manual_create_7_type_tcket(username,promotion,platform_type):
-        print(platform_type)
-        for platform in platform_type:
-            if platform in  ('gi8viet','huamei','tcgdemov3','rollbet','lodibet','jkscus1','meilin'):
-                SIGLE_PROMO_7_TICKET.main(username,promotion,platform)
 
 def auto_create_ticket_func(ticket_type,ticket_input,platform_type):
     for platform in platform_type:
@@ -806,20 +799,6 @@ def api_auto_create_ticket_func():
     ticket_input=data.get("ticket_input","")
     platforms=data["platforms"]  
     auto_create_ticket_func(ticket_type,ticket_input,platforms)
-    
-    return jsonify(
-        {
-            "success": True,
-            "message": "Trigger API Successfully"
-            }
-        )
-@python_flask.route('/api/SIGLE_PROMO_7_TICKET',methods=['POST']) #創建7種票券API
-def api_auto_create_7_ticket():
-    data=request.json
-    promotion_id=data["promotion_id"]
-    username=data["username"]
-    platforms=data["platforms"]  
-    manual_create_7_type_tcket(username,promotion_id,platforms)
     
     return jsonify(
         {

@@ -672,8 +672,7 @@ const SCRIPTS_NEED_USERNAME = [
     "FRONTEND_DEPOSIT",         // frontend-checkbox
     "FIXED_DEPOSIT",            // frontend-fix_deposit
     "Customer_id",              // frontend-checkbox_id
-    "MANUAL_CREATE_SINGLE_CONFIRM", // frontend-checkbox_manual
-    "SIGLE_PROMO_7_TICKET",     // frontend-checkbox_7_Ticket
+    "MANUAL_CREATE_SINGLE_CONFIRM", // frontend-checkbox_manual   
     "PLAYER_RANK",              // frontend-player-rank
     "PROMOCODE_BATCH",          // frontend-promo-batch
     "BONUS_BATCH",              // frontend-bonus-batch
@@ -2089,11 +2088,6 @@ function runSelectScript(){
         let requestPayload = null;
 
     switch (scriptName) {
-        case "SIGLE_PROMO_7_TICKET":
-            extraData = {
-                promotion_id: getFormPromotionIdValue(),
-            };
-            break;
 
         case "SameTime_ReceiveTicket":
             extraData = {
