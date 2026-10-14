@@ -1183,6 +1183,8 @@ function toggleTicket() {
     if (ticket_select) ticket_select.classList.toggle("hidden", !showTicketSelect);
     if (ticket_input) ticket_input.classList.toggle("hidden", !(showTicketSelect && hasSelectTicket));
     if (ticket_id_input) ticket_id_input.classList.toggle("hidden", !requireTicket_input);
+    const ticketHint = document.getElementById("ticket_id_hint");
+    if (ticketHint) ticketHint.classList.toggle("hidden", !(manual_cb && manual_cb.checked));
 }
 function togglePromotion() {
     const promotion_id_Input = document.getElementById("promotion_id-input-div");
