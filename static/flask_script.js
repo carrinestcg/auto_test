@@ -696,7 +696,8 @@ const SCRIPTS_NEED_USERNAME = [
     "test_Extra_bonus",
     "MANUAL_SINGLE",
     "MANUAL_BATCH",
-    "SameTime_ReceiveTicket"
+    "SameTime_ReceiveTicket",
+    "Deposit_data"
 ];
 
 /** 勾選這些腳本（且無其他需要 username 的腳本）時，隱藏 username / password */
@@ -2101,6 +2102,12 @@ function runSelectScript(){
             };
             break;
 
+        case "Deposit_data":
+            extraData = {
+                platforms: platforms,
+            };
+            break;
+
         case "MANUAL_CREATE_SINGLE_CONFIRM":
             const rawTickets = document.getElementById("ticket_id")?.value.trim() || "";
             const ticket_id_list = rawTickets
@@ -2684,6 +2691,7 @@ function buildResultBodyHtml(data) {
         "customer_id",
         "customer_name",
         "same_time_receive_ticket",
+        "deposit_data",
     ];
     const showSummaryPanel = isSuccess || (summaryResultTypes.includes(resultType) && !data.code);
     return showSummaryPanel ? renderFormattedResult(data, resultType) : renderFailureResult(data);
@@ -2929,6 +2937,14 @@ function detectResultType(data) {
     }
     const report = data.data;
     if (!report) return "generic";
+    if (
+        report &&
+        typeof report === "object" &&
+        !Array.isArray(report) &&
+        ("deposit" in report || "deposit_counts" in report)
+    ) {
+        return "deposit_data";
+    }
     if (report.customer_id != null && String(report.customer_id).trim() !== "") {
         return Number(data.type) === 2 ? "customer_name" : "customer_id";
     }
@@ -3377,6 +3393,14 @@ function renderVerifyPlayerInfoMultiResult(data) {
     return `${summary}<div class="result-task-list">${items}</div>`;
 }
 
+function renderDepositDataResult(data) {
+    const row = data.data || {};
+    return renderStatsBar([
+        { label: "存款金額", numeric: row.deposit ?? 0 },
+        { label: "存款次數", numeric: row.deposit_counts ?? 0 },
+    ]);
+}
+
 function renderCustomerIdResult(data) {
     const customerId =
         data.data?.customer_id != null && String(data.data.customer_id).trim() !== ""
@@ -3442,6 +3466,9 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "customer_id") {
         return renderCustomerIdResult(data);
+    }
+    if (resultType === "deposit_data") {
+        return renderDepositDataResult(data);
     }
     if (resultType === "customer_name") {
         return renderCustomerNameResult(data);

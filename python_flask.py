@@ -46,6 +46,7 @@ from version_util import load_version_info
 import SameTimeReceiveTicket
 import Backend_Deposit
 import create_free_spin_event
+import DEPOSIT_DATA
 
 
 logging.basicConfig(
@@ -1062,6 +1063,25 @@ def api_all_deposit_promotion():
 def api_manual_single():
     MANUAL_SINGLE.main()
     return jsonify({"success": True, "message": "Trigger API Successfully"})
+
+@python_flask.route("/api/Deposit_data", methods=["POST"])
+def api_deposit_data():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    platforms = data.get("platforms") or []
+    if isinstance(platforms, str):
+        platforms = [platforms]
+    merchant_code = ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
+    if not username or not merchant_code:
+        return jsonify({"success": False, "message": "請提供玩家帳號與平台"}), 400
+    row = DEPOSIT_DATA.get_odsdb_data(username, merchant_code)
+    if not row:
+        return jsonify({"success": False, "message": "查無存款統計"}), 404
+    return jsonify({
+        "success": True,
+        "message": "存款統計查詢完成",
+        "data": row,
+    })
 
 @python_flask.route("/api/Create_FreeSpin_Event", methods=["POST"])
 def api_create_free_spin_event():
