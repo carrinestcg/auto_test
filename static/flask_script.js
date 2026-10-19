@@ -697,7 +697,8 @@ const SCRIPTS_NEED_USERNAME = [
     "MANUAL_SINGLE",
     "MANUAL_BATCH",
     "SameTime_ReceiveTicket",
-    "Deposit_data"
+    "Deposit_data",
+    "bet_data"
 ];
 
 /** 勾選這些腳本（且無其他需要 username 的腳本）時，隱藏 username / password */
@@ -2108,6 +2109,12 @@ function runSelectScript(){
             };
             break;
 
+        case "bet_data":
+            extraData = {
+                platforms: platforms,
+            };
+            break;
+
         case "MANUAL_CREATE_SINGLE_CONFIRM":
             const rawTickets = document.getElementById("ticket_id")?.value.trim() || "";
             const ticket_id_list = rawTickets
@@ -2692,6 +2699,7 @@ function buildResultBodyHtml(data) {
         "customer_name",
         "same_time_receive_ticket",
         "deposit_data",
+        "bet_data",
     ];
     const showSummaryPanel = isSuccess || (summaryResultTypes.includes(resultType) && !data.code);
     return showSummaryPanel ? renderFormattedResult(data, resultType) : renderFailureResult(data);
@@ -2907,6 +2915,9 @@ function detectResultType(data) {
     if (data.kind === "same_time_receive_ticket") {
         return "same_time_receive_ticket";
     }
+    if (data.kind === "bet_data") {
+        return "bet_data";
+    }
     if (data.kind === "create_bug") {
         return "create_qa_task";
     }
@@ -2944,6 +2955,14 @@ function detectResultType(data) {
         ("deposit" in report || "deposit_counts" in report)
     ) {
         return "deposit_data";
+    }
+    if (
+        report &&
+        typeof report === "object" &&
+        !Array.isArray(report) &&
+        ("bet_amount" in report || "RNG" in report || "SPORTS" in report || "PVP" in report)
+    ) {
+        return "bet_data";
     }
     if (report.customer_id != null && String(report.customer_id).trim() !== "") {
         return Number(data.type) === 2 ? "customer_name" : "customer_id";
@@ -3075,11 +3094,18 @@ function renderStatusBadge(status) {
 
 function renderStatsBar(cards, options = {}) {
     const colsClass =
-        options.columns === 6 ? " is-cols-6" : options.columns === 4 ? " is-cols-4" : "";
+        options.columns === 6
+            ? " is-cols-6"
+            : options.columns === 4
+              ? " is-cols-4"
+              : options.columns === 2
+                ? " is-cols-2"
+                : "";
+    const usePrimary = options.primary !== false;
     const items = cards
         .map(
             (card, index) => `
-        <div class="result-stat${index === 0 ? " result-stat-primary" : ""}">
+        <div class="result-stat${usePrimary && index === 0 ? " result-stat-primary" : ""}">
             <span class="result-stat-label">${escapeHtml(card.label)}</span>
             ${
                 card.numeric != null
@@ -3401,6 +3427,22 @@ function renderDepositDataResult(data) {
     ]);
 }
 
+function renderBetDataResult(data) {
+    const row = data.data || {};
+    return renderStatsBar(
+        [
+            { label: "總有效投注", numeric: row.bet_amount ?? 0, dimZero: true },
+            { label: "棋牌 PVP", numeric: row.PVP ?? 0, dimZero: true },
+            { label: "電子 RNG", numeric: row.RNG ?? 0, dimZero: true },
+            { label: "真人 LIVE", numeric: row.LIVE ?? 0, dimZero: true },
+            { label: "電子彩票", numeric: row.ELOTT ?? 0, dimZero: true },
+            { label: "彩票 LOTT", numeric: row.LOTT ?? 0, dimZero: true },
+            { label: "捕魚 FISH", numeric: row.FISH ?? 0, dimZero: true },
+            { label: "體育 SPORTS", numeric: row.SPORTS ?? 0, dimZero: true },
+        ],
+        { columns: 2, primary: false }
+    );
+}
 function renderCustomerIdResult(data) {
     const customerId =
         data.data?.customer_id != null && String(data.data.customer_id).trim() !== ""
@@ -3469,6 +3511,9 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "deposit_data") {
         return renderDepositDataResult(data);
+    }
+    if (resultType === "bet_data") {
+        return renderBetDataResult(data);
     }
     if (resultType === "customer_name") {
         return renderCustomerNameResult(data);

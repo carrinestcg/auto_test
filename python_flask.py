@@ -1083,6 +1083,30 @@ def api_deposit_data():
         "data": row,
     })
 
+@python_flask.route("/api/bet_data", methods=["POST"])
+def api_bet_data():
+    data = request.get_json(silent=True) or {}
+    username = (data.get("username") or "").strip()
+    platforms = data.get("platforms") or []
+    if isinstance(platforms, str):
+        platforms = [platforms]
+    merchant_code = ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
+    if not username or not merchant_code:
+        return jsonify({"success": False, "message": "請提供玩家帳號與平台"}), 400
+    customer_id = Customer_id.main(username, merchant_code, 1)
+    if not customer_id:
+        return jsonify({"success": False, "message": "查無玩家 ID"}), 404
+    row = DEPOSIT_DATA.get_odsdb_data_bet(customer_id)
+    if not row:
+        return jsonify({"success": False, "message": "查無投注統計"}), 404
+    return jsonify({
+        "success": True,
+        "kind": "bet_data",
+        "message": "投注統計查詢完成",
+        "data": row,
+    })
+ 
+
 @python_flask.route("/api/Create_FreeSpin_Event", methods=["POST"])
 def api_create_free_spin_event():
     data=request.json
