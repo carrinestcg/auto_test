@@ -130,4 +130,3 @@ def main():
     except Exception as e:
         logging.error(e)
         
-main()

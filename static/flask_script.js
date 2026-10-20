@@ -711,7 +711,8 @@ const SCRIPTS_HIDE_USERNAME = [
     "create_bug",
     "calculate_workdays",
     "Create_FreeSpin_Event",
-    "auto_create_ticket"
+    "auto_create_ticket",
+    "UPDATE_SCHEDULE_TASK"
 ];
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
@@ -2094,6 +2095,12 @@ function runSelectScript(){
         case "SameTime_ReceiveTicket":
             extraData = {
                 username2: document.getElementById("username2").value,
+            };
+            break;
+
+        case "UPDATE_SCHEDULE_TASK":
+            extraData = {
+                platforms: platforms,
             };
             break;
 

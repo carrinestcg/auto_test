@@ -47,6 +47,7 @@ import SameTimeReceiveTicket
 import Backend_Deposit
 import create_free_spin_event
 import DEPOSIT_DATA
+import update_schedule_task
 
 
 logging.basicConfig(
@@ -1064,6 +1065,20 @@ def api_manual_single():
     MANUAL_SINGLE.main()
     return jsonify({"success": True, "message": "Trigger API Successfully"})
 
+@python_flask.route("/api/UPDATE_SCHEDULE_TASK", methods=["POST"])
+def api_update_schedule_task():
+    data = request.get_json(silent=True) or {}
+    platforms = data.get("platforms") or ["gi8viet"]
+    merchant_code = ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
+    if not merchant_code:
+        return jsonify({"success": False, "message": "請提供平台"}), 400
+    result=update_schedule_task.main(merchant_code)
+    if result:
+        return jsonify({"success": True, "message": "Trigger API Successfully"})
+    else:
+        return jsonify({"success": False, "message": "Trigger API Failed"}), 500
+    
+
 @python_flask.route("/api/Deposit_data", methods=["POST"])
 def api_deposit_data():
     data = request.get_json(silent=True) or {}
@@ -1109,9 +1124,12 @@ def api_bet_data():
 
 @python_flask.route("/api/Create_FreeSpin_Event", methods=["POST"])
 def api_create_free_spin_event():
-    data=request.json
-    platforms = data.get("platforms") or []
-    result = create_free_spin_event.implement(platforms)
+    data = request.get_json(silent=True) or {}
+    platforms = data.get("platforms") or ["gi8viet"]
+    merchant_code = ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
+    if not merchant_code:
+        return jsonify({"success": False, "message": "請提供平台"}), 400
+    result = create_free_spin_event.implement(merchant_code)
     if result:
         return jsonify({"success": True, "message": "Create Free Spin Event Successfully"})
     else:
