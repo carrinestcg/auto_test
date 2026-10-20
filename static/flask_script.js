@@ -794,7 +794,30 @@ function initBugFieldSuggest() {
         summaryEl.addEventListener("input", updateRunButtonState);
     }
 }
+/** Bug 描述（重現步驟）：聚焦自動帶 "1. "，按 Enter 自動接下一個編號 */
+function initBugStepNumbering() {
+    const ta = document.getElementById("bug_description");
+    if (!ta) return;
 
+    ta.addEventListener("focus", () => {
+        if (!ta.value) ta.value = "1. ";
+    });
+
+    // 離開時若只剩編號（沒有實際內容）就清空，避免送出 "1."
+    ta.addEventListener("blur", () => {
+        if (/^\s*\d+\.\s*$/.test(ta.value)) ta.value = "";
+    });
+
+    ta.addEventListener("keydown", (e) => {
+        // isComposing / 229：中文輸入法選字時按 Enter 不能觸發
+        if (e.key !== "Enter" || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+        e.preventDefault();
+
+        const start = ta.selectionStart;
+        const next = ta.value.slice(0, start).split("\n").length + 1;
+        ta.setRangeText(`\n${next}. `, start, ta.selectionEnd, "end");
+    });
+}
 function setBugFieldHint(id, show) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1553,6 +1576,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initFileUploadZones();
     initThemeToggle();
     updateRunButtonState();
+    initBugStepNumbering();
     const usernameEl = document.getElementById("username");
     if (usernameEl) {
         usernameEl.addEventListener("input", updateRunButtonState);
