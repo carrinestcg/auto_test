@@ -1371,8 +1371,8 @@ function initRunOnEnter() {
     });
 }
 const RUN_BUTTON_LABELS = {
-    create_qa_task: "建立QA",
-    create_bug: "建立Bug",
+    create_qa_task: "建立QA Task",
+    create_bug: "建立Bug單",
 };
 
 function syncRunButtonLabel() {
