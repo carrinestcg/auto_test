@@ -664,6 +664,7 @@ function toggleInput() {
     toggleWorkdaysInput();
     toggleNotesCapture();
     syncScenarioPanelWithSelection();
+    syncRunButtonLabel();
 }
 /** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
 const SCRIPTS_NEED_USERNAME = [
