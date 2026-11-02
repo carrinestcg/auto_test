@@ -1,7 +1,14 @@
 {
-  "version": "1.5.6",
-  "released_at": "2026-10-19",
+  "version": "1.5.7",
+  "released_at": "2026-11-02",
   "changelog": [
+    {
+      "version": "1.5.7",
+      "date": "2026-11-02",
+      "items": [
+        "建立 QA Task 會記住這台瀏覽器選過的 Jira 帳號"
+      ]
+    },
     {
       "version": "1.5.6",
       "date": "2026-10-19",

@@ -871,6 +871,7 @@ function bindJiraSuggest({ inputId, menuId, endpoint, minChars, groupByReleased,
         input.value = name;
         hideMenu();
         updateRunButtonState();
+        input.dispatchEvent(new Event("change"));
         input.focus();
     };
 
@@ -1591,12 +1592,51 @@ document.addEventListener("DOMContentLoaded", function () {
     initScenarioPanel();
     initPlatformChipPicker();
     initBugFieldSuggest();
+    initRememberedJiraUser();
     initTestNotes();
     syncPlatformChipsFromSelect();
     syncPromotionIdForPlatformSelection();
 });
 
 const TEST_NOTES_STORAGE_KEY = "auto_test_scratch_notes";
+const JIRA_USER_STORAGE_KEY = "auto_test_jira_user";
+
+function readRememberedJiraUser() {
+    try {
+        return (localStorage.getItem(JIRA_USER_STORAGE_KEY) || "").trim();
+    } catch (err) {
+        return "";
+    }
+}
+
+function rememberJiraUser(name) {
+    const value = (name || "").trim();
+    try {
+        if (value) {
+            localStorage.setItem(JIRA_USER_STORAGE_KEY, value);
+        } else {
+            localStorage.removeItem(JIRA_USER_STORAGE_KEY);
+        }
+    } catch (err) {
+        /* 瀏覽器擋住 localStorage 時，這次仍用欄位上的值 */
+    }
+}
+
+function initRememberedJiraUser() {
+    const input = document.getElementById("qa_task_assignee");
+    if (!input) return;
+    const saved = readRememberedJiraUser();
+    if (saved && !input.value.trim()) {
+        input.value = saved;
+    }
+    const stats = document.getElementById("qa_stats_assignee");
+    if (stats && saved && !stats.value.trim()) {
+        stats.value = saved;
+    }
+    const persist = () => rememberJiraUser(input.value);
+    input.addEventListener("change", persist);
+    input.addEventListener("blur", persist);
+}
 
 function initTestNotes() {
     const field = document.getElementById("right-panel-notes-input");
@@ -2303,15 +2343,18 @@ function runSelectScript(){
             break;
         }
 
-        case "create_qa_task":
+        case "create_qa_task": {
+            const qaAssignee = document.getElementById("qa_task_assignee").value.trim();
+            rememberJiraUser(qaAssignee);
             extraData = {
                 tcg_keys: document.getElementById("tcg_keys_input").value
                     .split(/[\s,;]+/)
                     .filter(Boolean),
-                assignee: document.getElementById("qa_task_assignee").value.trim(),
+                assignee: qaAssignee,
             };
             requestPayload = { ...extraData };
             break;
+        }
 
         case "create_bug": {
             extraData = {
@@ -2340,7 +2383,7 @@ function runSelectScript(){
             const tpKeys = tpRaw.split(/[\s,;]+/).filter(Boolean);
             const effectiveDates = getWorkdaysEffectiveDates({ autoApply: true });
             extraData = {
-                assignee: document.getElementById("qa_stats_assignee").value.trim() || "carrine.s",
+                assignee: document.getElementById("qa_stats_assignee").value.trim() || readRememberedJiraUser() || "carrine.s",
                 tp_key: tpKeys[0] || "",
                 date_from: effectiveDates.from,
                 date_to: effectiveDates.to,
