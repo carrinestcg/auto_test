@@ -1369,6 +1369,18 @@ function initRunOnEnter() {
         runSelectScript();
     });
 }
+const RUN_BUTTON_LABELS = {
+    create_qa_task: "建立QA",
+    create_bug: "建立Bug",
+};
+
+function syncRunButtonLabel() {
+    const label = document.getElementById("run-test-label");
+    if (!label) return;
+    const checked = getCheckedScriptValues();
+    const text = checked.length === 1 ? RUN_BUTTON_LABELS[checked[0]] : null;
+    label.textContent = text || "開始測試";
+}
 
 function updateRunButtonState() {
     const btn = document.getElementById("run-test-btn");
