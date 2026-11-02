@@ -1348,6 +1348,28 @@ function getRunBlockReason() {
     return null;
 }
 
+function initRunOnEnter() {
+    const root = document.querySelector(".account-main");
+    if (!root || root.dataset.enterBound === "true") return;
+    root.dataset.enterBound = "true";
+    root.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" || event.shiftKey || event.repeat || event.isComposing || event.keyCode === 229) return;
+        if (event.defaultPrevented) return;
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (target.closest("textarea, select, button, a")) return;
+        if (target instanceof HTMLInputElement && target.type === "file") return;
+        const btn = document.getElementById("run-test-btn");
+        if (!btn || btn.classList.contains("is-loading")) return;
+        event.preventDefault();
+        if (btn.disabled || getRunBlockReason()) {
+            updateRunButtonState();
+            return;
+        }
+        runSelectScript();
+    });
+}
+
 function updateRunButtonState() {
     const btn = document.getElementById("run-test-btn");
     const hint = document.getElementById("run-test-hint");
@@ -1593,6 +1615,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initPlatformChipPicker();
     initBugFieldSuggest();
     initRememberedJiraUser();
+    initRunOnEnter();
     initTestNotes();
     syncPlatformChipsFromSelect();
     syncPromotionIdForPlatformSelection();
