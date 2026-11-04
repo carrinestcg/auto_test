@@ -2969,21 +2969,21 @@ function copyTextToClipboard(text) {
 function setupResultModalInteractions(body) {
     if (!body) return;
 
-    body.querySelectorAll(".result-row-copy-btn").forEach((button) => {
-        const originalTitle = button.getAttribute("title") || "複製";
+        body.querySelectorAll(".result-copy-btn").forEach((button) => {
+        const label = button.querySelector(".result-copy-btn-label");
+        const originalText = label ? label.textContent : "";
         button.addEventListener("click", (event) => {
             event.preventDefault();
-            event.stopPropagation();
             const text = button.dataset.copy || "";
             if (!text) return;
 
             copyTextToClipboard(text)
                 .then(() => {
                     button.classList.add("copied");
-                    button.setAttribute("title", "已複製");
+                    if (label) label.textContent = "已複製！";
                     window.setTimeout(() => {
                         button.classList.remove("copied");
-                        button.setAttribute("title", originalTitle);
+                        if (label) label.textContent = originalText;
                     }, 1200);
                 })
                 .catch(() => {
@@ -3589,8 +3589,10 @@ function renderCustomerIdResult(data) {
 
     return `${stats}
         <div class="result-copy-row">
-            ${renderCopyButton(customerId, "複製玩家ID")}
-            <span class="result-copy-row-text">複製玩家 ID</span>
+            <button type="button" class="result-copy-btn" data-copy="${escapeHtml(customerId)}">
+                ${COPY_ICON_SVG}
+                <span class="result-copy-btn-label">複製玩家 ID</span>
+            </button>
         </div>`;
 }
 
