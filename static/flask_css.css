@@ -3747,3 +3747,26 @@ a.result-task-key:hover {
         min-width: 100%;
     }
 }
+.result-copy-row .result-row-copy-btn {
+    opacity: 1;
+    transform: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    transition: all 150ms ease-out;
+}
+
+.result-copy-row .result-row-copy-btn:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+}
+
+.result-copy-row .result-row-copy-btn.copied,
+.result-copy-row .result-row-copy-btn.copied:hover {
+    border-color: var(--success);
+    background: rgba(4, 120, 87, 0.12);
+    color: var(--success);
+}

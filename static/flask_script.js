@@ -2942,25 +2942,48 @@ function initResultModal() {
         closeResultModal();
     });
 }
-
+function copyTextToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        return navigator.clipboard.writeText(text);
+    }
+    return new Promise((resolve, reject) => {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.top = "0";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        let ok = false;
+        try {
+            ok = document.execCommand("copy");
+        } catch (e) {
+            ok = false;
+        }
+        document.body.removeChild(ta);
+        ok ? resolve() : reject(new Error("copy failed"));
+    });
+}
 function setupResultModalInteractions(body) {
     if (!body) return;
 
     body.querySelectorAll(".result-row-copy-btn").forEach((button) => {
+        const originalTitle = button.getAttribute("title") || "複製";
         button.addEventListener("click", (event) => {
             event.preventDefault();
             event.stopPropagation();
             const text = button.dataset.copy || "";
             if (!text) return;
 
-            navigator.clipboard
-                .writeText(text)
+            copyTextToClipboard(text)
                 .then(() => {
                     button.classList.add("copied");
                     button.setAttribute("title", "已複製");
                     window.setTimeout(() => {
                         button.classList.remove("copied");
-                        button.setAttribute("title", "複製單號");
+                        button.setAttribute("title", originalTitle);
                     }, 1200);
                 })
                 .catch(() => {
@@ -3557,11 +3580,18 @@ function renderCustomerIdResult(data) {
     const customerId =
         data.data?.customer_id != null && String(data.data.customer_id).trim() !== ""
             ? String(data.data.customer_id)
-            : "—";
-    return renderStatsBar([
-        { label: "玩家 ID", value: customerId },
+            : "";
+    const stats = renderStatsBar([
+        { label: "玩家 ID", value: customerId || "—" },
         { label: "查詢結果", value: data.success ? "成功" : "失敗" },
     ]);
+    if (!customerId) return stats;
+
+    return `${stats}
+        <div class="result-copy-row">
+            ${renderCopyButton(customerId, "複製玩家ID")}
+            <span class="result-copy-row-text">複製玩家 ID</span>
+        </div>`;
 }
 
 function renderCustomerNameResult(data) {
