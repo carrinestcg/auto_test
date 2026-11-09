@@ -1078,23 +1078,53 @@ def api_update_schedule_task():
     else:
         return jsonify({"success": False, "message": "Trigger API Failed"}), 500
     
+def _merchant_code_from_request(data):
+    platforms = data.get("platforms") or []
+    if isinstance(platforms, str):
+        platforms = [platforms]
+    return ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
+
 
 @python_flask.route("/api/Deposit_data", methods=["POST"])
 def api_deposit_data():
     data = request.get_json(silent=True) or {}
     username = (data.get("username") or "").strip()
-    platforms = data.get("platforms") or []
-    if isinstance(platforms, str):
-        platforms = [platforms]
-    merchant_code = ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
+    merchant_code = _merchant_code_from_request(data)
+
     if not username or not merchant_code:
         return jsonify({"success": False, "message": "請提供玩家帳號與平台"}), 400
+
     row = DEPOSIT_DATA.get_odsdb_data(username, merchant_code)
     if not row:
         return jsonify({"success": False, "message": "查無存款統計"}), 404
     return jsonify({
         "success": True,
         "message": "存款統計查詢完成",
+        "data": row,
+    })
+
+
+@python_flask.route("/api/Query_deposit_count", methods=["POST"])
+def api_query_deposit_count():
+    data = request.get_json(silent=True) or {}
+    merchant_code = _merchant_code_from_request(data)
+    raw_deposit_count = data.get("deposit_count")
+
+    if not merchant_code:
+        return jsonify({"success": False, "message": "請提供平台"}), 400
+    if raw_deposit_count is None or str(raw_deposit_count).strip() == "":
+        return jsonify({"success": False, "message": "請填寫存款次數"}), 400
+    try:
+        deposit_count = int(str(raw_deposit_count).strip())
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "message": "deposit_count 格式錯誤"}), 400
+
+    row = DEPOSIT_DATA.get_customers_by_deposit_count(merchant_code, deposit_count)
+    if not row:
+        return jsonify({"success": False, "message": "查無存款次數符合的玩家"}), 404
+    return jsonify({
+        "success": True,
+        "message": "已找出存款次數符合的玩家",
         "data": row,
     })
 

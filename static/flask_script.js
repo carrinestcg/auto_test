@@ -665,6 +665,7 @@ function toggleInput() {
     toggleNotesCapture();
     syncScenarioPanelWithSelection();
     syncRunButtonLabel();
+    toggleDepositCount();
 }
 /** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
 const SCRIPTS_NEED_USERNAME = [
@@ -713,8 +714,19 @@ const SCRIPTS_HIDE_USERNAME = [
     "calculate_workdays",
     "Create_FreeSpin_Event",
     "auto_create_ticket",
-    "UPDATE_SCHEDULE_TASK"
+    "UPDATE_SCHEDULE_TASK",
+    "Query_deposit_count"
 ];
+function toggleDepositCount(){
+    const depositCountWrap = document.getElementById("deposit-count-input-div");
+    const requestDepositCount = isChecked("query-deposit-count");
+    if (!depositCountWrap) return;
+    depositCountWrap.classList.toggle("hidden", !requestDepositCount);
+    if (!requestDepositCount) {
+        const hint = document.getElementById("deposit_count_hint");
+        if (hint) hint.style.display = "none";
+    }
+}
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
     const wrap = document.getElementById("promotion-type-select-wrap");
@@ -1295,8 +1307,10 @@ function toggleUsernamePassword() {
 
     userDiv.classList.toggle("hidden", shouldHide);
     // pwdWrap.classList.toggle("hidden", shouldHide);  ← 刪掉這行，密碼欄位交給 HTML 上的 hidden 永久控制
+    // 存款次數欄跟玩家帳號在同一欄，藏帳號時不要把整欄藏掉
+    const keepAccountColumn = isChecked("query-deposit-count");
     if (userColumn) {
-        userColumn.classList.toggle("hidden", shouldHide);
+        userColumn.classList.toggle("hidden", shouldHide && !keepAccountColumn);
     }
 
     updateRunButtonState();
@@ -1321,6 +1335,12 @@ function getRunBlockReason() {
         const username = document.getElementById("username")?.value.trim();
         if (!username) {
             return "請填寫玩家帳號後再執行測試";
+        }
+    }
+    if (isChecked("query-deposit-count")) {
+        const depositCount = document.getElementById("deposit_count")?.value.trim();
+        if (!depositCount) {
+            return "請填寫存款次數";
         }
     }
     if (isChecked("create_qa_task")) {
@@ -1465,6 +1485,16 @@ function validateFormBeforeSubmit() {
     }
 
     
+    const depositCountWrap = document.getElementById("deposit-count-input-div");
+    const needDepositCount = depositCountWrap && !depositCountWrap.classList.contains("hidden");
+    const depositCountInput = document.getElementById("deposit_count");
+    const depositCountHint = document.getElementById("deposit_count_hint");
+    if (needDepositCount && (!depositCountInput || depositCountInput.value.trim() === "")) {
+        if (depositCountHint) depositCountHint.style.display = "inline";
+        return false;
+    }
+    if (depositCountHint) depositCountHint.style.display = "none";
+
     if (needUsername && !usernameInputDiv.value.trim()) {
         document.getElementById("username_hint").style.display = "inline";
         document.getElementById("password_hint").style.display = "inline";
@@ -1616,6 +1646,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const usernameEl = document.getElementById("username");
     if (usernameEl) {
         usernameEl.addEventListener("input", updateRunButtonState);
+    }
+    const depositCountEl = document.getElementById("deposit_count");
+    if (depositCountEl) {
+        depositCountEl.addEventListener("input", () => {
+            const hint = document.getElementById("deposit_count_hint");
+            if (hint && depositCountEl.value.trim()) hint.style.display = "none";
+            updateRunButtonState();
+        });
     }
     const tcgEl = document.getElementById("tcg_keys_input");
     if (tcgEl) {
@@ -2175,6 +2213,7 @@ function runSelectScript(){
     const username=document.getElementById("username").value;
     const platforms = getSelectedPlatforms();
     const checkSelectScript=Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el=>el.value);
+    const deposit_count = document.getElementById("deposit_count")?.value.trim() ?? "";
     let ticket_select = document.getElementById("frontend-checkbox_select");
     let ticket_types=Array.from(ticket_select.selectedOptions).map(opt=>opt.value)
     console.log("checkSelectScript:", checkSelectScript);
@@ -2213,6 +2252,13 @@ function runSelectScript(){
         case "Deposit_data":
             extraData = {
                 platforms: platforms,
+            };
+            break;
+
+        case "Query_deposit_count":
+            requestPayload = {
+                platforms: platforms,
+                deposit_count: deposit_count,
             };
             break;
 
@@ -3554,6 +3600,38 @@ function renderVerifyPlayerInfoMultiResult(data) {
 
 function renderDepositDataResult(data) {
     const row = data.data || {};
+    if (Array.isArray(row.customers)) {
+        const total = Number(row.total ?? row.customers.length);
+        const summary = renderStatsBar([
+            { label: "存款次數", numeric: row.deposit_counts ?? 0 },
+            { label: "符合人數", numeric: total, suffix: "人" },
+        ]);
+        if (!row.customers.length) {
+            return `${summary}${renderEmptyState("沒有符合的玩家", "此平台沒有這個存款次數的 customer。")}`;
+        }
+        const items = row.customers
+            .map((item) => {
+                const name = item.customer_name || "—";
+                return `
+        <article class="result-task-item">
+            <div class="result-task-main">
+                <div class="result-task-content">
+                    <div class="result-task-row-top">
+                        <div class="result-task-ids">
+                            ${renderIssueKey(name, { plain: true })}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>`;
+            })
+            .join("");
+        const more =
+            total > row.customers.length
+                ? `<p class="result-task-summary">只顯示前 ${row.customers.length} 筆，共 ${total} 人</p>`
+                : "";
+        return `${summary}${more}<div class="result-task-list">${items}</div>`;
+    }
     return renderStatsBar([
         { label: "存款金額", numeric: row.deposit ?? 0 },
         { label: "存款次數", numeric: row.deposit_counts ?? 0 },

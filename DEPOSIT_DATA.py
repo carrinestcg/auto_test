@@ -9,6 +9,22 @@ SQL = """
     WHERE CUSTOMER_NAME = :username
       AND MERCHANT_CODE = :merchant_code
 """
+SQL_FOR_COUNT = """
+    SELECT CUSTOMER_NAME
+    FROM TCG_ODSDB.ODS_MEMBER_PROFILE
+    WHERE DEPOSIT_COUNTS = :deposit_counts
+      AND MERCHANT_CODE = :merchant_code
+      AND REG_DATE >= TO_TIMESTAMP('2026-10-08 00:00:00.000', 'YYYY-MM-DD HH24:MI:SS.FF3')
+    ORDER BY CUSTOMER_NAME
+    FETCH FIRST 30 ROWS ONLY
+"""
+SQL_FOR_COUNT_TOTAL = """
+    SELECT COUNT(*)
+    FROM TCG_ODSDB.ODS_MEMBER_PROFILE
+    WHERE DEPOSIT_COUNTS = :deposit_counts
+      AND MERCHANT_CODE = :merchant_code
+      AND REG_DATE >= TO_TIMESTAMP('2026-10-08 00:00:00.000', 'YYYY-MM-DD HH24:MI:SS.FF3')
+"""
 
 SQL_FOR_BET="""
        SELECT tms.PVP_VALID_GAME_BETTING,
@@ -36,20 +52,67 @@ def _json_value(value):
     return value
 
 
-def get_odsdb_data(username, merchant_code):
+def _odsdb_connect():
+    return oracledb.connect(
+        user="TCG_ODSDB",
+        password="3JAqs3RpSnsw99SF",
+        dsn="10.81.1.11:1521/tcgsit",
+    )
+
+
+def get_customers_by_deposit_count(merchant_code, deposit_counts):
+    """只找出 DEPOSIT_COUNTS 等於指定次數的玩家。"""
+    merchant_code = (merchant_code or "").strip()
+    if not merchant_code or deposit_counts is None:
+        return None
+
+    conn = None
+    cursor = None
+    try:
+        conn = _odsdb_connect()
+        cursor = conn.cursor()
+        params = {"deposit_counts": deposit_counts, "merchant_code": merchant_code}
+        cursor.execute(SQL_FOR_COUNT_TOTAL, params)
+        total_row = cursor.fetchone()
+        total = int(total_row[0]) if total_row and total_row[0] is not None else 0
+        if total == 0:
+            logging.info("查無存款次數 deposit_counts=%s merchant=%s", deposit_counts, merchant_code)
+            return None
+        cursor.execute(SQL_FOR_COUNT, params)
+        columns = [desc[0] for desc in cursor.description]
+        customers = []
+        for row in cursor.fetchall():
+            record = {col: _json_value(val) for col, val in zip(columns, row)}
+            customers.append({
+                "customer_name": record.get("CUSTOMER_NAME"),
+            })
+        return {
+            "deposit_counts": deposit_counts,
+            "total": total,
+            "customers": customers,
+        }
+    except Exception as e:
+        logging.error("依存款次數查玩家失敗: %s", e)
+        return None
+    finally:
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+
+def get_odsdb_data(username, merchant_code, deposit_counts=None):
     username = (username or "").strip()
     merchant_code = (merchant_code or "").strip()
+    if deposit_counts is not None:
+        return get_customers_by_deposit_count(merchant_code, deposit_counts)
     if not username or not merchant_code:
         return None
 
     conn = None
     cursor = None
     try:
-        conn = oracledb.connect(
-            user="TCG_ODSDB",
-            password="3JAqs3RpSnsw99SF",
-            dsn="10.81.1.11:1521/tcgsit",
-        )
+        conn = _odsdb_connect()
         cursor = conn.cursor()
         cursor.execute(SQL, {"username": username, "merchant_code": merchant_code})
         row = cursor.fetchone()

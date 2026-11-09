@@ -108,6 +108,11 @@
                             <label for="ticket_input">票券名稱</label>
                             <input type="text" id="ticket_input" name="ticket_input" class="account-line-input">
                         </div>
+                        <div id="deposit-count-input-div" class="input-group hidden">
+                            <label for="deposit_count">存款次數</label>
+                            <input type="text" id="deposit_count" name="deposit_count" inputmode="numeric" class="account-line-input">
+                            <small id="deposit_count_hint" class="field-hint">此欄位必填</small>
+                        </div>
                     </div>
 
                     <div id="password-input-div" class="input-group account-field-col hidden">
@@ -459,6 +464,10 @@
                     <label>
                         <input type="checkbox" name="script" value="Customer_id" id="frontend-checkbox_id" onchange="toggleInput()">
                         查詢 customer_id
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Query_deposit_count" id="query-deposit-count" onchange="toggleInput()">
+                        查詢 customer 存款次數
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Customer_name" id="Customer_name" onchange="toggleInput()">
