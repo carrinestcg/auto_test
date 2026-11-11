@@ -202,14 +202,14 @@ def lottery_bet(username,amount):
 def api_PROMOCODE_BATCH():
     data=request.json
     username=data["username"]
-    dailyremain_count, remainingCount, success_count=PROMOCODE_BATCH.main(username)
-    if success_count > 0:
+    promoCode=data.get("promoCode")
+    result =PROMOCODE_BATCH.main(username, promoCode)
+    if result :
         return jsonify(
             {
                 "success": True,
                 "message": "Success Received PromoCode",
-                "dailyremain_count": dailyremain_count,
-                "remainingCount": remainingCount
+                "promoCode": promoCode
                 }
             ),200
     else:
@@ -217,8 +217,7 @@ def api_PROMOCODE_BATCH():
             {
                 "success": False,
                 "message": "Receive PromoCode Failed",
-                "dailyremain_count": dailyremain_count,
-                "remainingCount": remainingCount
+                "promoCode": promoCode
                 }
             ),400
 @python_flask.route('/api/SameTimeLogin',methods=['POST']) #並行API

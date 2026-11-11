@@ -71,28 +71,7 @@ class Frontend:
             error_message=response_json.get('message')
             logging.error(f"{error_message}")
             return False
-    def proccess_all_promoCode(self,customer_id):
-        PromoCode_list=self.get_promo_code_list(customer_id)
-        success_count=0
-        if not PromoCode_list:
-            logging.error("優惠碼列表為空，無法領取")
-            return 0
-        for item in PromoCode_list:
-            '''
-            promoName=item.get("promoName","")
-            if  promoName!='CCD_Promo code_01':
-                continue
-            '''
-            promoCode = item.get("promoCode")
-            success=self.click_promo_code(promoCode,customer_id)
-            if success:
-                success_count+=1
-                logging.info(f"領取優惠碼{promoCode}成功") 
-            else:
-                logging.info("領取優惠碼失敗") 
-            
-        return success_count
-            
+    
 class B_end:
     def __init__(self,credential:dict):
         self.session=requests.Session()
@@ -103,7 +82,6 @@ class B_end:
         self.token_data=self.token
         self.record_data_list=[]
         self.claimid_list=[]
-        self.success_count=0
         self.claimid=''
     def header(self):
         return{
@@ -187,35 +165,35 @@ class B_end:
             logging.error("查詢剩餘次數失敗")
             return None,None
 
-def main(username:str):
+def main(username:str, promoCode:str):
     from Customer_id import main
     total_claim_count=0
     dailyremain_count=0
     remainingCount=0
-    success_count=0
     credential_Backend = {
             "operatorName": "carrine03",
             "password": "Test@1234"
         }
     
     try:    
+        '''
         backend = B_end(credential_Backend)
         if backend.token:
             dailyremain_count,remainingCount=backend.get_remaincount_promocode()
             logging.info(f"當日剩餘次數{dailyremain_count}")
             logging.info(f"總剩餘次數{remainingCount}")
-
+        '''
         
         try:   
             frontend = Frontend()
             customer_id=main(username,platform="gi8viet",query_type=1)
-            success_count=frontend.proccess_all_promoCode(customer_id)
-            total_claim_count+=success_count
+            result = frontend.click_promo_code(promoCode, customer_id)
         
         except Exception as e:
                 logging.error(f"啟動時發生錯誤: {e}")
         time.sleep(0.5)
-        
+
+        '''
         if backend.token:
             after_receive_remain_dailyremain_count,after_receive_remainingCount=backend.get_remaincount_promocode()
             logging.info(f"更新後的當日剩餘次數{after_receive_remain_dailyremain_count}")
@@ -228,12 +206,9 @@ def main(username:str):
                 logging.info("總剩餘次數扣除正確")
             else:
                 logging.error("總剩餘次數扣除不正確")
-            
-        if success_count > 0:
-            return after_receive_remain_dailyremain_count, after_receive_remainingCount,success_count
-        else:
-            logging.info("沒有成功領取任何優惠碼")
-            return dailyremain_count, remainingCount, success_count
+        '''
+        
+        return result
             
         
             

@@ -666,6 +666,7 @@ function toggleInput() {
     syncScenarioPanelWithSelection();
     syncRunButtonLabel();
     toggleDepositCount();
+    togglePromocodeFeild();
 }
 /** 需要 username 的腳本清單（這些被勾選時一定要顯示 username/password） */
 const SCRIPTS_NEED_USERNAME = [
@@ -727,6 +728,17 @@ function toggleDepositCount(){
         if (hint) hint.style.display = "none";
     }
 }
+function togglePromocodeFeild(){
+    const PromocodeWrap = document.getElementById("promo-code-input-div");
+    const requestPromoCode = isChecked("frontend-promo-batch");
+    if (!PromocodeWrap) return;
+    PromocodeWrap.classList.toggle("hidden", !requestPromoCode);
+    if (!requestPromoCode) {
+        const hint = document.getElementById("promoCode_hint");
+        if (hint) hint.style.display = "none";
+    }
+}
+
 /** 勾選「創建活動」時顯示活動類型多選（#promotion-checkbox_select） */
 function togglePromotionTypeList() {
     const wrap = document.getElementById("promotion-type-select-wrap");
@@ -2230,6 +2242,11 @@ function runSelectScript(){
         let requestPayload = null;
 
     switch (scriptName) {
+        case "PROMOCODE_BATCH":
+            extraData = {
+                promoCode: document.getElementById("promo-code-input").value,
+            };
+            break;
 
         case "SameTime_ReceiveTicket":
             extraData = {

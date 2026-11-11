@@ -178,6 +178,12 @@
                         <small id="deposit_hint" class="field-hint">此欄位必填</small>
                     </div>
 
+                    <div id="promo-code-input-div" class="input-group hidden">
+                        <label for="promo-code-input-id">優惠碼 ID</label>
+                        <input type="text" id="promo-code-input" name="deposit_amount">
+                        <small id="promoCode_hint" class="field-hint">此欄位必填</small>
+                    </div>
+
                     <div id="qa-task-input-div" class="input-group hidden">
                         <div class="qa-task-field-row">
                             <div class="bug-field">
@@ -467,7 +473,7 @@
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Query_deposit_count" id="query-deposit-count" onchange="toggleInput()">
-                        查詢 customer 存款次數
+                        查詢 特定存款次數的 customer 
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="Customer_name" id="Customer_name" onchange="toggleInput()">
