@@ -1678,6 +1678,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initPlatformChipPicker();
     initBugFieldSuggest();
     initRememberedJiraUser();
+    initRememberedBugFixVersion();
     initRunOnEnter();
     initTestNotes();
     syncPlatformChipsFromSelect();
@@ -1686,6 +1687,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 const TEST_NOTES_STORAGE_KEY = "auto_test_scratch_notes";
 const JIRA_USER_STORAGE_KEY = "auto_test_jira_user";
+const BUG_FIX_VERSION_STORAGE_KEY = "auto_test_bug_fix_version";
 
 function readRememberedJiraUser() {
     try {
@@ -1720,6 +1722,41 @@ function initRememberedJiraUser() {
         stats.value = saved;
     }
     const persist = () => rememberJiraUser(input.value);
+    input.addEventListener("change", persist);
+    input.addEventListener("blur", persist);
+}
+
+function readRememberedBugFixVersion() {
+    try {
+        return (localStorage.getItem(BUG_FIX_VERSION_STORAGE_KEY) || "").trim();
+    } catch (err) {
+        return "";
+    }
+}
+
+function rememberBugFixVersion(name) {
+    const value = (name || "").trim();
+    try {
+        if (value) {
+            localStorage.setItem(BUG_FIX_VERSION_STORAGE_KEY, value);
+        } else {
+            localStorage.removeItem(BUG_FIX_VERSION_STORAGE_KEY);
+        }
+    } catch (err) {
+        /* 瀏覽器擋住 localStorage 時，這次仍用欄位上的值 */
+    }
+}
+
+function initRememberedBugFixVersion() {
+    const input = document.getElementById("bug_fix_version");
+    if (!input) return;
+    const saved = readRememberedBugFixVersion();
+    if (saved && !input.value.trim()) {
+        input.value = saved;
+        updateBugFieldHints();
+        updateRunButtonState();
+    }
+    const persist = () => rememberBugFixVersion(input.value);
     input.addEventListener("change", persist);
     input.addEventListener("blur", persist);
 }
@@ -2456,9 +2493,11 @@ function runSelectScript(){
         }
 
         case "create_bug": {
+            const fixVersion = document.getElementById("bug_fix_version").value.trim();
+            rememberBugFixVersion(fixVersion);
             extraData = {
                 summary: document.getElementById("bug_summary").value.trim(),
-                fix_version: document.getElementById("bug_fix_version").value.trim(),
+                fix_version: fixVersion,
                 component: document.getElementById("bug_component").value.trim(),
                 related_key: document.getElementById("bug_related_key").value.trim(),
                 description: document.getElementById("bug_description").value.trim(),
