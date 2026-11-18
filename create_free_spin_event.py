@@ -151,44 +151,46 @@ def create_free_spin_event(token, merchantCode, eventId):
 }
 
     headers = header(token)
-    cookies = {
-        "language": "zh_CN"
-    }
+    
     params={
         "menuId": 160005,
     }
     try:
-        response = requests.post(API_URL, json=payload, headers=headers, params=params, cookies=cookies, verify=False)
+        response = requests.post(API_URL, json=payload, headers=headers, params=params, verify=False)
         response.raise_for_status()
         
         response_data = response.json()
+        print(response_data)
         logging.info(f"URL: {response.request.url}")
         logging.info(f"Headers: {response.request.headers}")
         logging.info(f"Body: {response.request.body}")
         if response_data.get('success') == True:
-            logging.info(f"創建kyc方案成功: ")
+            logging.info(f"創建免費轉方案成功: ")
             return True
         else:
             error_msg = response_data.get("message", "未知錯誤")
-            logging.info(f"創建kyc方案失败: {error_msg}")
+            logging.info(f"創建免費轉方案失败: {error_msg}")
             return False
         
     except Exception as e:
         logging.error(f"狀態碼: {response.status_code}", e)
         return False
 def implement(merchantCode):
-    merchantCode=merchantCode[0]
+    if isinstance(merchantCode, (list, tuple)):
+        merchantCode = merchantCode[0] if merchantCode else "gi8viet"
+    merchantCode = (merchantCode or "gi8viet").strip()
     deposit_Info = None
     try:
         token=get_token()
         KYC(token)
         eventID=get_event(token,merchantCode)
-        result=create_free_spin_event(token, merchantCode, eventID)
-        if result:
-            logging.info("成功創建kyc方案")
-            return True
+        if eventID:
+            result=create_free_spin_event(token, merchantCode, eventID)
+            if result:
+                logging.info("成功創建免費轉方案")
+                return True
         else:
-            logging.info("創建kyc方案失敗")
+            logging.info("創建免費轉方案失敗")
             return False
     except Exception as e:
         logging.error(f"執行過程中發生錯誤: {e}")
