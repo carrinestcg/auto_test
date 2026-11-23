@@ -40,6 +40,7 @@ import Acheivement_bonus
 import schedule_manual
 import create_qa_task
 import create_bug
+import qa_jira_fill
 import calculate_workdays
 from Verify_Info import verify_info
 from version_util import load_version_info
@@ -48,6 +49,8 @@ import Backend_Deposit
 import create_free_spin_event
 import DEPOSIT_DATA
 import update_schedule_task
+import rescue_reward_api
+import edit_prmotion_time
 
 
 logging.basicConfig(
@@ -399,6 +402,48 @@ def api_schedule_manual_bonus():
             {
                 "success": False,
                 "message": "Schedule Manual Bonus Failed"
+                }
+            ),500
+@python_flask.route('/api/Rescue_Reward_api',methods=['POST']) #救援金API
+def api_Resue_reward_bonus():
+    data=request.get_json(silent=True)
+    platforms=data["platforms"]
+    date=data["date"]
+    isSuccess=rescue_reward_api.main(platforms, date)
+
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Resuce reward api Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Resuce reward api Failed"
+                }
+            ),500
+
+@python_flask.route('/api/Edit_Promotion_Time',methods=['POST']) #更改任務開始時間
+def api_Edit_Promotion_Time():
+    data=request.get_json(silent=True)
+    promotion_id = data.get("promotion_id")
+    isSuccess=edit_prmotion_time.main(promotion_id)
+
+    if isSuccess:
+        return jsonify(
+            {
+                "success": True,
+                "message": "Edit promotionTime Success"
+                }
+            ),200
+    else:
+        return jsonify(
+            {
+                "success": False,
+                "message": "Edit promotionTime Failed"
                 }
             ),500
 
@@ -1158,6 +1203,7 @@ def api_create_free_spin_event():
     merchant_code = ((platforms[0] if platforms else None) or data.get("merchant_code") or "").strip()
     if not merchant_code:
         return jsonify({"success": False, "message": "請提供平台"}), 400
+    print(merchant_code)
     result = create_free_spin_event.implement(merchant_code)
     if result:
         return jsonify({"success": True, "message": "Create Free Spin Event Successfully"})
@@ -1290,6 +1336,61 @@ def api_create_bug():
         }), 200
     except Exception as e:
         return jsonify({"success": False, "kind": "create_bug", "message": str(e)}), 500
+
+
+@python_flask.route("/api/qa_jira_fill/folders", methods=["GET"])
+def api_qa_jira_fill_folders():
+    query = request.args.get("q", "")
+    try:
+        return jsonify({
+            "success": True,
+            "data": qa_jira_fill.list_project_folders(query, request.args.get("jira", "")),
+        })
+    except Exception as exc:
+        logging.error("列出 Drive 專案資料夾失敗: %s", exc)
+        return jsonify({"success": False, "message": str(exc), "data": []}), 500
+
+
+@python_flask.route("/api/qa_jira_fill/files", methods=["GET"])
+def api_qa_jira_fill_files():
+    return jsonify({"success": True, "data": qa_jira_fill.list_screenshots()})
+
+
+@python_flask.route("/api/qa_jira_fill/history", methods=["GET"])
+def api_qa_jira_fill_history():
+    return jsonify({"success": True, "data": qa_jira_fill.load_history()})
+
+
+@python_flask.route("/api/qa_jira_fill", methods=["POST"])
+def api_qa_jira_fill():
+    if request.content_type and "multipart/form-data" in request.content_type:
+        data = request.form
+        uploads = _bug_attachment_uploads(request.files.getlist("attachments"))
+    else:
+        data = request.get_json(silent=True) or {}
+        uploads = []
+    try:
+        record = qa_jira_fill.fill(
+            data.get("jira") or data.get("issue_key"),
+            data.get("result"),
+            data.get("note") or "",
+            uploads,
+            data.get("folder_id") or "",
+            data.get("folder_name") or "",
+        )
+        return jsonify({
+            "success": bool(record.get("success")),
+            "kind": "qa_jira_fill",
+            "message": record["message"],
+            "data": record,
+        }), (200 if record.get("success") else 400)
+    except Exception as exc:
+        logging.error("Jira 回填失敗: %s", exc)
+        return jsonify({
+            "success": False,
+            "kind": "qa_jira_fill",
+            "message": str(exc),
+        }), 400
 
 
 @python_flask.route("/api/jira_fix_versions", methods=["GET"])

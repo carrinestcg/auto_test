@@ -94,7 +94,7 @@ const TEST_SCENARIOS = [
         tab: "Player Management",
         scripts: ["Customer_id"],
         platforms: ["gi8viet"],
-        followUp: "填玩家帳號後執行，結果顯示在彈窗。",
+        followUp: "填玩家帳號後執行，結果顯示在右側執行面板。",
     },
     {
         id: "create_member",
@@ -134,7 +134,7 @@ const TEST_SCENARIOS = [
         id: "change_password",
         title: "變更玩家密碼",
         summary: "重設為 123qwe",
-        tab: "TestingTooLTab",
+        tab: "Player Management",
         scripts: ["Change_password"],
         platforms: ["gi8viet"],
         followUp: "填玩家帳號後執行，密碼將重設為 123qwe。",
@@ -142,6 +142,25 @@ const TEST_SCENARIOS = [
 ];
 
 let activeScenarioId = null;
+
+function displayScriptName(scriptName) {
+    if (!scriptName) return "";
+    let input = null;
+    try {
+        input = document.querySelector(`input[name="script"][value="${CSS.escape(scriptName)}"]`);
+    } catch (e) {
+        input = null;
+    }
+    const label = input && input.closest("label");
+    const text = label ? label.textContent.replace(/\s+/g, " ").trim() : "";
+    return text || scriptName;
+}
+
+function isGenericSuccessMessage(message) {
+    const text = String(message || "").trim();
+    if (!text) return true;
+    return /^(trigger api successfully|success(fully)?|執行成功|操作已完成)$/i.test(text);
+}
 
 function getCheckedScriptValues() {
     return Array.from(document.querySelectorAll('input[name="script"]:checked')).map((el) => el.value);
@@ -645,6 +664,16 @@ function askPlayerInfoType(defaultTypes = []) {
     });
 }
 
+function selectSingleQaTool(event) {
+    const current = event?.target;
+    if (current?.checked) {
+        document.querySelectorAll('#SanityTooLTab input[name="script"]').forEach((input) => {
+            if (input !== current) input.checked = false;
+        });
+    }
+    toggleInput();
+}
+
 function toggleInput() {
     toggleAmount();
     toggleTicket();
@@ -662,6 +691,7 @@ function toggleInput() {
     toggleQATaskInput();
     toggleBugInput();
     toggleWorkdaysInput();
+    toggleQaJiraFill();
     toggleNotesCapture();
     syncScenarioPanelWithSelection();
     syncRunButtonLabel();
@@ -1010,6 +1040,119 @@ function bindJiraSuggest({ inputId, menuId, endpoint, minChars, groupByReleased,
     });
 }
 
+function toggleQaJiraFill() {
+    const div = document.getElementById("qa-jira-fill-div");
+    if (!div) return;
+    const show = isChecked("qa_jira_fill");
+    div.classList.toggle("hidden", !show);
+    if (show) {
+        initQaFillFolderSuggest();
+        refreshQaJiraFillStatus();
+    }
+}
+
+const QA_FILL_FOLDER_KEY = "auto_test_qa_fill_folder";
+
+function initQaFillFolderSuggest() {
+    const input = document.getElementById("qa_fill_project");
+    const menu = document.getElementById("qa_fill_project_menu");
+    const idInput = document.getElementById("qa_fill_folder_id");
+    if (!input || !menu || !idInput || input.dataset.bound === "true") return;
+    input.dataset.bound = "true";
+    try {
+        const saved = JSON.parse(localStorage.getItem(QA_FILL_FOLDER_KEY) || "null");
+        if (saved?.name) {
+            input.value = saved.name;
+            idInput.value = saved.id || "";
+        }
+    } catch (e) {
+        /* 記不住上次的資料夾就不帶入 */
+    }
+    let timer = 0;
+    const hide = () => menu.classList.add("hidden");
+    input.addEventListener("input", () => {
+        idInput.value = "";
+        updateRunButtonState();
+        window.clearTimeout(timer);
+        timer = window.setTimeout(async () => {
+            const query = input.value.trim();
+            try {
+                const jira = document.getElementById("qa_fill_jira")?.value.trim() || "";
+                const res = await fetch(`/api/qa_jira_fill/folders?q=${encodeURIComponent(query)}&jira=${encodeURIComponent(jira)}`);
+                const data = await res.json();
+                const rows = data.data || [];
+                if (!data.success) {
+                    menu.innerHTML = `<div class="jira-suggest-empty">${escapeHtml(data.message || "無法讀取 Drive 資料夾")}</div>`;
+                } else if (!rows.length) {
+                    menu.innerHTML = `<div class="jira-suggest-empty">沒有符合的資料夾，送出時會新建「${escapeHtml(query || "專案")}」</div>`;
+                } else {
+                    menu.innerHTML = rows.slice(0, 12).map((row) => (
+                        `<button type="button" class="jira-suggest-item" data-id="${escapeHtml(row.id)}" data-name="${escapeHtml(row.name)}">${escapeHtml(row.name)}</button>`
+                    )).join("");
+                    menu.querySelectorAll(".jira-suggest-item").forEach((btn) => {
+                        btn.addEventListener("click", () => {
+                            input.value = btn.dataset.name || "";
+                            idInput.value = btn.dataset.id || "";
+                            localStorage.setItem(QA_FILL_FOLDER_KEY, JSON.stringify({
+                                id: idInput.value,
+                                name: input.value,
+                            }));
+                            hide();
+                            updateRunButtonState();
+                        });
+                    });
+                }
+                menu.classList.remove("hidden");
+            } catch (e) {
+                menu.innerHTML = `<div class="jira-suggest-empty">無法讀取 Drive 資料夾</div>`;
+                menu.classList.remove("hidden");
+            }
+        }, 250);
+    });
+    input.addEventListener("blur", () => window.setTimeout(hide, 180));
+}
+
+function refreshQaJiraFillStatus() {
+    const shotList = document.getElementById("qa_fill_shot_list");
+    const history = document.getElementById("qa_fill_history");
+    if (shotList) {
+        fetch("/api/qa_jira_fill/files")
+            .then((res) => res.json())
+            .then((data) => {
+                const files = data.data || [];
+                shotList.textContent = files.length
+                    ? `screenshots/ 目前有 ${files.length} 張：${files.map((file) => file.name).join("、")}`
+                    : "screenshots/ 目前沒有截圖。";
+            })
+            .catch(() => {
+                shotList.textContent = "無法讀取 screenshots/。";
+            });
+    }
+    if (history) {
+        fetch("/api/qa_jira_fill/history")
+            .then((res) => res.json())
+            .then((data) => {
+                const rows = data.data || [];
+                if (!rows.length) {
+                    history.textContent = "尚無回填紀錄。";
+                    return;
+                }
+                history.innerHTML = rows.slice(0, 8).map((row) => {
+                    const state = row.success ? "成功" : "失敗";
+                    const link = row.folder_url
+                        ? ` · <a href="${escapeHtml(row.folder_url)}" target="_blank" rel="noopener noreferrer">截圖</a>`
+                        : "";
+                    const place = [row.year_folder, row.project_folder].filter(Boolean).join(" / ");
+                    const project = place ? `${escapeHtml(place)} · ` : "";
+                    return `<div>${escapeHtml(row.time || "")} · ${project}${escapeHtml(row.jira || "")} · ${escapeHtml(row.result || "")} · ${state}${link}</div>`;
+                }).join("");
+            })
+            .catch(() => {
+                history.textContent = "無法讀取操作紀錄。";
+            });
+    }
+}
+
 function toggleWorkdaysInput() {
     const div = document.getElementById("workdays-input-div");
     if (!div) return;
@@ -1288,7 +1431,7 @@ function togglePlatform() {
     if (!manual_platform_select || !select) return;
 
     const checkedScripts = Array.from(document.querySelectorAll('input[name="script"]:checked')).map(el => el.value);
-    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","create_bug","calculate_workdays","SameTime_ReceiveTicket"];  /*不需要選平台*/
+    const excludePlatform = ["FRONTEND_DEPOSIT", "extra_promo_id", "Compensation_api", "frontend-checkbox_lott","create_member_player", "FIXED_DEPOSIT","Schedule_manual_bonus","create_qa_task","create_bug","calculate_workdays","qa_jira_fill","SameTime_ReceiveTicket"];  /*不需要選平台*/
     
     const needPlatform = checkedScripts.some(s => !excludePlatform.includes(s));
     manual_platform_select.classList.toggle("hidden", !needPlatform);
@@ -1383,6 +1526,16 @@ function getRunBlockReason() {
             return "請填寫 Component/s";
         }
     }
+    if (isChecked("qa_jira_fill")) {
+        const project = document.getElementById("qa_fill_project")?.value.trim();
+        const jira = document.getElementById("qa_fill_jira")?.value.trim();
+        if (!project) {
+            return "請填專案資料夾";
+        }
+        if (!jira) {
+            return "請填寫 Jira 單號";
+        }
+    }
     return null;
 }
 
@@ -1410,6 +1563,7 @@ function initRunOnEnter() {
 const RUN_BUTTON_LABELS = {
     create_qa_task: "建立QA Task",
     create_bug: "建立Bug單",
+    qa_jira_fill: "回填 Jira",
 };
 
 function syncRunButtonLabel() {
@@ -1683,6 +1837,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (tcgEl) {
         tcgEl.addEventListener("input", updateRunButtonState);
     }
+    const qaFillJiraEl = document.getElementById("qa_fill_jira");
+    if (qaFillJiraEl) {
+        qaFillJiraEl.addEventListener("input", () => {
+            const folderId = document.getElementById("qa_fill_folder_id");
+            if (folderId) folderId.value = "";
+            updateRunButtonState();
+        });
+    }
+    document.getElementById("qa_fill_project")?.addEventListener("input", updateRunButtonState);
     initResultModal();
     initRightPanel();
     initWorkdaysDatePicker();
@@ -2006,6 +2169,11 @@ function switchTab(evt, tabId) {
     if (accountCard) accountCard.classList.toggle("hidden", isExcel || isVersion);
     if (scriptsSection) scriptsSection.classList.toggle("hidden", isVersion);
     if (versionSection) versionSection.classList.toggle("hidden", !isVersion);
+    document.body.classList.toggle("is-version-view", isVersion);
+    if (isVersion) {
+        const main = document.querySelector(".center-panel");
+        if (main) main.scrollTop = 0;
+    }
     if (scriptsHeading) {
         scriptsHeading.textContent = isExcel ? "Excel 比對" : "測試功能選擇";
     }
@@ -2528,6 +2696,26 @@ function runSelectScript(){
             break;
         }
 
+        case "qa_jira_fill": {
+            extraData = {
+                jira: document.getElementById("qa_fill_jira").value.trim(),
+                result: document.getElementById("qa_fill_result").value,
+                note: document.getElementById("qa_fill_note").value.trim(),
+                folder_id: document.getElementById("qa_fill_folder_id").value.trim(),
+                folder_name: document.getElementById("qa_fill_project").value.trim(),
+            };
+            const files = document.getElementById("qa_fill_attachments")?.files;
+            if (files && files.length) {
+                const formData = new FormData();
+                Object.entries(extraData).forEach(([key, value]) => formData.append(key, value));
+                Array.from(files).forEach((file) => formData.append("attachments", file));
+                requestPayload = formData;
+            } else {
+                requestPayload = { ...extraData };
+            }
+            break;
+        }
+
         case "calculate_workdays": {
             const tpRaw = document.getElementById("qa_stats_tp_key").value.trim();
             const tpKeys = tpRaw.split(/[\s,;]+/).filter(Boolean);
@@ -2662,6 +2850,15 @@ async function runScriptApi(scriptName, payload) {
             data.success ? "ok" : "err"
         );
         showResultPopup(data, { scriptName });
+        if (scriptName === "qa_jira_fill") {
+            if (data.success) {
+                const input = document.getElementById("qa_fill_attachments");
+                if (input) input.value = "";
+                const nameEl = input?.closest(".file-upload-zone")?.querySelector(".file-upload-name");
+                if (nameEl) nameEl.textContent = "尚未選擇檔案";
+            }
+            refreshQaJiraFillStatus();
+        }
         return data;
     } catch (err) {
         appendRunLog(`${scriptName}：API 失敗 — ${err}`, "err");
@@ -2803,6 +3000,7 @@ function switchRightPanelTab(tabId) {
         const active = btn.dataset.rightTab === tabId;
         btn.classList.toggle("active", active);
         btn.setAttribute("aria-selected", active ? "true" : "false");
+        if (active) btn.classList.remove("is-quiet");
     });
     document.querySelectorAll(".right-panel-pane").forEach((pane) => {
         const active = pane.id === `right-panel-${tabId}`;
@@ -2903,7 +3101,7 @@ function renderRunHistoryList() {
     list.innerHTML = items
         .map(
             (item, idx) => `<li class="run-history-item ${item.success ? "is-success" : "is-fail"}" data-history-idx="${idx}" role="button" tabindex="0">
-                <div class="run-history-meta">${escapeHtml(item.time || "")}${item.scriptName ? " · " + escapeHtml(item.scriptName) : ""}</div>
+                <div class="run-history-meta">${escapeHtml(item.time || "")}${(item.scriptLabel || item.scriptName) ? " · " + escapeHtml(item.scriptLabel || displayScriptName(item.scriptName)) : ""}</div>
                 <div class="run-history-title">${escapeHtml(item.message || (item.success ? "成功" : "失敗"))}</div>
             </li>`
         )
@@ -2935,6 +3133,7 @@ function buildResultBodyHtml(data) {
         "same_time_receive_ticket",
         "deposit_data",
         "bet_data",
+        "qa_jira_fill",
     ];
     const showSummaryPanel = isSuccess || (summaryResultTypes.includes(resultType) && !data.code);
     return showSummaryPanel ? renderFormattedResult(data, resultType) : renderFailureResult(data);
@@ -2961,8 +3160,13 @@ function showResultInRightPanel(data, options = {}) {
             badge.className = `right-result-badge ${isSuccess ? "is-success" : "is-fail"}`;
         }
         if (msg) {
-            msg.textContent = data.message || (isSuccess ? "執行成功" : "執行失敗");
+            const generic = isSuccess && isGenericSuccessMessage(data.message);
+            msg.hidden = generic;
+            msg.textContent = generic ? "" : (data.message || (isSuccess ? "執行成功" : "執行失敗"));
         }
+        document.querySelectorAll(".right-panel-tab").forEach((btn) => {
+            btn.classList.toggle("is-quiet", btn.dataset.rightTab !== "result");
+        });
         if (body) {
             body.innerHTML = buildResultBodyHtml(data);
             setupResultModalInteractions(body);
@@ -2974,6 +3178,7 @@ function showResultInRightPanel(data, options = {}) {
         pushRunHistory({
             time: new Date().toLocaleString("zh-TW", { hour12: false }),
             scriptName: options.scriptName || "",
+            scriptLabel: displayScriptName(options.scriptName),
             success: isSuccess,
             message: data.message || "",
             data,
@@ -3178,6 +3383,9 @@ function detectResultType(data) {
     }
     if (data.kind === "create_bug") {
         return "create_qa_task";
+    }
+    if (data.kind === "qa_jira_fill") {
+        return "qa_jira_fill";
     }
     if ("postcardCode" in data) {
         return "postcard";
@@ -3738,18 +3946,20 @@ function renderCustomerIdResult(data) {
         data.data?.customer_id != null && String(data.data.customer_id).trim() !== ""
             ? String(data.data.customer_id)
             : "";
-    const stats = renderStatsBar([
-        { label: "玩家 ID", value: customerId || "—" },
-        { label: "查詢結果", value: data.success ? "成功" : "失敗" },
-    ]);
-    if (!customerId) return stats;
+    if (!customerId) {
+        return renderStatsBar([{ label: "玩家 ID", value: "—" }]);
+    }
 
-    return `${stats}
-        <div class="result-copy-row">
-            <button type="button" class="result-copy-btn" data-copy="${escapeHtml(customerId)}">
-                ${COPY_ICON_SVG}
-                <span class="result-copy-btn-label">複製玩家 ID</span>
-            </button>
+    return `
+        <div class="result-id-block">
+            <span class="result-stat-label">玩家 ID</span>
+            <div class="result-id-line">
+                <span class="result-stat-value is-identifier">${escapeHtml(customerId)}</span>
+                <button type="button" class="result-copy-btn" data-copy="${escapeHtml(customerId)}">
+                    ${COPY_ICON_SVG}
+                    <span class="result-copy-btn-label">複製</span>
+                </button>
+            </div>
         </div>`;
 }
 
@@ -3771,6 +3981,28 @@ function renderManualSingleConfirmResult(data) {
     ]);
 }
 
+function renderQaJiraFillResult(data) {
+    const info = data.data || {};
+    const files = Array.isArray(info.files) ? info.files : [];
+    const summary = renderStatsBar([
+        { label: "Jira", value: info.jira || "—" },
+        { label: "測試結果", value: info.result || "—" },
+        { label: "截圖", numeric: files.length, suffix: "張", dimZero: true },
+    ]);
+    const folder = info.folder_url
+        ? `<p class="result-task-summary"><a href="${escapeHtml(info.folder_url)}" target="_blank" rel="noopener noreferrer">開啟截圖資料夾</a></p>`
+        : "";
+    const comment = info.comment_url
+        ? `<p class="result-task-summary"><a href="${escapeHtml(info.comment_url)}" target="_blank" rel="noopener noreferrer">開啟 Jira 留言</a></p>`
+        : "";
+    const list = files.length
+        ? `<ul class="changelog-list">${files.map((file) => `<li><a href="${escapeHtml(file.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(file.name)}</a></li>`).join("")}</ul>`
+        : "";
+    const note = info.note ? `<p class="result-task-note">${escapeHtml(info.note)}</p>` : "";
+    const error = data.success ? "" : `<p class="result-task-note text-fail">${escapeHtml(data.message || info.message || "回填失敗")}</p>`;
+    return `${summary}${error}${note}${folder}${comment}${list}`;
+}
+
 function renderFormattedResult(data, resultType) {
     if (resultType === "calculate_workdays") {
         return renderWorkdaysReport(data.data);
@@ -3780,6 +4012,9 @@ function renderFormattedResult(data, resultType) {
     }
     if (resultType === "create_qa_task") {
         return renderCreateQaTaskResults(data.data);
+    }
+    if (resultType === "qa_jira_fill") {
+        return renderQaJiraFillResult(data);
     }
     if (resultType === "postcard") {
         return renderPostCardResult(data);
@@ -3832,4 +4067,5 @@ function closeResultModal() {
         }
     }, 180);
 }
+
 

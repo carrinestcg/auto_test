@@ -14,3 +14,5 @@ tcg-sheet-integration*.json
 tcg-sheet-integration-*.json
 credentials*.json
 .venv/
+screenshots/*
+!screenshots/.gitkeep

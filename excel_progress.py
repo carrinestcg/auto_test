@@ -36,11 +36,56 @@ def _credentials_path() -> Path | None:
     return path
 
 
-def _load_service_account_credentials():
+def _escape_controls_in_json_strings(text: str) -> str:
+    """金鑰若把私鑰換行寫成真正的換行，JSON 會解析失敗。只轉字串裡的控制字元。"""
+    out = []
+    in_string = False
+    escaped = False
+    for char in text:
+        if in_string:
+            if escaped:
+                out.append(char)
+                escaped = False
+                continue
+            if char == "\\":
+                out.append(char)
+                escaped = True
+                continue
+            if char == '"':
+                in_string = False
+                out.append(char)
+                continue
+            if char == "\n":
+                out.append("\\n")
+                continue
+            if char == "\r":
+                out.append("\\r")
+                continue
+            if ord(char) < 0x20:
+                out.append(f"\\u{ord(char):04x}")
+                continue
+        elif char == '"':
+            in_string = True
+        out.append(char)
+    return "".join(out)
+
+
+def _parse_service_account_info(text: str) -> dict:
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return json.loads(_escape_controls_in_json_strings(text))
+
+
+def _load_service_account_credentials(scopes=None):
+    scopes = scopes or SCOPES
     json_str = os.environ.get("GOOGLE_SHEETS_CREDENTIALS_JSON", "").strip()
     if json_str:
-        info = json.loads(json_str)
-        return service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
+        try:
+            info = _parse_service_account_info(json_str)
+            return service_account.Credentials.from_service_account_info(info, scopes=scopes)
+        except json.JSONDecodeError:
+            pass
 
     cred_path = _credentials_path()
     if cred_path is None:
@@ -53,7 +98,7 @@ def _load_service_account_credentials():
             "找不到 Google 服務帳號金鑰檔："
             f"{cred_path}（請確認 .env 的 GOOGLE_SHEETS_CREDENTIALS 路徑正確）"
         )
-    return service_account.Credentials.from_service_account_file(str(cred_path), scopes=SCOPES)
+    return service_account.Credentials.from_service_account_file(str(cred_path), scopes=scopes)
 
 
 def parse_google_sheet_id(value: str | None) -> str:

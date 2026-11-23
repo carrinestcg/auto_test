@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..600&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='flask_css.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='flask_ui_v2.css') }}">
     <script>
         (function () {
             try {
@@ -32,29 +33,29 @@
             <div class="version">v{{ version_info.version }} · 測試自動化</div>
         </div>
         <nav class="sidebar-nav" role="tablist" aria-label="測試腳本分類">
+            <button type="button" class="nav-item active" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="true">
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
+                <span class="nav-label">充值</span>
+            </button>
             <button type="button" class="nav-item" onclick="switchTab(event,'Frontend')" role="tab" aria-selected="false">
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span>
-                <span class="nav-label">前台 Frontend</span>
+                <span class="nav-label">領獎</span>
             </button>
             <button type="button" class="nav-item" onclick="switchTab(event,'Backend')" role="tab" aria-selected="false">
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg></span>
-                <span class="nav-label">後台 Backend</span>
+                <span class="nav-label">建立資料</span>
             </button>
             <button type="button" class="nav-item" onclick="switchTab(event,'Player Management')" role="tab" aria-selected="false">
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
-                <span class="nav-label">玩家管理</span>
+                <span class="nav-label">玩家</span>
             </button>
             <button type="button" class="nav-item" onclick="switchTab(event,'Promotion / Ticket')" role="tab" aria-selected="false">
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg></span>
-                <span class="nav-label">票券／活動</span>
-            </button>
-            <button type="button" class="nav-item active" onclick="switchTab(event,'TestingTooLTab')" role="tab" aria-selected="true">
-                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
-                <span class="nav-label">測試工具</span>
+                <span class="nav-label">維運</span>
             </button>
             <button type="button" class="nav-item" onclick="switchTab(event,'SanityTooLTab')" role="tab" aria-selected="false">
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>
-                <span class="nav-label">建立QA_Task</span>
+                <span class="nav-label">QA 文書</span>
             </button>
             <button type="button" class="nav-item" onclick="switchTab(event,'ExcelTab')" role="tab" aria-selected="false">
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M8 13h2"/><path d="M8 17h2"/><path d="M14 13h2"/><path d="M14 17h2"/></svg></span>
@@ -310,6 +311,54 @@
                         <p id="workdays-date-applied-hint" class="workdays-date-applied-hint hidden" aria-live="polite"></p>
                     </div>
 
+                    <div id="qa-jira-fill-div" class="input-group bug-form hidden">
+                        <div class="bug-field bug-field-full">
+                            <label for="qa_fill_project" class="field-label">專案資料夾 *</label>
+                            <div class="jira-suggest">
+                                <input type="text" id="qa_fill_project" class="account-line-input" placeholder="輸入 TP-5299 搜尋，例如 TP-5299 平均存款金額" autocomplete="off">
+                                <div id="qa_fill_project_menu" class="jira-suggest-menu hidden" role="listbox"></div>
+                            </div>
+                            <input type="hidden" id="qa_fill_folder_id" value="">
+                            <small class="field-helper">先填單號。TCG 單會在 Release 2026 找專案資料夾，TP 單會在 TP 2026 找。還沒有這個資料夾時，送出後會新建。</small>
+                        </div>
+                        <div class="bug-field-row">
+                            <div class="bug-field">
+                                <label for="qa_fill_jira" class="field-label">Jira 單號 *</label>
+                                <input type="text" id="qa_fill_jira" class="account-line-input" placeholder="TCG-12345" autocomplete="off">
+                            </div>
+                            <div class="bug-field">
+                                <label for="qa_fill_result" class="field-label">測試結果 *</label>
+                                <select id="qa_fill_result" class="app-select">
+                                    <option value="PASS" selected>PASS</option>
+                                    <option value="FAIL">FAIL</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="bug-field bug-field-full">
+                            <label for="qa_fill_note" class="field-label">測試說明</label>
+                            <textarea id="qa_fill_note" rows="3" class="bug-textarea-sm" placeholder="活動正常建立，獎勵派發成功。"></textarea>
+                        </div>
+                        <div class="bug-field bug-field-full">
+                            <label class="field-label">截圖</label>
+                            <p class="field-helper">先把手動截圖存到專案的 <code>screenshots/</code>。也可以在這裡再補選圖片，會一併上傳。</p>
+                            <p id="qa_fill_shot_list" class="field-helper">尚未檢查截圖資料夾。</p>
+                            <div class="file-upload-zone" data-input="qa_fill_attachments">
+                                <input type="file" id="qa_fill_attachments" class="file-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple>
+                                <label for="qa_fill_attachments" class="file-upload-label">
+                                    <span class="file-upload-icon" aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                    </span>
+                                    <span class="file-upload-title">補選截圖（選填）</span>
+                                    <span class="file-upload-name">尚未選擇檔案</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="bug-field bug-field-full">
+                            <label class="field-label">操作紀錄</label>
+                            <div id="qa_fill_history" class="field-helper">尚無回填紀錄。</div>
+                        </div>
+                    </div>
+
                     <div class="multi-select-wrapper input-group platform-select-wrap hidden" id="platform-select-wrap">
                         <label class="field-label" for="platform-chip-picker">平台</label>
                         <select id="frontend-checkbox_manual_platform" name="platform_type_manual" class="platform-select-hidden" tabindex="-1" aria-hidden="true">
@@ -417,22 +466,66 @@
                         前台領取票券
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="LOTTERY_BET" id="frontend-checkbox_lott" onchange="toggleInput()">
-                        前台彩票投注
+                        <input type="checkbox" name="script" value="PostCard_api" id="PostCard_api" onchange="toggleInput()">
+                        領取郵寄碼
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="MANUAL_SIGN" id="MANUAL_SIGN" onchange="toggleInput()">
-                        前台手工報名活動
+                        <input type="checkbox" name="script" value="Achievement_bonus" id="Achievement_bonus" onchange="toggleInput()">
+                        領取成就獎勵
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="ALL_deposit_promotion" id="deposit_promotion_complete" onchange="toggleInput()">
-                        達成存款活動
+                        <input type="checkbox" name="script" value="QUEST_bonus" id="QUEST_bonus" onchange="toggleInput()">
+                        領取任務獎勵
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Activity_bonus" id="Activity_bonus" onchange="toggleInput()">
+                        領取活躍度獎勵
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Rescue_Reward_api" id="Rescue_Reward_api" onchange="toggleInput()">
+                        觸發救援金
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
+                        觸發 APP 下載獎勵
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Compensation_api" id="Compensation_api" onchange="toggleInput()">
+                        幸運注單補派獎
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Extra_Reward_api" id="Extra_Reward_api" onchange="toggleInput()">
+                        觸發翻倍獎勵
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="PLAYER_RANK" id="frontend-player-rank" onchange="toggleInput()">
+                        手動達成升級獎勵
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="SameTime_ReceiveTicket" id="SameTime_ReceiveTicket" onchange="toggleInput()">
+                        同時領取票券
                     </label>
                 </div>
             </div>
 
             <div id="Backend" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
+                    <label>
+                        <input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">
+                        創建票券
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Create_all_promotion" id="Create_all_promotion" onchange="toggleInput()">
+                        創建活動
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Create_FreeSpin_Event" id="Create_FreeSpin_Event" onchange="toggleInput()">
+                        創建免費轉方案
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Codition_create_bonus" id="Codition_create_bonus" onchange="toggleInput()">
+                        條件派發
+                    </label>
                     <label>
                         <input type="checkbox" name="script" value="MANUAL_SINGLE">
                         創建個人＋單一審核(多人batch)
@@ -442,20 +535,16 @@
                         創建個人＋批量審核(多人batch)
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="Codition_create_bonus" id="Codition_create_bonus" onchange="toggleInput()">
-                        條件派發
-                    </label>
-                    <label>
                         <input type="checkbox" name="script" value="MANUAL_CREATE_SINGLE_CONFIRM" id="frontend-checkbox_manual" onchange="toggleInput()">
                         創建個人＋審核
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="PLAYER_RANK" id="frontend-player-rank" onchange="toggleInput()">
-                        手動達成升級獎勵
+                        <input type="checkbox" name="script" value="MANUAL_SIGN" id="MANUAL_SIGN" onchange="toggleInput()">
+                        前台手工報名活動
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="Extra_Reward_api" id="Extra_Reward_api" onchange="toggleInput()">
-                        觸發翻倍獎勵
+                        <input type="checkbox" name="script" value="LOTTERY_BET" id="frontend-checkbox_lott" onchange="toggleInput()">
+                        前台彩票投注
                     </label>
                 </div>
             </div>
@@ -477,10 +566,6 @@
                         查詢 customer_id
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="Query_deposit_count" id="query-deposit-count" onchange="toggleInput()">
-                        查詢 特定存款次數的 customer 
-                    </label>
-                    <label>
                         <input type="checkbox" name="script" value="Customer_name" id="Customer_name" onchange="toggleInput()">
                         查詢 customer_account
                     </label>
@@ -488,18 +573,18 @@
                         <input type="checkbox" name="script" value="Input_User_Info" id="Input_User_Info" onchange="toggleInput()">
                         填入 customer_info
                     </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
+                        變更玩家密碼
+                    </label>
                 </div>
             </div>
 
             <div id="Promotion / Ticket" class="tabcontent" role="tabpanel">
                 <div class="select-group script-grid">
                     <label>
-                        <input type="checkbox" name="script" value="auto_create_ticket" id="frontend-checkbox_ticket" onchange="toggleInput()">
-                        創建票券
-                    </label>
-                    <label>
-                        <input type="checkbox" name="script" value="Create_all_promotion" id="Create_all_promotion" onchange="toggleInput()">
-                        創建活動
+                        <input type="checkbox" name="script" value="Schedule_manual_bonus" id="Schedule_manual_bonus" onchange="toggleInput()">
+                        定時任務 API
                     </label>
                     <label>
                         <input type="checkbox" name="script" value="UPDATE_SCHEDULE_TASK" id="UPDATE_SCHEDULE_TASK" onchange="toggleInput()">
@@ -509,143 +594,66 @@
                         <input type="checkbox" name="script" value="Edit_Promotion_Time" id="Edit_Promotion_Time" onchange="toggleInput()">
                         更改任務時間
                     </label>
+                    <label>
+                        <input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">
+                        品牌管理員並行操作測試
+                    </label>
                 </div>
             </div>
 
             <div id="TestingTooLTab" class="tabcontent active" role="tabpanel">
-                <div class="script-categories">
-                    <section class="script-category" aria-labelledby="script-cat-deposit">
-                        <div class="script-category-header">
-                            <span class="script-category-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <rect x="2" y="5" width="20" height="14" rx="2"/>
-                                    <path d="M16 12h.01"/>
-                                    <path d="M2 10h20"/>
-                                </svg>
-                            </span>
-                            <h3 id="script-cat-deposit" class="script-category-title">充值相關</h3>
-                        </div>
-                        <div class="script-grid script-category-grid">
-                            <label>
-                                <input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">
-                                前台充值
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="BACKEND_DEPOSIT" id="backend-checkbox" onchange="toggleInput()">
-                                後台充值
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
-                                後台批量審核充值
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="FIXED_DEPOSIT" id="frontend-fix_deposit" onchange="toggleInput()">
-                                快捷充值送
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Deposit_data" id="Deposit_data" onchange="toggleInput()">
-                                存款金額＆存款次數統計
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="bet_data" id="bet_data" onchange="toggleInput()">
-                                投注資料統計
-                            </label>
-                        </div>
-                    </section>
-
-                    <section class="script-category" aria-labelledby="script-cat-reward">
-                        <div class="script-category-header">
-                            <span class="script-category-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="20 12 20 22 4 22 4 12"/>
-                                    <rect x="2" y="7" width="20" height="5"/>
-                                    <line x1="12" y1="22" x2="12" y2="7"/>
-                                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-                                </svg>
-                            </span>
-                            <h3 id="script-cat-reward" class="script-category-title">領取 / 獎勵相關</h3>
-                        </div>
-                        <div class="script-grid script-category-grid">
-                            <label>
-                                <input type="checkbox" name="script" value="Compensation_api" id="Compensation_api" onchange="toggleInput()">
-                                幸運注單補派獎
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="APP_Download" id="APP_Download_API" onchange="toggleInput()">
-                                觸發 APP 下載獎勵
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Rescue_Reward_api" id="Rescue_Reward_api" onchange="toggleInput()">
-                                觸發救援金
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="PostCard_api" id="PostCard_api" onchange="toggleInput()">
-                                領取郵寄碼
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Achievement_bonus" id="Achievement_bonus" onchange="toggleInput()">
-                                領取成就獎勵
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="QUEST_bonus" id="QUEST_bonus" onchange="toggleInput()">
-                                領取任務獎勵
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Activity_bonus" id="Activity_bonus" onchange="toggleInput()">
-                                領取活躍度獎勵
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="SameTime_ReceiveTicket" id="SameTime_ReceiveTicket" onchange="toggleInput()">
-                                同時領取票券
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Create_FreeSpin_Event" id="Create_FreeSpin_Event" onchange="toggleInput()">
-                                創建免費轉方案
-                            </label>
-                        </div>
-                    </section>
-
-                    <section class="script-category" aria-labelledby="script-cat-system">
-                        <div class="script-category-header">
-                            <span class="script-category-icon" aria-hidden="true">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <circle cx="12" cy="12" r="3"/>
-                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                                </svg>
-                            </span>
-                            <h3 id="script-cat-system" class="script-category-title">系統 / 帳號管理</h3>
-                        </div>
-                        <div class="script-grid script-category-grid">
-                            <label>
-                                <input type="checkbox" name="script" value="SameTimeLogin" id="SameTimeLogin_manager" onchange="toggleInput()">
-                                品牌管理員並行操作測試
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Change_password" id="Change_password" onchange="toggleInput()">
-                                變更玩家密碼
-                            </label>
-                            <label>
-                                <input type="checkbox" name="script" value="Schedule_manual_bonus" id="Schedule_manual_bonus" onchange="toggleInput()">
-                                定時任務 API
-                            </label>
-                        </div>
-                    </section>
+                <div class="script-grid">
+                    <label>
+                        <input type="checkbox" name="script" value="FRONTEND_DEPOSIT" id="frontend-checkbox" onchange="toggleInput()">
+                        前台充值
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="BACKEND_DEPOSIT" id="backend-checkbox" onchange="toggleInput()">
+                        後台充值
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="DEPOSIT_API" id="DEPOSIT_API_script" onchange="toggleInput()">
+                        後台批量審核充值
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="FIXED_DEPOSIT" id="frontend-fix_deposit" onchange="toggleInput()">
+                        快捷充值送
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Deposit_data" id="Deposit_data" onchange="toggleInput()">
+                        存款金額＆存款次數統計
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="bet_data" id="bet_data" onchange="toggleInput()">
+                        投注資料統計
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="Query_deposit_count" id="query-deposit-count" onchange="toggleInput()">
+                        查詢 特定存款次數的 customer 
+                    </label>
+                    <label class="hidden">
+                        <input type="checkbox" name="script" value="ALL_deposit_promotion" id="deposit_promotion_complete" onchange="toggleInput()">
+                        達成存款活動
+                    </label>
                 </div>
             </div>
             <div id="SanityTooLTab" class="tabcontent" role="tabpanel">
                 <div class="script-grid">
                     <label>
-                        <input type="checkbox" name="script" value="create_qa_task" id="create_qa_task" onchange="toggleInput(); toggleQATaskInput()">
+                        <input type="checkbox" name="script" value="create_qa_task" id="create_qa_task" onchange="selectSingleQaTool(event)">
                         建立QA_Task
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="create_bug" id="create_bug" onchange="toggleInput(); toggleBugInput()">
+                        <input type="checkbox" name="script" value="create_bug" id="create_bug" onchange="selectSingleQaTool(event)">
                         建立 Bug 單
                     </label>
                     <label>
-                        <input type="checkbox" name="script" value="calculate_workdays" id="calculate_workdays" onchange="toggleInput(); toggleWorkdaysInput()">
+                        <input type="checkbox" name="script" value="calculate_workdays" id="calculate_workdays" onchange="selectSingleQaTool(event)">
                         計算workdays
+                    </label>
+                    <label>
+                        <input type="checkbox" name="script" value="qa_jira_fill" id="qa_jira_fill" onchange="selectSingleQaTool(event)">
+                        Jira 回填
                     </label>
                 </div>
             </div>
@@ -924,6 +932,7 @@
         window.APP_VERSION = {{ version_info | tojson }};
     </script>
     <script src="{{ url_for('static', filename='flask_script.js') }}"></script>
+    <script src="{{ url_for('static', filename='flask_ux.js') }}"></script>
 
     {% if selected_scripts %}
     <div class="card">
