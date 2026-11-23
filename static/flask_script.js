@@ -716,7 +716,8 @@ const SCRIPTS_HIDE_USERNAME = [
     "Create_FreeSpin_Event",
     "auto_create_ticket",
     "UPDATE_SCHEDULE_TASK",
-    "Query_deposit_count"
+    "Query_deposit_count",
+    "Rescue_Reward_api"
 ];
 function toggleDepositCount(){
     const depositCountWrap = document.getElementById("deposit-count-input-div");
@@ -1271,10 +1272,12 @@ function toggleRoundID(){
     RoundID_input.classList.toggle("hidden", !Compensation.checked);
 }
 function toggleDateTime(){
-    const Schedule_manual_bonus=document.getElementById("Schedule_manual_bonus");
-    const DateTime_input=document.getElementById("date-input-div");
-    if (!Schedule_manual_bonus || !DateTime_input) return;
-    DateTime_input.classList.toggle("hidden", !Schedule_manual_bonus.checked);
+    const dateWrap = document.getElementById("date-input-div");
+    if (!dateWrap) return;
+    const needDate =
+        isChecked("Schedule_manual_bonus") ||
+        isChecked("Rescue_Reward_api");
+    dateWrap.classList.toggle("hidden", !needDate);
 }
 /** 任一測試腳本被勾選時顯示平台（API 皆會帶 platforms；未選時後端預設 gi8viet）。 */
 function togglePlatform() {
@@ -1537,6 +1540,13 @@ function validateFormBeforeSubmit() {
     }
 
     if (isChecked("Schedule_manual_bonus")) {
+        const dateEl = document.getElementById("date_time");
+        if (!dateEl || !dateEl.value.trim()) {
+            alert("請填寫日期時間（格式: 2026-06-22，需為過去時間）");
+            return false;
+        }
+    }
+    if (isChecked("Rescue_Reward_api")) {
         const dateEl = document.getElementById("date_time");
         if (!dateEl || !dateEl.value.trim()) {
             alert("請填寫日期時間（格式: 2026-06-22，需為過去時間）");
@@ -2596,6 +2606,11 @@ function runSelectScript(){
             extraData = {
                 promotion_id: getFormPromotionIdValue(),
                 type: 3,
+            };
+            break;
+        case "Rescue_Reward_api":
+            extraData = {
+                date: document.getElementById("date_time").value.trim(),
             };
             break;
 
