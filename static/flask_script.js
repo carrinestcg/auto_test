@@ -717,7 +717,8 @@ const SCRIPTS_HIDE_USERNAME = [
     "auto_create_ticket",
     "UPDATE_SCHEDULE_TASK",
     "Query_deposit_count",
-    "Rescue_Reward_api"
+    "Rescue_Reward_api",
+   "Edit_Promotion_Time" 
 ];
 function toggleDepositCount(){
     const depositCountWrap = document.getElementById("deposit-count-input-div");
@@ -1261,6 +1262,7 @@ function togglePromotion() {
         isChecked("QUEST_bonus") ||
         isChecked("Activity_bonus") ||
         isChecked("Schedule_manual_bonus") ||
+        isChecked("Edit_Promotion_Time")||
         isDiscountCouponDepositMode();
 
     promotion_id_Input.classList.toggle("hidden", !requirePromotion_id);
@@ -2563,6 +2565,12 @@ function runSelectScript(){
         case "Customer_name":
             extraData = {
                     type: 2
+                }
+        break;
+
+        case "Edit_Promotion_Time":
+            extraData = {
+                    promotion_id: getFormPromotionIdValue(),
                 }
         break;
 
