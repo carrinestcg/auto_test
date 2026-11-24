@@ -199,6 +199,62 @@ def _resolve_project_folder(service, folder_id, folder_name, issue_key):
     return created["id"], created.get("name") or folder_name, year_name
 
 
+def list_ticket_folders(parent_id="", parent_name="", query=""):
+    """列出 TP 專案底下的 TCG 單資料夾。"""
+    service = _drive_service()
+    parent_id = str(parent_id or "").strip()
+    if not parent_id:
+        parent_id, _name, _year = _resolve_project_folder(service, "", parent_name, "TP-1")
+    folders = _list_child_folders(service, parent_id)
+    needle = str(query or "").strip().lower()
+    if needle:
+        folders = [item for item in folders if needle in item["name"].lower()]
+    return folders
+
+
+def _resolve_ticket_folder(service, project_id, project_name, issue_key, ticket_id, ticket_name):
+    """TP 專案底下再找 TCG 單資料夾。Release 的專案資料夾本身就是單號，不再往下拆。"""
+    if not re.match(r"^TP[\s\-]*\d", str(project_name or ""), re.IGNORECASE):
+        return project_id, ""
+    if not str(issue_key or "").upper().startswith("TCG"):
+        return project_id, ""
+
+    children = _list_child_folders(service, project_id)
+    ticket_id = str(ticket_id or "").strip()
+    ticket_name = str(ticket_name or "").strip()
+    if ticket_id:
+        chosen = next((item for item in children if item["id"] == ticket_id), None)
+        if chosen:
+            return chosen["id"], chosen["name"]
+        return ticket_id, ticket_name or ticket_id
+
+    key = issue_key.upper()
+    prefixed = [item for item in children if item["name"].upper().startswith(key)]
+    if ticket_name:
+        named = [item for item in children if ticket_name.lower() in item["name"].lower()]
+        if len(named) == 1:
+            return named[0]["id"], named[0]["name"]
+        if len(named) > 1:
+            names = "、".join(item["name"] for item in named[:8])
+            raise ValueError(f"找到多個 TCG 資料夾，請選一個：{names}")
+    if len(prefixed) == 1:
+        return prefixed[0]["id"], prefixed[0]["name"]
+    if len(prefixed) > 1:
+        names = "、".join(item["name"] for item in prefixed[:8])
+        raise ValueError(f"找到多個 TCG 資料夾，請選一個：{names}")
+
+    created = service.files().create(
+        body={
+            "name": issue_key,
+            "mimeType": "application/vnd.google-apps.folder",
+            "parents": [project_id],
+        },
+        fields="id, name",
+        supportsAllDrives=True,
+    ).execute()
+    return created["id"], created.get("name") or issue_key
+
+
 def _share_reader(service, file_id):
     service.permissions().create(
         fileId=file_id,
@@ -332,7 +388,7 @@ def _shot_paths():
     ]
 
 
-def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name=""):
+def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="", ticket_folder_id="", ticket_folder_name=""):
     issue_key = parse_ticket_key(issue_raw)
     if not issue_key or not JIRA_KEY_RE.fullmatch(issue_key):
         raise ValueError("請填 Jira 單號，例如 TCG-12345")
@@ -354,6 +410,7 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="")
         "success": False,
         "year_folder": "",
         "project_folder": "",
+        "ticket_folder": "",
         "folder_url": "",
         "files": [],
         "comment_url": "",
@@ -366,7 +423,11 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="")
         )
         record["year_folder"] = year_name
         record["project_folder"] = project_name
-        _folder_name, folder_url, files, share_note = _upload_folder(service, issue_key, paths, project_id)
+        ticket_id, ticket_name = _resolve_ticket_folder(
+            service, project_id, project_name, issue_key, ticket_folder_id, ticket_folder_name
+        )
+        record["ticket_folder"] = ticket_name
+        _folder_name, folder_url, files, share_note = _upload_folder(service, issue_key, paths, ticket_id)
         record["folder_url"] = folder_url
         record["files"] = files
         comment_id, comment_url = _add_comment(
@@ -377,7 +438,7 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="")
         archived = _archive(paths, issue_key)
         record["archived"] = archived
         record["success"] = True
-        message = f"{issue_key} 已回填{result}（{year_name} / {project_name}）"
+        message = f"{issue_key} 已回填{result}（{year_name} / {project_name}" + (f" / {ticket_name}" if ticket_name else "") + "）"
         if share_note:
             message = f"{message}。{share_note}"
         record["message"] = message

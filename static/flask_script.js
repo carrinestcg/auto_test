@@ -1048,6 +1048,7 @@ function toggleQaJiraFill() {
     div.classList.toggle("hidden", !show);
     if (show) {
         initQaFillFolderSuggest();
+        initQaFillTicketSuggest();
         refreshQaJiraFillStatus();
     }
 }
@@ -1073,6 +1074,7 @@ function initQaFillFolderSuggest() {
     const hide = () => menu.classList.add("hidden");
     input.addEventListener("input", () => {
         idInput.value = "";
+        syncQaFillTicketField();
         updateRunButtonState();
         window.clearTimeout(timer);
         timer = window.setTimeout(async () => {
@@ -1099,6 +1101,7 @@ function initQaFillFolderSuggest() {
                                 name: input.value,
                             }));
                             hide();
+                            syncQaFillTicketField();
                             updateRunButtonState();
                         });
                     });
@@ -1106,6 +1109,71 @@ function initQaFillFolderSuggest() {
                 menu.classList.remove("hidden");
             } catch (e) {
                 menu.innerHTML = `<div class="jira-suggest-empty">無法讀取 Drive 資料夾</div>`;
+                menu.classList.remove("hidden");
+            }
+        }, 250);
+    });
+    input.addEventListener("blur", () => window.setTimeout(hide, 180));
+    syncQaFillTicketField();
+}
+
+function syncQaFillTicketField() {
+    const wrap = document.getElementById("qa_fill_ticket_wrap");
+    const name = document.getElementById("qa_fill_project")?.value.trim() || "";
+    const show = /^TP[\s\-]*\d/i.test(name);
+    if (wrap) wrap.classList.toggle("hidden", !show);
+    if (!show) {
+        const ticketId = document.getElementById("qa_fill_ticket_id");
+        const ticketName = document.getElementById("qa_fill_ticket");
+        if (ticketId) ticketId.value = "";
+        if (ticketName) ticketName.value = "";
+    }
+}
+
+function initQaFillTicketSuggest() {
+    const input = document.getElementById("qa_fill_ticket");
+    const menu = document.getElementById("qa_fill_ticket_menu");
+    const idInput = document.getElementById("qa_fill_ticket_id");
+    if (!input || !menu || !idInput || input.dataset.bound === "true") return;
+    input.dataset.bound = "true";
+    let timer = 0;
+    const hide = () => menu.classList.add("hidden");
+    input.addEventListener("input", () => {
+        idInput.value = "";
+        window.clearTimeout(timer);
+        timer = window.setTimeout(async () => {
+            const parentId = document.getElementById("qa_fill_folder_id")?.value.trim() || "";
+            const parentName = document.getElementById("qa_fill_project")?.value.trim() || "";
+            if (!parentId && !parentName) return;
+            const query = input.value.trim();
+            try {
+                const params = new URLSearchParams({
+                    parent_id: parentId,
+                    parent_name: parentName,
+                    q: query,
+                });
+                const res = await fetch(`/api/qa_jira_fill/tickets?${params.toString()}`);
+                const data = await res.json();
+                const rows = data.data || [];
+                if (!data.success) {
+                    menu.innerHTML = `<div class="jira-suggest-empty">${escapeHtml(data.message || "無法讀取 TCG 資料夾")}</div>`;
+                } else if (!rows.length) {
+                    menu.innerHTML = `<div class="jira-suggest-empty">沒有符合的 TCG 單，送出時會用 Jira 單號尋找或新建</div>`;
+                } else {
+                    menu.innerHTML = rows.slice(0, 12).map((row) => (
+                        `<button type="button" class="jira-suggest-item" data-id="${escapeHtml(row.id)}" data-name="${escapeHtml(row.name)}">${escapeHtml(row.name)}</button>`
+                    )).join("");
+                    menu.querySelectorAll(".jira-suggest-item").forEach((btn) => {
+                        btn.addEventListener("click", () => {
+                            input.value = btn.dataset.name || "";
+                            idInput.value = btn.dataset.id || "";
+                            hide();
+                        });
+                    });
+                }
+                menu.classList.remove("hidden");
+            } catch (e) {
+                menu.innerHTML = `<div class="jira-suggest-empty">無法讀取 TCG 資料夾</div>`;
                 menu.classList.remove("hidden");
             }
         }, 250);
@@ -1143,7 +1211,7 @@ function refreshQaJiraFillStatus() {
                     const link = row.folder_url
                         ? ` · <a href="${escapeHtml(row.folder_url)}" target="_blank" rel="noopener noreferrer">截圖</a>`
                         : "";
-                    const place = [row.year_folder, row.project_folder].filter(Boolean).join(" / ");
+                    const place = [row.year_folder, row.project_folder, row.ticket_folder].filter(Boolean).join(" / ");
                     const project = place ? `${escapeHtml(place)} · ` : "";
                     return `<div>${escapeHtml(row.time || "")} · ${project}${escapeHtml(row.jira || "")} · ${escapeHtml(row.result || "")} · ${state}${link}</div>`;
                 }).join("");
@@ -2704,6 +2772,8 @@ function runSelectScript(){
                 note: document.getElementById("qa_fill_note").value.trim(),
                 folder_id: document.getElementById("qa_fill_folder_id").value.trim(),
                 folder_name: document.getElementById("qa_fill_project").value.trim(),
+                ticket_folder_id: document.getElementById("qa_fill_ticket_id")?.value.trim() || "",
+                ticket_folder_name: document.getElementById("qa_fill_ticket")?.value.trim() || "",
             };
             const files = document.getElementById("qa_fill_attachments")?.files;
             if (files && files.length) {

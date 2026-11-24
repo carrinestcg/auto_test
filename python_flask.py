@@ -1351,6 +1351,22 @@ def api_qa_jira_fill_folders():
         return jsonify({"success": False, "message": str(exc), "data": []}), 500
 
 
+@python_flask.route("/api/qa_jira_fill/tickets", methods=["GET"])
+def api_qa_jira_fill_tickets():
+    try:
+        return jsonify({
+            "success": True,
+            "data": qa_jira_fill.list_ticket_folders(
+                request.args.get("parent_id", ""),
+                request.args.get("parent_name", ""),
+                request.args.get("q", ""),
+            ),
+        })
+    except Exception as exc:
+        logging.error("列出 TCG 單資料夾失敗: %s", exc)
+        return jsonify({"success": False, "message": str(exc), "data": []}), 500
+
+
 @python_flask.route("/api/qa_jira_fill/files", methods=["GET"])
 def api_qa_jira_fill_files():
     return jsonify({"success": True, "data": qa_jira_fill.list_screenshots()})
@@ -1377,6 +1393,8 @@ def api_qa_jira_fill():
             uploads,
             data.get("folder_id") or "",
             data.get("folder_name") or "",
+            data.get("ticket_folder_id") or "",
+            data.get("ticket_folder_name") or "",
         )
         return jsonify({
             "success": bool(record.get("success")),
