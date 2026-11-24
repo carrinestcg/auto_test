@@ -73,9 +73,53 @@ def save_uploads(uploads):
     return saved
 
 
+OAUTH_TOKEN_PATH = APP_DIR / "drive_oauth_token.json"
+
+
+def _oauth_client_path():
+    env_path = os.environ.get("GOOGLE_OAUTH_CLIENT_JSON", "").strip()
+    if not env_path:
+        return None
+    path = Path(env_path).expanduser()
+    if not path.is_absolute():
+        path = (APP_DIR / path).resolve()
+    return path
+
+
+def _user_credentials():
+    """擁有者授權一次後留下的 token。沒有這個檔就改走服務帳號。"""
+    if not OAUTH_TOKEN_PATH.is_file():
+        return None
+    from google.auth.transport.requests import Request
+    from google.oauth2.credentials import Credentials
+
+    creds = Credentials.from_authorized_user_file(str(OAUTH_TOKEN_PATH), DRIVE_SCOPES)
+    if creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+        OAUTH_TOKEN_PATH.write_text(creds.to_json(), encoding="utf-8")
+    if not creds.valid:
+        raise RuntimeError("Drive 授權已失效，請在這台有瀏覽器的機器重跑 authorize_drive.py")
+    return creds
+
+
 def _drive_service():
-    creds = _load_service_account_credentials(DRIVE_SCOPES)
+    creds = _user_credentials() or _load_service_account_credentials(DRIVE_SCOPES)
     return build("drive", "v3", credentials=creds, cache_discovery=False)
+
+
+def authorize_drive():
+    """開瀏覽器讓資料夾擁有者登入一次，並把 refresh token 存到本機。"""
+    client_path = _oauth_client_path()
+    if client_path is None or not client_path.is_file():
+        raise FileNotFoundError(
+            "找不到 OAuth 用戶端 JSON。請在 .env 設定 GOOGLE_OAUTH_CLIENT_JSON"
+        )
+    from google_auth_oauthlib.flow import InstalledAppFlow
+
+    flow = InstalledAppFlow.from_client_secrets_file(str(client_path), DRIVE_SCOPES)
+    creds = flow.run_local_server(port=0, access_type="offline", prompt="consent")
+    OAUTH_TOKEN_PATH.write_text(creds.to_json(), encoding="utf-8")
+    return OAUTH_TOKEN_PATH
 
 
 TP_YEAR_RE = re.compile(r"^TP[\s\-]*(20\d{2})$", re.IGNORECASE)
@@ -167,7 +211,7 @@ def list_project_folders(query="", issue_key=""):
     return folders
 
 
-def _resolve_project_folder(service, folder_id, folder_name, issue_key):
+def _resolve_project_folder(service, folder_id, folder_name, issue_key, create=True):
     folder_id = str(folder_id or "").strip()
     folder_name = str(folder_name or "").strip()
     is_tp = _is_tp(issue_key, folder_name)
@@ -186,6 +230,9 @@ def _resolve_project_folder(service, folder_id, folder_name, issue_key):
         raise ValueError(f"找到多個專案資料夾，請選一個：{names}")
     if len(matches) == 1:
         return matches[0]["id"], matches[0]["name"], year_name
+
+    if not create:
+        raise ValueError(f"找不到專案資料夾「{folder_name}」。請先在 Drive 建好，或從清單選一個。")
 
     created = service.files().create(
         body={
@@ -212,7 +259,7 @@ def list_ticket_folders(parent_id="", parent_name="", query=""):
     return folders
 
 
-def _resolve_ticket_folder(service, project_id, project_name, issue_key, ticket_id, ticket_name):
+def _resolve_ticket_folder(service, project_id, project_name, issue_key, ticket_id, ticket_name, create=True):
     """TP 專案底下再找 TCG 單資料夾。Release 的專案資料夾本身就是單號，不再往下拆。"""
     if not re.match(r"^TP[\s\-]*\d", str(project_name or ""), re.IGNORECASE):
         return project_id, ""
@@ -243,6 +290,9 @@ def _resolve_ticket_folder(service, project_id, project_name, issue_key, ticket_
         names = "、".join(item["name"] for item in prefixed[:8])
         raise ValueError(f"找到多個 TCG 資料夾，請選一個：{names}")
 
+    if not create:
+        raise ValueError(f"找不到 {issue_key} 的資料夾。請先在 Drive 放好檔案，再從清單選這個資料夾。")
+
     created = service.files().create(
         body={
             "name": issue_key,
@@ -253,6 +303,15 @@ def _resolve_ticket_folder(service, project_id, project_name, issue_key, ticket_
         supportsAllDrives=True,
     ).execute()
     return created["id"], created.get("name") or issue_key
+
+
+def _folder_link(service, folder_id):
+    meta = service.files().get(
+        fileId=folder_id,
+        fields="id, webViewLink",
+        supportsAllDrives=True,
+    ).execute()
+    return meta.get("webViewLink") or f"https://drive.google.com/drive/folders/{folder_id}"
 
 
 def _share_reader(service, file_id):
@@ -388,7 +447,13 @@ def _shot_paths():
     ]
 
 
-def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="", ticket_folder_id="", ticket_folder_name=""):
+def _as_bool(value):
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="", ticket_folder_id="", ticket_folder_name="", link_only=False):
     issue_key = parse_ticket_key(issue_raw)
     if not issue_key or not JIRA_KEY_RE.fullmatch(issue_key):
         raise ValueError("請填 Jira 單號，例如 TCG-12345")
@@ -397,10 +462,12 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="",
         raise ValueError("測試結果請選 PASS 或 FAIL")
     note = str(note or "").strip()
 
-    save_uploads(uploads)
-    paths = _shot_paths()
-    if not paths:
-        raise ValueError("screenshots 資料夾沒有截圖。請先把圖存進去，或在表單選擇圖片。")
+    link_only = _as_bool(link_only)
+    if link_only:
+        paths = []
+    else:
+        save_uploads(uploads)
+        paths = _shot_paths()
 
     record = {
         "time": _display_time(),
@@ -419,15 +486,20 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="",
     try:
         service = _drive_service()
         project_id, project_name, year_name = _resolve_project_folder(
-            service, folder_id, folder_name, issue_key
+            service, folder_id, folder_name, issue_key, create=bool(paths)
         )
         record["year_folder"] = year_name
         record["project_folder"] = project_name
         ticket_id, ticket_name = _resolve_ticket_folder(
-            service, project_id, project_name, issue_key, ticket_folder_id, ticket_folder_name
+            service, project_id, project_name, issue_key, ticket_folder_id, ticket_folder_name, create=bool(paths)
         )
         record["ticket_folder"] = ticket_name
-        _folder_name, folder_url, files, share_note = _upload_folder(service, issue_key, paths, ticket_id)
+        if paths:
+            _folder_name, folder_url, files, share_note = _upload_folder(service, issue_key, paths, ticket_id)
+        else:
+            folder_url = _folder_link(service, ticket_id)
+            files = []
+            share_note = "已貼上既有資料夾連結，沒有上傳圖片。"
         record["folder_url"] = folder_url
         record["files"] = files
         comment_id, comment_url = _add_comment(
@@ -435,8 +507,9 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="",
         )
         record["comment_url"] = comment_url
         record["comment_id"] = comment_id
-        archived = _archive(paths, issue_key)
-        record["archived"] = archived
+        if paths:
+            archived = _archive(paths, issue_key)
+            record["archived"] = archived
         record["success"] = True
         message = f"{issue_key} 已回填{result}（{year_name} / {project_name}" + (f" / {ticket_name}" if ticket_name else "") + "）"
         if share_note:

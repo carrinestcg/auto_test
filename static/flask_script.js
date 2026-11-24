@@ -2775,6 +2775,7 @@ function runSelectScript(){
                 folder_name: document.getElementById("qa_fill_project").value.trim(),
                 ticket_folder_id: document.getElementById("qa_fill_ticket_id")?.value.trim() || "",
                 ticket_folder_name: document.getElementById("qa_fill_ticket")?.value.trim() || "",
+                link_only: document.getElementById("qa_fill_link_only")?.checked === true,
             };
             const files = document.getElementById("qa_fill_attachments")?.files;
             if (files && files.length) {

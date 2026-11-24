@@ -1402,6 +1402,7 @@ def api_qa_jira_fill():
             data.get("folder_name") or "",
             data.get("ticket_folder_id") or "",
             data.get("ticket_folder_name") or "",
+            data.get("link_only"),
         )
         return jsonify({
             "success": bool(record.get("success")),

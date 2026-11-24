@@ -356,8 +356,15 @@
                             <textarea id="qa_fill_note" rows="3" class="bug-textarea-sm" placeholder="活動正常建立，獎勵派發成功。"></textarea>
                         </div>
                         <div class="bug-field bug-field-full">
+                            <label class="field-label" for="qa_fill_link_only">
+                                <input type="checkbox" id="qa_fill_link_only" checked>
+                                不上傳圖片，只貼已選資料夾的連結
+                            </label>
+                            <small class="field-helper">先在 Drive 把檔案放進這個資料夾。回填時抓它的連結貼到 Jira。</small>
+                        </div>
+                        <div class="bug-field bug-field-full">
                             <label class="field-label">截圖</label>
-                            <p class="field-helper">先把手動截圖存到專案的 <code>screenshots/</code>。也可以在這裡再補選圖片，會一併上傳。</p>
+                            <p class="field-helper">取消上面的勾選後，才會把這裡或 screenshots/ 的圖上傳到 Drive。</p>
                             <p id="qa_fill_shot_list" class="field-helper">尚未檢查截圖資料夾。</p>
                             <div class="file-upload-zone" data-input="qa_fill_attachments">
                                 <input type="file" id="qa_fill_attachments" class="file-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple>
