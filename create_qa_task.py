@@ -79,9 +79,20 @@ def resolve_assignee_name(query, fallback=""):
     return raw
 
 
-def create_qa_task(tcg_key, summary, fix_versions, reporter, assignee=None):
+def qa_task_title(summary, tasktype):
+    """Tasktype 1 一般測試，2 為 Sanity Test。"""
+    try:
+        kind = int(tasktype)
+    except (TypeError, ValueError):
+        kind = 1
+    if kind == 2:
+        return f"[QA][PED] Sanity Test {summary}"
+    return f"[QA][PED] 測試 {summary}"
+
+
+def create_qa_task(tcg_key, summary, fix_versions, reporter, Tasktype=1, assignee=None):
     """在 TCG 單底下建立 QA Task subtask，建立後轉為 In Progress"""
-    new_summary = f"[QA][PED] 測試 {summary}"
+    new_summary = qa_task_title(summary, Tasktype)
     assignee_name = resolve_assignee_name(assignee, fallback=ASSIGNEE)
 
     fields = {
@@ -157,7 +168,7 @@ def main():
 
             new_key = create_qa_task(tcg_key, summary, fix_versions, reporter)
             if new_key:
-                print(f"   ✅ 建立成功：{new_key} → [QA][PED] 測試 {summary}")
+                print(f"   ✅ 建立成功：{new_key} → {qa_task_title(summary, 1)}")
                 print(f"   🔗 {JIRA_BASE_URL}/browse/{new_key}")
         except requests.exceptions.HTTPError as e:
             print(f"   ❌ API 錯誤：{e}")

@@ -186,6 +186,14 @@
                     </div>
 
                     <div id="qa-task-input-div" class="input-group hidden">
+                        <div class="bug-field bug-field-full">
+                            <label for="qa_task_type" class="field-label">Task 類型</label>
+                            <select id="qa_task_type" class="app-select">
+                                <option value="1">一般 QA Task</option>
+                                <option value="2">Sanity Test</option>
+                            </select>
+                            <small class="field-helper">一般標題為 [QA][PED] 測試。Sanity Test 標題為 [QA][PED] Sanity Test。</small>
+                        </div>
                         <div class="qa-task-field-row">
                             <div class="bug-field">
                                 <label for="tcg_keys_input" class="field-label">TCG 單號 *</label>

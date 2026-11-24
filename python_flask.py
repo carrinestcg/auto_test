@@ -1222,27 +1222,34 @@ def api_create_qa_task():
         tcg_keys = [k.strip().upper() for k in str(tcg_keys_raw).replace(",", " ").split() if k.strip()]
 
     assignee = str(data.get("assignee") or "").strip()
+    try:
+        tasktype = int(data.get("task_type") or data.get("Tasktype") or 1)
+    except (TypeError, ValueError):
+        tasktype = 1
+    if tasktype not in (1, 2):
+        tasktype = 1
     if not tcg_keys:
         return jsonify({"success": False, "message": "請提供 TCG 單號"}), 400
     try:
         results = []
         for tcg_key in tcg_keys:
             summary, fix_versions, reporter = create_qa_task.get_issue(tcg_key)
+            title = create_qa_task.qa_task_title(summary, tasktype)
             new_key = create_qa_task.create_qa_task(
-                tcg_key, summary, fix_versions, reporter, assignee=assignee
+                tcg_key, summary, fix_versions, reporter, tasktype, assignee=assignee
             )
             if new_key is not None:
                 results.append({
                     "tcg_key": tcg_key,
                     "new_key": new_key,
-                    "summary": f"[QA][PED] 測試 {summary}",
+                    "summary": title,
                     "url": f"{create_qa_task.JIRA_BASE_URL}/browse/{new_key}"
                 })
             else:
                 results.append({
                     "tcg_key": tcg_key,
                     "new_key": None,
-                    "summary": f"[QA][PED] 測試 {summary}",
+                    "summary": title,
                     "url": None,
                     "error": f"無法建立 QA 任務，請檢查 TCG 單號 {tcg_key} 是否存在或有權限"
                 })

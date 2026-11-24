@@ -6,4 +6,5 @@ python-dotenv
 pandas
 openpyxl
 google-auth
+google-auth-oauthlib
 google-api-python-client

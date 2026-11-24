@@ -2736,6 +2736,7 @@ function runSelectScript(){
                     .split(/[\s,;]+/)
                     .filter(Boolean),
                 assignee: qaAssignee,
+                task_type: Number(document.getElementById("qa_task_type")?.value) || 1,
             };
             requestPayload = { ...extraData };
             break;
