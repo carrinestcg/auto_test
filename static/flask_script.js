@@ -748,7 +748,8 @@ const SCRIPTS_HIDE_USERNAME = [
     "UPDATE_SCHEDULE_TASK",
     "Query_deposit_count",
     "Rescue_Reward_api",
-   "Edit_Promotion_Time" 
+    "Edit_Promotion_Time",
+    "qa_jira_fill"
 ];
 function toggleDepositCount(){
     const depositCountWrap = document.getElementById("deposit-count-input-div");

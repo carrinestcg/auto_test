@@ -908,23 +908,48 @@ select.multi-select { border-radius: 12px; background: var(--bg-input); color: v
 #account-config-card .account-run-actions { display: flex; gap: 8px; }
 #account-config-card #run-test-btn { flex: 1; }
 
-/* 寬螢幕：測試項目在左、帳號與參數在右 */
+/* 寬螢幕：測試項目在左、帳號與參數在右，兩欄拉滿剩餘高度 */
 @media (min-width: 1280px) {
+    .center-panel.main,
+    .main.center-panel {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        padding-bottom: 20px;
+    }
+    #operation-assist { flex: 0 0 auto; }
     #myForm {
+        flex: 1 1 auto;
+        min-height: 0;
         display: grid;
         grid-template-columns: minmax(0, 1fr) 520px;
-        align-items: start;
+        grid-template-rows: minmax(0, 1fr);
+        align-items: stretch;
         gap: 20px;
     }
-    #scripts-section     { grid-column: 1; grid-row: 1; }
+    #scripts-section,
+    #account-config-card {
+        min-height: 0;
+        height: 100%;
+    }
+    #scripts-section {
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    #scripts-section > .card-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+    }
     #account-config-card {
         grid-column: 2;
         grid-row: 1;
-        position: sticky;
-        top: 0;
-        max-height: calc(100vh - var(--topbar-h) - 40px);
+        position: static;
+        max-height: none;
     }
     #account-config-card .card-body { overflow-y: auto; }
-    #version-section     { grid-column: 1 / -1; grid-row: 1; }
+    #version-section { grid-column: 1 / -1; grid-row: 1; }
     #myForm:has(#account-config-card.hidden) { grid-template-columns: minmax(0, 1fr); }
 }
