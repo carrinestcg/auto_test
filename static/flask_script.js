@@ -131,6 +131,14 @@ const TEST_SCENARIOS = [
         followUp: "填標題、Fix Version/s、Component/s 後執行。",
     },
     {
+        id: "qa_jira_fill",
+        title: "qa_jira_fill",
+        summary: "填入 comment",
+        tab: "SanityTooLTab",
+        scripts: ["qa_jira_fill"],
+        followUp: "填單號，找到資料夾後送出。",
+    },
+    {
         id: "change_password",
         title: "變更玩家密碼",
         summary: "重設為 123qwe",
@@ -139,6 +147,7 @@ const TEST_SCENARIOS = [
         platforms: ["gi8viet"],
         followUp: "填玩家帳號後執行，密碼將重設為 123qwe。",
     },
+    
 ];
 
 let activeScenarioId = null;
