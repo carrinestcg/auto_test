@@ -132,7 +132,7 @@ const TEST_SCENARIOS = [
     },
     {
         id: "qa_jira_fill",
-        title: "qa_jira_fill",
+        title: "Jira 回填 ",
         summary: "填入 comment",
         tab: "SanityTooLTab",
         scripts: ["qa_jira_fill"],
