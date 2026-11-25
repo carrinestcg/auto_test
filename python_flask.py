@@ -1233,10 +1233,10 @@ def api_create_qa_task():
     try:
         results = []
         for tcg_key in tcg_keys:
-            summary, fix_versions, reporter = create_qa_task.get_issue(tcg_key)
+            summary, reporter = create_qa_task.get_issue(tcg_key)
             title = create_qa_task.qa_task_title(summary, tasktype)
             new_key = create_qa_task.create_qa_task(
-                tcg_key, summary, fix_versions, reporter, tasktype, assignee=assignee
+                tcg_key, summary, reporter, tasktype, assignee=assignee
             )
             if new_key is not None:
                 results.append({
