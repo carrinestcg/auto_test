@@ -7,6 +7,7 @@ import os
 import re
 import shutil
 import threading
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -60,16 +61,17 @@ def list_screenshots():
     return files
 
 
-def save_uploads(uploads):
-    """表單附上的圖也先放進 screenshots/，跟手動存檔走同一條上傳。"""
-    SHOT_DIR.mkdir(parents=True, exist_ok=True)
+def save_uploads(uploads, dest_dir=None):
+    """表單附上的圖寫進 dest_dir（預設 screenshots/）。回傳 Path 清單。"""
+    dest_dir = Path(dest_dir) if dest_dir else SHOT_DIR
+    dest_dir.mkdir(parents=True, exist_ok=True)
     saved = []
     for filename, content, _mime in uploads or []:
-        dest = SHOT_DIR / _safe_name(filename)
+        dest = dest_dir / _safe_name(filename)
         if dest.exists():
-            dest = SHOT_DIR / f"{dest.stem}_{_now_stamp()}{dest.suffix}"
+            dest = dest_dir / f"{dest.stem}_{_now_stamp()}{dest.suffix}"
         dest.write_bytes(content)
-        saved.append(dest.name)
+        saved.append(dest)
     return saved
 
 
@@ -323,18 +325,54 @@ def _share_reader(service, file_id):
     ).execute()
 
 
+def _call_with_retry(fn, attempts=3, delay=1.2):
+    last = None
+    for index in range(attempts):
+        try:
+            return fn()
+        except Exception as exc:
+            last = exc
+            if index < attempts - 1:
+                time.sleep(delay * (index + 1))
+    raise last
+
+
+def _upload_one_file(service, path, folder_id):
+    media = MediaFileUpload(str(path), resumable=False)
+    created = service.files().create(
+        body={"name": path.name, "parents": [folder_id]},
+        media_body=media,
+        fields="id, name, webViewLink",
+        supportsAllDrives=True,
+    ).execute()
+    try:
+        _share_reader(service, created["id"])
+        share_ok = True
+    except Exception:
+        share_ok = False
+    return {
+        "name": created.get("name") or path.name,
+        "url": created.get("webViewLink") or f"https://drive.google.com/file/d/{created['id']}/view",
+        "share_ok": share_ok,
+    }
+
+
 def _upload_folder(service, issue_key, paths, project_folder_id):
     parent = project_folder_id
     folder_name = f"{issue_key}_{_now_stamp()}"
-    folder = service.files().create(
-        body={
-            "name": folder_name,
-            "mimeType": "application/vnd.google-apps.folder",
-            "parents": [parent],
-        },
-        fields="id, webViewLink",
-        supportsAllDrives=True,
-    ).execute()
+
+    def create_folder():
+        return service.files().create(
+            body={
+                "name": folder_name,
+                "mimeType": "application/vnd.google-apps.folder",
+                "parents": [parent],
+            },
+            fields="id, webViewLink",
+            supportsAllDrives=True,
+        ).execute()
+
+    folder = _call_with_retry(create_folder)
     folder_id = folder["id"]
     share_note = ""
     try:
@@ -344,33 +382,23 @@ def _upload_folder(service, issue_key, paths, project_folder_id):
 
     uploaded = []
     for path in paths:
-        media = MediaFileUpload(str(path), resumable=False)
-        created = service.files().create(
-            body={"name": path.name, "parents": [folder_id]},
-            media_body=media,
-            fields="id, name, webViewLink",
-            supportsAllDrives=True,
-        ).execute()
-        try:
-            _share_reader(service, created["id"])
-        except Exception:
-            if not share_note:
-                share_note = "檔案已上傳，但無法設成任何人可看連結，請確認資料夾分享權限。"
-        uploaded.append({
-            "name": created.get("name") or path.name,
-            "url": created.get("webViewLink") or f"https://drive.google.com/file/d/{created['id']}/view",
-        })
+        item = _call_with_retry(lambda p=path: _upload_one_file(service, p, folder_id))
+        if not item.pop("share_ok", True) and not share_note:
+            share_note = "檔案已上傳，但無法設成任何人可看連結，請確認資料夾分享權限。"
+        uploaded.append(item)
 
     folder_url = folder.get("webViewLink") or f"https://drive.google.com/drive/folders/{folder_id}"
     return folder_name, folder_url, uploaded, share_note
 
 
-def _comment_body(result, note, folder_url, files):
+def _comment_body(result, note, folder_url, files, path_label=""):
     headline = "QA verified Pass:" if result == "PASS" else "QA verified Fail:"
     lines = [
         headline,
         f"Test result link: {folder_url}",
     ]
+    if path_label:
+        lines.append(f"Drive 路徑：{path_label}")
     if note:
         lines.extend(["", note])
     if files:
@@ -387,6 +415,197 @@ def _jira_headers():
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
+
+
+_QA_DONE_STATUSES = {"closed", "resolved", "done", "cancelled", "canceled"}
+
+
+def _jira_get(path, params=None):
+    resp = requests.get(
+        f"{JIRA_BASE_URL}{path}",
+        headers=_jira_headers(),
+        params=params,
+        verify=JIRA_SSL,
+        timeout=30,
+    )
+    if not resp.ok:
+        detail = resp.text[:300] or resp.reason
+        raise requests.HTTPError(f"Jira 讀取失敗（{resp.status_code}）：{detail}", response=resp)
+    return resp.json()
+
+
+def _issue_type_name(fields):
+    itype = (fields or {}).get("issuetype") or {}
+    return str(itype.get("name") or "").strip()
+
+
+def _status_name(fields):
+    status = (fields or {}).get("status") or {}
+    return str(status.get("name") or "").strip()
+
+
+def _is_qa_task(fields):
+    return _issue_type_name(fields).lower() == "qa task"
+
+
+def _status_done(name):
+    return str(name or "").strip().lower() in _QA_DONE_STATUSES
+
+
+def _parse_task_type(value):
+    try:
+        kind = int(value)
+    except (TypeError, ValueError):
+        kind = 1
+    return 2 if kind == 2 else 1
+
+
+def _is_sanity_summary(summary):
+    return "sanity" in str(summary or "").lower()
+
+
+def _matches_task_type(summary, task_type):
+    sanity = _is_sanity_summary(summary)
+    return sanity if task_type == 2 else not sanity
+
+
+def _qa_task_score(summary, status, task_type=1):
+    score = 0
+    title = str(summary or "")
+    st = str(status or "").strip().lower()
+    if _status_done(st):
+        score -= 50
+    elif st == "in progress":
+        score += 100
+    elif st == "open":
+        score += 40
+    else:
+        score += 20
+    if title.startswith("[QA][PED]"):
+        score += 20
+    if task_type == 2 and _is_sanity_summary(title):
+        score += 10
+    elif task_type != 2 and "測試" in title:
+        score += 10
+    return score
+
+
+def _resolve_qa_task(issue_key, task_type=1):
+    """留言與結案目標是 QA Task。填主單時依類型找一般測試或 Sanity Test；Drive 仍用主單號。"""
+    task_type = _parse_task_type(task_type)
+    type_label = "Sanity Test" if task_type == 2 else "一般 QA Task"
+    data = _jira_get(
+        f"/rest/api/2/issue/{issue_key}",
+        params={"fields": "summary,issuetype,status,subtasks,parent"},
+    )
+    fields = data.get("fields") or {}
+    if _is_qa_task(fields):
+        parent = ((fields.get("parent") or {}).get("key") or "").strip()
+        return {
+            "qa_key": issue_key,
+            "drive_key": parent or issue_key,
+            "parent_key": parent,
+            "qa_summary": fields.get("summary") or "",
+            "qa_status": _status_name(fields),
+            "task_type": task_type,
+        }
+
+    candidates = []
+    for item in fields.get("subtasks") or []:
+        sub_fields = item.get("fields") or {}
+        if not _is_qa_task(sub_fields) and _issue_type_name(sub_fields):
+            continue
+        summary = str(sub_fields.get("summary") or "")
+        if not _is_qa_task(sub_fields):
+            if not summary.startswith("[QA][PED]") and "QA Task" not in summary:
+                continue
+        if not _matches_task_type(summary, task_type):
+            continue
+        key = str(item.get("key") or "").strip()
+        if not key:
+            continue
+        status = _status_name(sub_fields)
+        candidates.append((_qa_task_score(summary, status, task_type), key, summary, status))
+
+    if not candidates:
+        raise ValueError(
+            f"{issue_key} 底下找不到 {type_label}。"
+            "請先建立對應的 QA Task，或把 Jira 單號改成那張 QA Task。"
+        )
+    candidates.sort(key=lambda row: row[0], reverse=True)
+    _score, qa_key, summary, status = candidates[0]
+    return {
+        "qa_key": qa_key,
+        "drive_key": issue_key,
+        "parent_key": issue_key,
+        "qa_summary": summary,
+        "qa_status": status,
+        "task_type": task_type,
+    }
+
+
+def _pick_resolve_transition(transitions):
+    rows = []
+    for item in transitions or []:
+        name = str(item.get("name") or "").strip()
+        to_name = str(((item.get("to") or {}).get("name")) or "").strip()
+        tid = str(item.get("id") or "").strip()
+        if not tid:
+            continue
+        lowered = name.lower()
+        to_lower = to_name.lower()
+        score = 0
+        if to_lower == "resolved":
+            score += 80
+        elif to_lower in {"closed", "done"}:
+            score += 60
+        if "resolv" in lowered:
+            score += 40
+        if "verified" in lowered:
+            score += 50
+        if "close" in lowered or lowered == "done":
+            score += 20
+        if score:
+            rows.append((score, tid, name, to_name))
+    if not rows:
+        return None
+    rows.sort(key=lambda row: row[0], reverse=True)
+    return rows[0]
+
+
+def _transition_qa_resolved(qa_key):
+    """In Progress 的 QA Task 工作流沒有 Resolved，對應動作是 Verified → Closed。"""
+    issue = _jira_get(
+        f"/rest/api/2/issue/{qa_key}",
+        params={"fields": "status"},
+    )
+    current = _status_name(issue.get("fields") or {})
+    if _status_done(current):
+        return f"狀態已是 {current}，略過轉換"
+
+    data = _jira_get(f"/rest/api/2/issue/{qa_key}/transitions")
+    picked = _pick_resolve_transition(data.get("transitions") or [])
+    if not picked:
+        names = [str(item.get("name") or "") for item in (data.get("transitions") or [])]
+        raise ValueError(
+            f"{qa_key} 目前是 {current or '未知狀態'}，沒有可用的 resolve / Verified 轉換"
+            + (f"（現有：{'、'.join(names)}）" if names else "")
+        )
+    _score, tid, name, to_name = picked
+    resp = requests.post(
+        f"{JIRA_BASE_URL}/rest/api/2/issue/{qa_key}/transitions",
+        headers=_jira_headers(),
+        json={"transition": {"id": tid}},
+        verify=JIRA_SSL,
+        timeout=30,
+    )
+    if not resp.ok:
+        detail = resp.text[:300] or resp.reason
+        raise requests.HTTPError(
+            f"{qa_key} 狀態轉換失敗（{resp.status_code}）：{detail}",
+            response=resp,
+        )
+    return f"{current} → {to_name}（{name}）"
 
 
 def _add_comment(issue_key, body):
@@ -409,10 +628,27 @@ def _add_comment(issue_key, body):
 def _archive(paths, issue_key):
     dest_dir = DONE_DIR / f"{issue_key}_{_now_stamp()}"
     dest_dir.mkdir(parents=True, exist_ok=True)
+    parents = set()
     for path in paths:
         if path.is_file():
+            parents.add(path.parent)
             shutil.move(str(path), dest_dir / path.name)
+    for folder in parents:
+        if folder != SHOT_DIR and folder.is_dir() and not any(folder.iterdir()):
+            folder.rmdir()
     return str(dest_dir.relative_to(APP_DIR))
+
+
+def _discard_staging(paths):
+    """失敗後只清掉這次暫存檔，不留本機殘檔給下一張票。"""
+    parents = set()
+    for path in paths or []:
+        if path.parent != SHOT_DIR and path.is_file():
+            parents.add(path.parent)
+            path.unlink(missing_ok=True)
+    for folder in parents:
+        if folder.is_dir() and not any(folder.iterdir()):
+            folder.rmdir()
 
 
 def _read_history():
@@ -453,7 +689,7 @@ def _as_bool(value):
     return str(value or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="", ticket_folder_id="", ticket_folder_name="", link_only=False):
+def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="", ticket_folder_id="", ticket_folder_name="", link_only=False, task_type=1):
     issue_key = parse_ticket_key(issue_raw)
     if not issue_key or not JIRA_KEY_RE.fullmatch(issue_key):
         raise ValueError("請填 Jira 單號，例如 TCG-12345")
@@ -461,17 +697,27 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="",
     if result not in {"PASS", "FAIL"}:
         raise ValueError("測試結果請選 PASS 或 FAIL")
     note = str(note or "").strip()
+    task_type = _parse_task_type(task_type)
+    target = _resolve_qa_task(issue_key, task_type)
+    qa_key = target["qa_key"]
+    drive_key = target["drive_key"]
 
     link_only = _as_bool(link_only)
+    uploads = uploads or []
     if link_only:
         paths = []
+    elif uploads:
+        # 這次表單選的圖單獨一夾，不跟 screenshots/ 上一批殘檔混在一起
+        staging = SHOT_DIR / f"_run_{drive_key}_{_now_stamp()}"
+        paths = save_uploads(uploads, staging)
     else:
-        save_uploads(uploads)
         paths = _shot_paths()
 
     record = {
         "time": _display_time(),
-        "jira": issue_key,
+        "jira": drive_key,
+        "qa_task": qa_key,
+        "task_type": task_type,
         "result": result,
         "note": note,
         "success": False,
@@ -481,42 +727,61 @@ def fill(issue_raw, result, note="", uploads=None, folder_id="", folder_name="",
         "folder_url": "",
         "files": [],
         "comment_url": "",
+        "status_change": "",
         "message": "",
     }
     try:
         service = _drive_service()
         project_id, project_name, year_name = _resolve_project_folder(
-            service, folder_id, folder_name, issue_key, create=bool(paths)
+            service, folder_id, folder_name, drive_key, create=bool(paths)
         )
         record["year_folder"] = year_name
         record["project_folder"] = project_name
         ticket_id, ticket_name = _resolve_ticket_folder(
-            service, project_id, project_name, issue_key, ticket_folder_id, ticket_folder_name, create=bool(paths)
+            service, project_id, project_name, drive_key, ticket_folder_id, ticket_folder_name, create=bool(paths)
         )
         record["ticket_folder"] = ticket_name
+        upload_folder_name = ""
         if paths:
-            _folder_name, folder_url, files, share_note = _upload_folder(service, issue_key, paths, ticket_id)
+            upload_folder_name, folder_url, files, share_note = _upload_folder(service, drive_key, paths, ticket_id)
         else:
             folder_url = _folder_link(service, ticket_id)
             files = []
             share_note = "已貼上既有資料夾連結，沒有上傳圖片。"
         record["folder_url"] = folder_url
         record["files"] = files
+        path_label = " / ".join(
+            part for part in (year_name, project_name, ticket_name, upload_folder_name) if part
+        )
         comment_id, comment_url = _add_comment(
-            issue_key, _comment_body(result, note, folder_url, files)
+            qa_key, _comment_body(result, note, folder_url, files, path_label)
         )
         record["comment_url"] = comment_url
         record["comment_id"] = comment_id
+        record["drive_path"] = path_label
+        status_note = ""
+        if result == "PASS":
+            try:
+                record["status_change"] = _transition_qa_resolved(qa_key)
+            except Exception as exc:
+                status_note = f"留言已貼上，但狀態沒轉成功：{exc}"
         if paths:
-            archived = _archive(paths, issue_key)
+            archived = _archive(paths, drive_key)
             record["archived"] = archived
         record["success"] = True
-        message = f"{issue_key} 已回填{result}（{year_name} / {project_name}" + (f" / {ticket_name}" if ticket_name else "") + "）"
+        message = f"{qa_key} 已回填 {result}（{path_label}）"
+        if drive_key != qa_key:
+            message = f"{drive_key} 的 QA Task {message}"
+        if record.get("status_change"):
+            message = f"{message}。狀態 {record['status_change']}"
+        if status_note:
+            message = f"{message}。{status_note}"
         if share_note:
             message = f"{message}。{share_note}"
         record["message"] = message
     except Exception as exc:
         record["message"] = str(exc)
+        _discard_staging(paths)
         _append_history(record)
         return record
     _append_history(record)

@@ -344,6 +344,13 @@
                                 <input type="text" id="qa_fill_jira" class="account-line-input" placeholder="TCG-12345" autocomplete="off">
                             </div>
                             <div class="bug-field">
+                                <label for="qa_fill_task_type" class="field-label">Task 類型 *</label>
+                                <select id="qa_fill_task_type" class="app-select">
+                                    <option value="1">一般 QA Task</option>
+                                    <option value="2">Sanity Test</option>
+                                </select>
+                            </div>
+                            <div class="bug-field">
                                 <label for="qa_fill_result" class="field-label">測試結果 *</label>
                                 <select id="qa_fill_result" class="app-select">
                                     <option value="PASS" selected>PASS</option>
@@ -351,6 +358,7 @@
                                 </select>
                             </div>
                         </div>
+                        <small class="field-helper">填主單即可。一般會貼在 [QA][PED] 測試，Sanity Test 會貼在 [QA][PED] Sanity Test。PASS 時把該張 QA Task 轉成 Closed（Verified）。</small>
                         <div class="bug-field bug-field-full">
                             <label for="qa_fill_note" class="field-label">測試說明</label>
                             <textarea id="qa_fill_note" rows="3" class="bug-textarea-sm" placeholder="活動正常建立，獎勵派發成功。"></textarea>
@@ -364,7 +372,7 @@
                         </div>
                         <div class="bug-field bug-field-full">
                             <label class="field-label">截圖</label>
-                            <p class="field-helper">取消上面的勾選後，才會把這裡或 screenshots/ 的圖上傳到 Drive。</p>
+                            <p class="field-helper">取消上面的勾選後才會上傳圖。有另外選檔就只傳這次選的；沒選檔才會把 screenshots/ 第一層全部傳上去。</p>
                             <p id="qa_fill_shot_list" class="field-helper">尚未檢查截圖資料夾。</p>
                             <div class="file-upload-zone" data-input="qa_fill_attachments">
                                 <input type="file" id="qa_fill_attachments" class="file-upload-input" accept="image/png,image/jpeg,image/gif,image/webp,image/bmp" multiple>

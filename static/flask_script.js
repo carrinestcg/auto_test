@@ -1053,8 +1053,6 @@ function toggleQaJiraFill() {
     }
 }
 
-const QA_FILL_FOLDER_KEY = "auto_test_qa_fill_folder";
-
 function initQaFillFolderSuggest() {
     const input = document.getElementById("qa_fill_project");
     const menu = document.getElementById("qa_fill_project_menu");
@@ -1062,13 +1060,9 @@ function initQaFillFolderSuggest() {
     if (!input || !menu || !idInput || input.dataset.bound === "true") return;
     input.dataset.bound = "true";
     try {
-        const saved = JSON.parse(localStorage.getItem(QA_FILL_FOLDER_KEY) || "null");
-        if (saved?.name) {
-            input.value = saved.name;
-            idInput.value = saved.id || "";
-        }
+        localStorage.removeItem("auto_test_qa_fill_folder");
     } catch (e) {
-        /* 記不住上次的資料夾就不帶入 */
+        /* 舊的資料夾記憶清不掉也不影響這次選取 */
     }
     let timer = 0;
     const hide = () => menu.classList.add("hidden");
@@ -1096,10 +1090,6 @@ function initQaFillFolderSuggest() {
                         btn.addEventListener("click", () => {
                             input.value = btn.dataset.name || "";
                             idInput.value = btn.dataset.id || "";
-                            localStorage.setItem(QA_FILL_FOLDER_KEY, JSON.stringify({
-                                id: idInput.value,
-                                name: input.value,
-                            }));
                             hide();
                             syncQaFillTicketField();
                             updateRunButtonState();
@@ -1213,7 +1203,11 @@ function refreshQaJiraFillStatus() {
                         : "";
                     const place = [row.year_folder, row.project_folder, row.ticket_folder].filter(Boolean).join(" / ");
                     const project = place ? `${escapeHtml(place)} · ` : "";
-                    return `<div>${escapeHtml(row.time || "")} · ${project}${escapeHtml(row.jira || "")} · ${escapeHtml(row.result || "")} · ${state}${link}</div>`;
+                    const ticket = row.qa_task && row.qa_task !== row.jira
+                        ? `${escapeHtml(row.jira || "")} / ${escapeHtml(row.qa_task)}`
+                        : escapeHtml(row.qa_task || row.jira || "");
+                    const status = row.status_change ? ` · ${escapeHtml(row.status_change)}` : "";
+                    return `<div>${escapeHtml(row.time || "")} · ${project}${ticket} · ${escapeHtml(row.result || "")} · ${state}${status}${link}</div>`;
                 }).join("");
             })
             .catch(() => {
@@ -2769,6 +2763,7 @@ function runSelectScript(){
         case "qa_jira_fill": {
             extraData = {
                 jira: document.getElementById("qa_fill_jira").value.trim(),
+                task_type: Number(document.getElementById("qa_fill_task_type")?.value) || 1,
                 result: document.getElementById("qa_fill_result").value,
                 note: document.getElementById("qa_fill_note").value.trim(),
                 folder_id: document.getElementById("qa_fill_folder_id").value.trim(),
@@ -2906,17 +2901,28 @@ function runSelectScript(){
     })();
 }
 
+async function postScriptOnce(scriptName, payload) {
+    const isFormData = typeof FormData !== "undefined" && payload instanceof FormData;
+    const res = await fetch(`/api/${scriptName}`, {
+        method: "POST",
+        headers: isFormData ? undefined : { "Content-Type": "application/json" },
+        body: isFormData ? payload : JSON.stringify(payload),
+    });
+    return res.json();
+}
+
 async function runScriptApi(scriptName, payload) {
     trackRunRequestStart();
     appendRunLog(`▶ ${scriptName} 開始…`);
     try {
-        const isFormData = typeof FormData !== "undefined" && payload instanceof FormData;
-        const res = await fetch(`/api/${scriptName}`, {
-            method: "POST",
-            headers: isFormData ? undefined : { "Content-Type": "application/json" },
-            body: isFormData ? payload : JSON.stringify(payload),
-        });
-        const data = await res.json();
+        let data = await postScriptOnce(scriptName, payload);
+        if (scriptName === "qa_jira_fill" && data && data.success === false) {
+            for (let attempt = 2; attempt <= 3; attempt += 1) {
+                appendRunLog(`${scriptName}：失敗，第 ${attempt} 次重傳…`, "err");
+                data = await postScriptOnce(scriptName, payload);
+                if (data?.success) break;
+            }
+        }
         console.log(scriptName, data);
         appendRunLog(
             `${scriptName}：${data.success ? "成功" : "失敗"}${data.message ? " — " + data.message : ""}`,
