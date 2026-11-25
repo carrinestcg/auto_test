@@ -24,7 +24,7 @@ class Frontend:
         try:
 
             if self.token is not None and self.token_expire is not None and datetime.now()<self.token_expire:
-                return self.token
+               return self.token
             
             login_url='http://sit3.sit-gi8viet.com/wps/session/login/unsecure'
             
@@ -86,7 +86,7 @@ class Frontend:
                 'x-timestamp': unitTime     
             }
         
-    def get_mcssite_manualtransfer_channel(self):
+    def get_mcssite_manualtransfer_channel(self, channel_code="WCFQR"):
         url = 'http://www.sit-gi8viet.com/wps/relay/MCSFE_getDepositPaymentChannels?webSupported=Y&mobileSupported=N&groupMTByChannelName=Y'
         headers = self.header()
         response = self.session.get(url, headers=headers)
@@ -95,8 +95,8 @@ class Frontend:
         channel_info=[]
         if response_json.get("success"):
             value = response_json.get("value", {})
-            wechat = value.get("WCFQR", {}) 
-            channels = wechat.get("channels", [])
+            channel_group = value.get(channel_code, {})
+            channels = channel_group.get("channels", [])
             for channel in channels:
                 channel_info.append({
                     "vendorName": channel['vendorName'],
@@ -166,7 +166,7 @@ class Frontend:
                 logging.info("token 過期, 重新登入")
                 self.get_token_login(self.credential['username'],self.credential['password'])
             if self.token is None:
-                return
+                return 0, 1 
             login_URL="http://www.sit-gi8viet.com/wps/relay/MCSFE_depositByQRImageUrl"
 
             headers=self.header()
@@ -208,7 +208,7 @@ class Frontend:
                 
         logging.info(f"總共充值{success_count}筆")
         logging.info(f"總共失敗{success_fail}筆")
-        return success_count  
+        return success_count, success_fail 
             
         
 def main(username, amount, type, ticket_id=None, promotion_id = None, discountAmount=None, depositAmount=None):
@@ -241,21 +241,17 @@ def main(username, amount, type, ticket_id=None, promotion_id = None, discountAm
                     channel_info = frontend.get_mcssite_manualtransfer_channel()
                     for i in range(repeat):
                         logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
-                        count = frontend.deposit_QAD(credential['username'], channel_info, promotion_id, depositAmount)
-                        if count > 0:
-                            success_count += count
-                        else:
-                            fail_count += 1
+                        ok, fail= frontend.deposit_QAD(credential['username'], channel_info, promotion_id, depositAmount)
+                        success_count += ok
+                        fail_count += fail
                         time.sleep(1)
                 elif type ==1:
                     channel_info = frontend.get_mcssite_manualtransfer_channel()
                     for i in range(repeat):
                         logging.info(f"{account} 第 {i+1}/{repeat} 次充值")
-                        count = frontend.deposit_QAD(credential['username'], channel_info, amount=amount)
-                        if count > 0:
-                            success_count += count
-                        else:
-                            fail_count += 1
+                        ok, fail= frontend.deposit_QAD(credential['username'], channel_info, amount=amount)
+                        success_count += ok
+                        fail_count += fail
                         time.sleep(1)
                         
                 elif type ==3: #使用充值折抵券
@@ -269,11 +265,9 @@ def main(username, amount, type, ticket_id=None, promotion_id = None, discountAm
                         if ticket["ticketId"] == ticket_id:
                             claimID=ticket["id"]
                             logging.info(f"找到指定的充值折抵券 {ticket_id}")
-                            count = frontend.deposit_QAD(credential['username'], channel_info, amount=amount, claimID=claimID, discountAmount=discountAmount, promotion_id=promotion_id, depositAmount=depositAmount)
-                            if count > 0:
-                                success_count += count
-                            else:
-                                fail_count += 1
+                            ok, fail = frontend.deposit_QAD(credential['username'], channel_info, amount=amount, claimID=claimID, discountAmount=discountAmount, promotion_id=promotion_id, depositAmount=depositAmount)
+                            success_count += ok
+                            fail_count += fail
                             time.sleep(1)
             else:
                 logging.error("登入失敗 無法取得Token")

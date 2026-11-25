@@ -70,7 +70,7 @@ def main(username: str, platform, query_type: int) -> str | None:
     if isinstance(platform, (list, tuple)):
         platform = platform[0] if platform else "gi8viet"
     platform = (platform or "gi8viet").strip()
-    username = (username or "").strip()
+    username = str(username or "").strip()
 
     customer_name = username if "@" in username else f"{platform}@{username}"
 
